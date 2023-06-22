@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
 
 const WORLD_BOUNDS: f32 = 100.0;
 const PLAYER_SPEED: f32 = 1.0;
@@ -56,6 +54,10 @@ fn setup(
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 0., 0.1)),
+                projection: OrthographicProjection {
+                    scaling_mode: ScalingMode::FixedVertical(100.),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
         });
