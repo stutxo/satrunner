@@ -20,7 +20,7 @@ fn main() {
             spawn_falling_dots_system,
             move_falling_dots_system,
         ))
-        .insert_resource(DotTimer(Timer::from_seconds(0.5, TimerMode::Repeating)))
+        .insert_resource(DotTimer(Timer::from_seconds(0.05, TimerMode::Repeating)))
         .run();
 }
 
@@ -110,9 +110,9 @@ pub fn move_system(
 
                 if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
                     if movement.length() < distance_to_target {
-                        t.translation += Vec3::new(movement.x, movement.y, 0.1);
+                        t.translation += Vec3::new(movement.x, 0.0, 0.1);
                     } else {
-                        t.translation = Vec3::new(tg.x, tg.y, 0.1);
+                        t.translation = Vec3::new(tg.x, 0.0, 0.1);
                         p.moving = false;
                     }
                 } else {
@@ -134,7 +134,7 @@ fn spawn_falling_dots_system(
 ) {
     let y_position = WORLD_BOUNDS;
     let x_position: f32 = rand::random::<f32>() * WORLD_BOUNDS * 2.0 - WORLD_BOUNDS; // Random position within the world bounds
-    let speed: f32 = 10.0 + rand::random::<f32>() * 3.0; // Random speed between 1.0 and 4.0
+    let speed: f32 = 70.0 + rand::random::<f32>() * 3.0; // Random speed between 1.0 and 4.0
 
     if timer.0.tick(time.delta()).just_finished() {
         commands
