@@ -19,7 +19,7 @@ fn main() {
             }),
             ..default()
         }))
-        .insert_resource(FixedTime::new_from_secs(1. / 60.))
+        .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .add_startup_system(setup)
         .add_systems((
             move_system.in_schedule(CoreSchedule::FixedUpdate),
