@@ -1,7 +1,5 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
 
-use bevy::time::fixed_timestep;
-
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng; // trait that defines the seed_from_u64 method // trait that defines the gen_range method
@@ -9,7 +7,6 @@ use rand::SeedableRng; // trait that defines the seed_from_u64 method // trait t
 const WORLD_BOUNDS: f32 = 100.0;
 const PLAYER_SPEED: f32 = 0.5;
 const FALL_SPEED: f32 = 0.5;
-const SPAWN_TIME: f32 = 0.0001;
 
 fn main() {
     App::new()
@@ -22,18 +19,14 @@ fn main() {
             }),
             ..default()
         }))
+        .insert_resource(FixedTime::new_from_secs(1. / 60.))
         .add_startup_system(setup)
         .add_systems((
-            move_system,
-            spawn_falling_dots_system,
-            move_falling_dots_system,
+            move_system.in_schedule(CoreSchedule::FixedUpdate),
+            spawn_falling_dots_system.in_schedule(CoreSchedule::FixedUpdate),
+            move_falling_dots_system.in_schedule(CoreSchedule::FixedUpdate),
         ))
-        // .insert_resource(DotTimer(Timer::from_seconds(
-        //     SPAWN_TIME,
-        //     TimerMode::Repeating,
-        // )))
         .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
-        .insert_resource(FixedTime::new_from_secs(1.0 / 30.0))
         .run();
 }
 
@@ -142,15 +135,11 @@ fn spawn_falling_dots_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    time: Res<Time>,
-    // mut timer: ResMut<DotTimer>,
     mut rng: ResMut<MyRng>,
 ) {
     let y_position = WORLD_BOUNDS;
     let speed: f32 = FALL_SPEED;
 
-    // if timer.0.tick(time.delta()).just_finished() {
-    // Determine the number of balls to spawn
     let num_balls: i32 = 2; // Change this to control the number of balls
 
     for _ in 0..num_balls {
@@ -172,11 +161,10 @@ fn spawn_falling_dots_system(
             .insert(FallingDot { speed, direction });
     }
 }
-// }
 
 fn move_falling_dots_system(
     mut commands: Commands,
-    time: Res<Time>,
+
     mut query: Query<(Entity, &mut Transform, &FallingDot)>,
 ) {
     for (entity, mut transform, dot) in query.iter_mut() {
