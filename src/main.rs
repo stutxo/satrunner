@@ -1,5 +1,7 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
 
+use bevy::time::fixed_timestep;
+
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng; // trait that defines the seed_from_u64 method // trait that defines the gen_range method
@@ -26,11 +28,12 @@ fn main() {
             spawn_falling_dots_system,
             move_falling_dots_system,
         ))
-        .insert_resource(DotTimer(Timer::from_seconds(
-            SPAWN_TIME,
-            TimerMode::Repeating,
-        )))
+        // .insert_resource(DotTimer(Timer::from_seconds(
+        //     SPAWN_TIME,
+        //     TimerMode::Repeating,
+        // )))
         .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
+        .insert_resource(FixedTime::default())
         .run();
 }
 
@@ -140,36 +143,36 @@ fn spawn_falling_dots_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     time: Res<Time>,
-    mut timer: ResMut<DotTimer>,
+    // mut timer: ResMut<DotTimer>,
     mut rng: ResMut<MyRng>,
 ) {
     let y_position = WORLD_BOUNDS;
     let speed: f32 = FALL_SPEED;
 
-    if timer.0.tick(time.delta()).just_finished() {
-        // Determine the number of balls to spawn
-        let num_balls: i32 = 2; // Change this to control the number of balls
+    // if timer.0.tick(time.delta()).just_finished() {
+    // Determine the number of balls to spawn
+    let num_balls: i32 = 2; // Change this to control the number of balls
 
-        for _ in 0..num_balls {
-            // Generate a random x position for each ball
-            let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
+    for _ in 0..num_balls {
+        // Generate a random x position for each ball
+        let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
 
-            // Generate a random direction for each ball
-            let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
-            let direction_y: f32 = rng.0.gen_range(-1.0..1.0);
-            let direction = Vec2::new(direction_x, direction_y).normalize();
+        // Generate a random direction for each ball
+        let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
+        let direction_y: f32 = rng.0.gen_range(-1.0..1.0);
+        let direction = Vec2::new(direction_x, direction_y).normalize();
 
-            commands
-                .spawn(MaterialMesh2dBundle {
-                    mesh: meshes.add(shape::Circle::new(0.25).into()).into(),
-                    material: materials.add(ColorMaterial::from(Color::WHITE)),
-                    transform: Transform::from_translation(Vec3::new(x_position, y_position, 0.1)),
-                    ..Default::default()
-                })
-                .insert(FallingDot { speed, direction });
-        }
+        commands
+            .spawn(MaterialMesh2dBundle {
+                mesh: meshes.add(shape::Circle::new(0.25).into()).into(),
+                material: materials.add(ColorMaterial::from(Color::WHITE)),
+                transform: Transform::from_translation(Vec3::new(x_position, y_position, 0.1)),
+                ..Default::default()
+            })
+            .insert(FallingDot { speed, direction });
     }
 }
+// }
 
 fn move_falling_dots_system(
     mut commands: Commands,
