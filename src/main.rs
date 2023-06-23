@@ -33,7 +33,7 @@ fn main() {
         //     TimerMode::Repeating,
         // )))
         .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
-        .insert_resource(FixedTime::default())
+        .insert_resource(FixedTime::new_from_secs(1.0 / 30.0))
         .run();
 }
 
