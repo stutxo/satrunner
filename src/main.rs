@@ -1,8 +1,12 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
 
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng; // trait that defines the seed_from_u64 method // trait that defines the gen_range method
+
 const WORLD_BOUNDS: f32 = 100.0;
 const PLAYER_SPEED: f32 = 0.5;
-const FALL_SPEED: f32 = 50.0;
+const FALL_SPEED: f32 = 0.5;
 const SPAWN_TIME: f32 = 0.0001;
 
 fn main() {
@@ -26,6 +30,7 @@ fn main() {
             SPAWN_TIME,
             TimerMode::Repeating,
         )))
+        .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
         .run();
 }
 
@@ -136,6 +141,7 @@ fn spawn_falling_dots_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     time: Res<Time>,
     mut timer: ResMut<DotTimer>,
+    mut rng: ResMut<MyRng>,
 ) {
     let y_position = WORLD_BOUNDS;
     let speed: f32 = FALL_SPEED;
@@ -146,11 +152,11 @@ fn spawn_falling_dots_system(
 
         for _ in 0..num_balls {
             // Generate a random x position for each ball
-            let x_position: f32 = rand::random::<f32>() * WORLD_BOUNDS * 2.0 - WORLD_BOUNDS;
+            let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
 
             // Generate a random direction for each ball
-            let direction_x: f32 = rand::random::<f32>() * 2.0 - 1.0;
-            let direction_y: f32 = rand::random::<f32>() * 2.0 - 1.0;
+            let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
+            let direction_y: f32 = rng.0.gen_range(-1.0..1.0);
             let direction = Vec2::new(direction_x, direction_y).normalize();
 
             commands
@@ -172,8 +178,8 @@ fn move_falling_dots_system(
 ) {
     for (entity, mut transform, dot) in query.iter_mut() {
         // Update position based on speed and direction
-        transform.translation.x += dot.speed * dot.direction.x * time.delta_seconds();
-        transform.translation.y += dot.speed * dot.direction.y * time.delta_seconds();
+        transform.translation.x += dot.speed * dot.direction.x;
+        transform.translation.y += dot.speed * dot.direction.y;
 
         if transform.translation.y < -WORLD_BOUNDS
             || transform.translation.y > WORLD_BOUNDS
@@ -241,3 +247,6 @@ struct FallingDot {
 
 #[derive(Resource)]
 struct DotTimer(Timer);
+
+#[derive(Resource)]
+struct MyRng(StdRng);
