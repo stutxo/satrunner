@@ -1,7 +1,9 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
 
 const WORLD_BOUNDS: f32 = 100.0;
-const PLAYER_SPEED: f32 = 1.0;
+const PLAYER_SPEED: f32 = 0.5;
+const FALL_SPEED: f32 = 50.0;
+const SPAWN_TIME: f32 = 0.0001;
 
 fn main() {
     App::new()
@@ -20,7 +22,10 @@ fn main() {
             spawn_falling_dots_system,
             move_falling_dots_system,
         ))
-        .insert_resource(DotTimer(Timer::from_seconds(0.05, TimerMode::Repeating)))
+        .insert_resource(DotTimer(Timer::from_seconds(
+            SPAWN_TIME,
+            TimerMode::Repeating,
+        )))
         .run();
 }
 
@@ -44,16 +49,16 @@ fn setup(
 
     commands
         .spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(1.0).into()).into(),
+            mesh: meshes.add(shape::Circle::new(0.5).into()).into(),
             material: materials.add(ColorMaterial::from(Color::ORANGE)),
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
             ..Default::default()
         })
         .insert(Player { moving: false })
         .insert(Target::default())
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 0., 0.1)),
+                transform: Transform::from_translation(Vec3::new(0., 25., 0.0)),
                 projection: OrthographicProjection {
                     scaling_mode: ScalingMode::FixedVertical(100.),
                     ..Default::default()
@@ -110,9 +115,9 @@ pub fn move_system(
 
                 if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
                     if movement.length() < distance_to_target {
-                        t.translation += Vec3::new(movement.x, 0.0, 0.1);
+                        t.translation += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
-                        t.translation = Vec3::new(tg.x, 0.0, 0.1);
+                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
                         p.moving = false;
                     }
                 } else {
@@ -133,18 +138,30 @@ fn spawn_falling_dots_system(
     mut timer: ResMut<DotTimer>,
 ) {
     let y_position = WORLD_BOUNDS;
-    let x_position: f32 = rand::random::<f32>() * WORLD_BOUNDS * 2.0 - WORLD_BOUNDS; // Random position within the world bounds
-    let speed: f32 = 70.0 + rand::random::<f32>() * 3.0; // Random speed between 1.0 and 4.0
+    let speed: f32 = FALL_SPEED;
 
     if timer.0.tick(time.delta()).just_finished() {
-        commands
-            .spawn(MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(1.0).into()).into(),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
-                transform: Transform::from_translation(Vec3::new(x_position, y_position, 0.1)),
-                ..Default::default()
-            })
-            .insert(FallingDot { speed });
+        // Determine the number of balls to spawn
+        let num_balls: i32 = 2; // Change this to control the number of balls
+
+        for _ in 0..num_balls {
+            // Generate a random x position for each ball
+            let x_position: f32 = rand::random::<f32>() * WORLD_BOUNDS * 2.0 - WORLD_BOUNDS;
+
+            // Generate a random direction for each ball
+            let direction_x: f32 = rand::random::<f32>() * 2.0 - 1.0;
+            let direction_y: f32 = rand::random::<f32>() * 2.0 - 1.0;
+            let direction = Vec2::new(direction_x, direction_y).normalize();
+
+            commands
+                .spawn(MaterialMesh2dBundle {
+                    mesh: meshes.add(shape::Circle::new(0.25).into()).into(),
+                    material: materials.add(ColorMaterial::from(Color::WHITE)),
+                    transform: Transform::from_translation(Vec3::new(x_position, y_position, 0.1)),
+                    ..Default::default()
+                })
+                .insert(FallingDot { speed, direction });
+        }
     }
 }
 
@@ -154,9 +171,15 @@ fn move_falling_dots_system(
     mut query: Query<(Entity, &mut Transform, &FallingDot)>,
 ) {
     for (entity, mut transform, dot) in query.iter_mut() {
-        transform.translation.y -= dot.speed * time.delta_seconds();
+        // Update position based on speed and direction
+        transform.translation.x += dot.speed * dot.direction.x * time.delta_seconds();
+        transform.translation.y += dot.speed * dot.direction.y * time.delta_seconds();
 
-        if transform.translation.y < -WORLD_BOUNDS {
+        if transform.translation.y < -WORLD_BOUNDS
+            || transform.translation.y > WORLD_BOUNDS
+            || transform.translation.x < -WORLD_BOUNDS
+            || transform.translation.x > WORLD_BOUNDS
+        {
             commands.entity(entity).despawn();
         }
     }
@@ -213,6 +236,7 @@ pub struct Target {
 #[derive(Component)]
 struct FallingDot {
     speed: f32,
+    direction: Vec2,
 }
 
 #[derive(Resource)]
