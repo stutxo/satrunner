@@ -47,7 +47,7 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(0.3).into()).into(),
             material: materials.add(ColorMaterial::from(Color::ORANGE)),
-            transform: Transform::from_translation(Vec3::new(0., -100., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
             ..Default::default()
         })
         .insert(Player { moving: false })
@@ -137,7 +137,7 @@ pub fn move_system(
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
-                        t.translation = Vec3::new(tg.x, -100.0, 0.1);
+                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
                         p.moving = false;
                     }
                 } else {
