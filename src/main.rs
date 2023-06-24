@@ -54,7 +54,7 @@ fn setup(
         .insert(Target::default())
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+                transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
                 projection: OrthographicProjection {
                     scaling_mode: ScalingMode::FixedVertical(100.0),
                     ..Default::default()
