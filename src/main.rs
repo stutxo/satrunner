@@ -63,7 +63,7 @@ fn setup(
             });
         });
 
-    let border = 0.05;
+    // let border = 0.05;
 
     // Left border
     // commands.spawn(SpriteBundle {
