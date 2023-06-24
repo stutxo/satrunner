@@ -1,11 +1,8 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
-
-use rand::rngs::StdRng;
 use rand::Rng;
-use rand::SeedableRng; // trait that defines the seed_from_u64 method // trait that defines the gen_range method
 
 const WORLD_BOUNDS: f32 = 100.0;
-const PLAYER_SPEED: f32 = 0.5;
+const PLAYER_SPEED: f32 = 1.0;
 const FALL_SPEED: f32 = 0.5;
 
 fn main() {
@@ -34,7 +31,6 @@ fn main() {
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(spawn_dots),
         ))
-        .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
         .insert_resource(DotPos { dots: Vec::new() })
         .run();
 }
@@ -45,37 +41,51 @@ fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut clear_color: ResMut<ClearColor>,
 ) {
-    clear_color.0 = Color::GRAY;
-
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: Color::rgb(0.0, 0.0, 0.0),
-            custom_size: Some(Vec2::new(WORLD_BOUNDS * 2.0, WORLD_BOUNDS * 2.0)),
-            ..default()
-        },
-        transform: Transform::from_translation(Vec3::new(0., 0., 0.0)),
-        ..default()
-    });
+    clear_color.0 = Color::BLACK;
 
     commands
         .spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(0.5).into()).into(),
+            mesh: meshes.add(shape::Circle::new(0.3).into()).into(),
             material: materials.add(ColorMaterial::from(Color::ORANGE)),
-            transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., -100., 0.1)),
             ..Default::default()
         })
         .insert(Player { moving: false })
         .insert(Target::default())
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 25., 0.0)),
+                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
                 projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(300.),
+                    scaling_mode: ScalingMode::FixedVertical(100.0),
                     ..Default::default()
                 },
                 ..Default::default()
             });
         });
+
+    let border = 0.05;
+
+    // Left border
+    // commands.spawn(SpriteBundle {
+    //     sprite: Sprite {
+    //         color: Color::WHITE,
+    //         custom_size: Some(Vec2::new(border, WORLD_BOUNDS * 2.0)),
+    //         ..default()
+    //     },
+    //     transform: Transform::from_translation(Vec3::new(-WORLD_BOUNDS - border / 2.0, 0.0, 0.0)),
+    //     ..default()
+    // });
+
+    // // Right border
+    // commands.spawn(SpriteBundle {
+    //     sprite: Sprite {
+    //         color: Color::WHITE,
+    //         custom_size: Some(Vec2::new(border, WORLD_BOUNDS * 2.0)),
+    //         ..default()
+    //     },
+    //     transform: Transform::from_translation(Vec3::new(WORLD_BOUNDS + border / 2.0, 0.0, 0.0)),
+    //     ..default()
+    // });
 }
 
 pub fn move_system(
@@ -127,7 +137,7 @@ pub fn move_system(
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
-                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
+                        t.translation = Vec3::new(tg.x, -100.0, 0.1);
                         p.moving = false;
                     }
                 } else {
@@ -140,20 +150,25 @@ pub fn move_system(
     }
 }
 
-fn internal_server(mut dots: ResMut<DotPos>, mut rng: ResMut<MyRng>) {
-    let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-    let y_position = WORLD_BOUNDS;
+fn internal_server(mut dots: ResMut<DotPos>) {
+    let mut rng = rand::thread_rng();
+    let num_balls: i32 = rng.gen_range(1..4);
 
-    let dot_start = Vec3::new(x_position, y_position, 0.1);
+    for _ in 0..num_balls {
+        let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
+        let y_position = WORLD_BOUNDS;
 
-    let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
-    let direction_y: f32 = rng.0.gen_range(-1.0..0.0);
-    let direction = Vec2::new(direction_x, direction_y).normalize();
+        let dot_start = Vec3::new(x_position, y_position, 0.1);
 
-    dots.dots.push(Dot {
-        pos: dot_start,
-        direction,
-    });
+        let direction_x: f32 = 0.0;
+        let direction_y: f32 = -1.0;
+        let direction = Vec2::new(direction_x, direction_y).normalize();
+
+        dots.dots.push(Dot {
+            pos: dot_start,
+            direction,
+        });
+    }
 }
 
 fn out_server(mut dots: ResMut<DotPos>) {
@@ -169,23 +184,18 @@ fn out_server(mut dots: ResMut<DotPos>) {
     });
 }
 
-fn spawn_dots(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    dots: ResMut<DotPos>,
-) {
+fn spawn_dots(mut commands: Commands, dots: ResMut<DotPos>) {
     for dot in dots.dots.iter() {
         commands
-            .spawn(MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(0.25).into()).into(),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
-                transform: Transform::from_translation(Vec3::new(dot.pos.x, dot.pos.y, 0.1)),
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(0.5, 0.5)),
+                    ..default()
+                },
+                transform: Transform::from_translation(dot.pos),
                 ..Default::default()
             })
-            .insert(FallingDot {
-                direction: dot.direction,
-            });
+            .insert(FallingDot());
     }
 }
 
@@ -194,32 +204,6 @@ fn despawn(mut commands: Commands, mut query: Query<(Entity, &FallingDot)>) {
         commands.entity(entity).despawn();
     }
 }
-
-// fn move_falling_dots_system(
-//     mut commands: Commands,
-
-//     mut query: Query<(Entity, &mut Transform, &FallingDot)>,
-//     dot_pos: ResMut<DotPos>,
-// ) {
-//     for (entity, mut transform, dot) in query.iter_mut() {
-//         // Update position based on speed and direction
-
-//         for pos in &dot_pos.pos {
-//             transform.translation.x += pos.x;
-//             transform.translation.y += pos.y;
-//         }
-//         // transform.translation.x += dot.speed * dot.direction.x;
-//         // transform.translation.y += dot.speed * dot.direction.y;
-
-//         // if transform.translation.y < -WORLD_BOUNDS
-//         //     || transform.translation.y > WORLD_BOUNDS
-//         //     || transform.translation.x < -WORLD_BOUNDS
-//         //     || transform.translation.x > WORLD_BOUNDS
-//         // {
-//         //     commands.entity(entity).despawn();
-//         // }
-//     }
-// }
 
 pub fn get_click_position(
     window: &Window,
@@ -270,15 +254,7 @@ pub struct Target {
 }
 
 #[derive(Component)]
-struct FallingDot {
-    direction: Vec2,
-}
-
-#[derive(Resource)]
-struct DotTimer(Timer);
-
-#[derive(Resource)]
-struct MyRng(StdRng);
+struct FallingDot();
 
 #[derive(Resource)]
 struct DotPos {
