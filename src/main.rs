@@ -23,10 +23,19 @@ fn main() {
         .add_startup_system(setup)
         .add_systems((
             move_system.in_schedule(CoreSchedule::FixedUpdate),
-            spawn_falling_dots_system.in_schedule(CoreSchedule::FixedUpdate),
-            move_falling_dots_system.in_schedule(CoreSchedule::FixedUpdate),
+            internal_server.in_schedule(CoreSchedule::FixedUpdate),
+            out_server
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(internal_server),
+            spawn_dots
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(out_server),
+            despawn
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(spawn_dots),
         ))
         .insert_resource(MyRng(StdRng::seed_from_u64(1234)))
+        .insert_resource(DotPos { dots: Vec::new() })
         .run();
 }
 
@@ -61,7 +70,7 @@ fn setup(
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 25., 0.0)),
                 projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(100.),
+                    scaling_mode: ScalingMode::FixedVertical(300.),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -131,56 +140,86 @@ pub fn move_system(
     }
 }
 
-fn spawn_falling_dots_system(
+fn internal_server(mut dots: ResMut<DotPos>, mut rng: ResMut<MyRng>) {
+    let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
+    let y_position = WORLD_BOUNDS;
+
+    let dot_start = Vec3::new(x_position, y_position, 0.1);
+
+    let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
+    let direction_y: f32 = rng.0.gen_range(-1.0..0.0);
+    let direction = Vec2::new(direction_x, direction_y).normalize();
+
+    dots.dots.push(Dot {
+        pos: dot_start,
+        direction,
+    });
+}
+
+fn out_server(mut dots: ResMut<DotPos>) {
+    for dot in dots.dots.iter_mut() {
+        dot.pos.x += FALL_SPEED * dot.direction.x;
+        dot.pos.y += FALL_SPEED * dot.direction.y;
+    }
+    dots.dots.retain(|dot| {
+        dot.pos.y >= -WORLD_BOUNDS
+            && dot.pos.y <= WORLD_BOUNDS
+            && dot.pos.x >= -WORLD_BOUNDS
+            && dot.pos.x <= WORLD_BOUNDS
+    });
+}
+
+fn spawn_dots(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut rng: ResMut<MyRng>,
+    dots: ResMut<DotPos>,
 ) {
-    let y_position = WORLD_BOUNDS;
-    let speed: f32 = FALL_SPEED;
-
-    let num_balls: i32 = 2; // Change this to control the number of balls
-
-    for _ in 0..num_balls {
-        // Generate a random x position for each ball
-        let x_position: f32 = rng.0.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-
-        // Generate a random direction for each ball
-        let direction_x: f32 = rng.0.gen_range(-1.0..1.0);
-        let direction_y: f32 = rng.0.gen_range(-1.0..1.0);
-        let direction = Vec2::new(direction_x, direction_y).normalize();
-
+    for dot in dots.dots.iter() {
         commands
             .spawn(MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::new(0.25).into()).into(),
                 material: materials.add(ColorMaterial::from(Color::WHITE)),
-                transform: Transform::from_translation(Vec3::new(x_position, y_position, 0.1)),
+                transform: Transform::from_translation(Vec3::new(dot.pos.x, dot.pos.y, 0.1)),
                 ..Default::default()
             })
-            .insert(FallingDot { speed, direction });
+            .insert(FallingDot {
+                direction: dot.direction,
+            });
     }
 }
 
-fn move_falling_dots_system(
-    mut commands: Commands,
-
-    mut query: Query<(Entity, &mut Transform, &FallingDot)>,
-) {
-    for (entity, mut transform, dot) in query.iter_mut() {
-        // Update position based on speed and direction
-        transform.translation.x += dot.speed * dot.direction.x;
-        transform.translation.y += dot.speed * dot.direction.y;
-
-        if transform.translation.y < -WORLD_BOUNDS
-            || transform.translation.y > WORLD_BOUNDS
-            || transform.translation.x < -WORLD_BOUNDS
-            || transform.translation.x > WORLD_BOUNDS
-        {
-            commands.entity(entity).despawn();
-        }
+fn despawn(mut commands: Commands, mut query: Query<(Entity, &FallingDot)>) {
+    for (entity, _) in query.iter_mut() {
+        commands.entity(entity).despawn();
     }
 }
+
+// fn move_falling_dots_system(
+//     mut commands: Commands,
+
+//     mut query: Query<(Entity, &mut Transform, &FallingDot)>,
+//     dot_pos: ResMut<DotPos>,
+// ) {
+//     for (entity, mut transform, dot) in query.iter_mut() {
+//         // Update position based on speed and direction
+
+//         for pos in &dot_pos.pos {
+//             transform.translation.x += pos.x;
+//             transform.translation.y += pos.y;
+//         }
+//         // transform.translation.x += dot.speed * dot.direction.x;
+//         // transform.translation.y += dot.speed * dot.direction.y;
+
+//         // if transform.translation.y < -WORLD_BOUNDS
+//         //     || transform.translation.y > WORLD_BOUNDS
+//         //     || transform.translation.x < -WORLD_BOUNDS
+//         //     || transform.translation.x > WORLD_BOUNDS
+//         // {
+//         //     commands.entity(entity).despawn();
+//         // }
+//     }
+// }
 
 pub fn get_click_position(
     window: &Window,
@@ -232,7 +271,6 @@ pub struct Target {
 
 #[derive(Component)]
 struct FallingDot {
-    speed: f32,
     direction: Vec2,
 }
 
@@ -241,3 +279,13 @@ struct DotTimer(Timer);
 
 #[derive(Resource)]
 struct MyRng(StdRng);
+
+#[derive(Resource)]
+struct DotPos {
+    dots: Vec<Dot>,
+}
+
+struct Dot {
+    pos: Vec3,
+    direction: Vec2,
+}
