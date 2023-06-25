@@ -2641,6 +2641,7 @@ dependencies = [
  "console_log",
  "log",
  "rand",
+ "serde",
 ]
 
 [[package]]

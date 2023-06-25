@@ -12,4 +12,6 @@ pub struct Target {
 }
 
 #[derive(Component)]
-pub struct FallingDot();
+pub struct Particle {
+    pub position: Vec3,
+}

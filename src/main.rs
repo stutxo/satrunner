@@ -1,15 +1,21 @@
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
+
 use rand::Rng;
 
 mod components;
 use components::*;
+mod resources;
+use resources::*;
 mod input;
 use input::*;
 
-const WORLD_BOUNDS: f32 = 100.0;
+const WORLD_BOUNDS: f32 = 300.0;
 const FALL_SPEED: f32 = 0.5;
 
 fn main() {
+    //use log::Level;
+    //console_log::init_with_level(Level::Info).expect("error initializing log");
+
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -28,16 +34,16 @@ fn main() {
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(internal_server),
             move_system.in_schedule(CoreSchedule::FixedUpdate),
-            spawn_dots
+            move_dot
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(out_server),
-            despawn
-                .in_schedule(CoreSchedule::FixedUpdate)
-                .after(spawn_dots),
         ))
         .insert_resource(DotPos { dots: Vec::new() })
         .insert_resource(PlayerPos {
             pp: Vec3::new(0.0, -50., 0.1),
+        })
+        .insert_resource(ParticlePool {
+            particles: Vec::new(),
         })
         .run();
 }
@@ -47,6 +53,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut clear_color: ResMut<ClearColor>,
+    mut particle_pool: ResMut<ParticlePool>,
 ) {
     clear_color.0 = Color::BLACK;
 
@@ -69,15 +76,32 @@ fn setup(
                 ..Default::default()
             });
         });
+
+    for _ in 0..10000 {
+        let particle = commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(0.5, 0.5)),
+                    ..default()
+                },
+                ..Default::default()
+            })
+            .insert(Particle {
+                position: Vec3::ZERO,
+            })
+            .insert(Visibility::Hidden)
+            .id();
+        particle_pool.particles.push(particle);
+    }
 }
 
 fn internal_server(mut dots: ResMut<DotPos>) {
     let mut rng = rand::thread_rng();
-    let num_balls: i32 = rng.gen_range(1..4);
+    let num_balls: i32 = rng.gen_range(1..10);
 
     for _ in 0..num_balls {
         let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-        let y_position = WORLD_BOUNDS;
+        let y_position: f32 = 25.;
 
         let dot_start = Vec3::new(x_position, y_position, 0.1);
 
@@ -109,38 +133,24 @@ fn out_server(mut dots: ResMut<DotPos>, pp: ResMut<PlayerPos>) {
     });
 }
 
-pub fn spawn_dots(mut commands: Commands, dots: ResMut<DotPos>) {
+pub fn move_dot(
+    mut particle_pool: ResMut<ParticlePool>,
+    mut particles: Query<(&mut Particle, &mut Visibility, &mut Transform)>,
+    dots: ResMut<DotPos>,
+) {
+    let mut pool_iter = particle_pool.particles.iter_mut();
     for dot in dots.dots.iter() {
-        commands
-            .spawn(SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(0.5, 0.5)),
-                    ..default()
-                },
-                transform: Transform::from_translation(dot.pos),
-                ..Default::default()
-            })
-            .insert(FallingDot());
+        if let Some(pool) = pool_iter.next() {
+            match particles.get_mut(*pool) {
+                Ok((mut particle, mut visibility, mut transform)) => {
+                    *visibility = Visibility::Visible;
+                    particle.position = dot.pos;
+                    transform.translation = dot.pos;
+                }
+                Err(err) => {
+                    info!("Error: {:?}", err);
+                }
+            }
+        }
     }
-}
-
-pub fn despawn(mut commands: Commands, mut query: Query<(Entity, &FallingDot)>) {
-    for (entity, _) in query.iter_mut() {
-        commands.entity(entity).despawn();
-    }
-}
-
-#[derive(Resource)]
-pub struct DotPos {
-    dots: Vec<Dot>,
-}
-
-pub struct Dot {
-    pos: Vec3,
-    direction: Vec2,
-}
-
-#[derive(Resource)]
-pub struct PlayerPos {
-    pp: Vec3,
 }
