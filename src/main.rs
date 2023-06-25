@@ -9,7 +9,7 @@ use resources::*;
 mod input;
 use input::*;
 
-const WORLD_BOUNDS: f32 = 300.0;
+pub const WORLD_BOUNDS: f32 = 300.0;
 const FALL_SPEED: f32 = 0.5;
 
 fn main() {
@@ -101,7 +101,7 @@ fn internal_server(mut dots: ResMut<DotPos>) {
 
     for _ in 0..num_balls {
         let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-        let y_position: f32 = 25.;
+        let y_position: f32 = 23.;
 
         let dot_start = Vec3::new(x_position, y_position, 0.1);
 

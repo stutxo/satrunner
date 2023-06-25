@@ -2,10 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Player, Target},
-    PlayerPos,
+    PlayerPos, WORLD_BOUNDS,
 };
 
-const WORLD_BOUNDS: f32 = 500.0;
 const PLAYER_SPEED: f32 = 1.0;
 
 pub fn get_click_position(
