@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::components::{Player, Target};
+use crate::{
+    components::{Player, Target},
+    PlayerPos,
+};
 
 const WORLD_BOUNDS: f32 = 100.0;
 const PLAYER_SPEED: f32 = 1.0;
@@ -48,6 +51,7 @@ pub fn move_system(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     mut windows: Query<&mut Window>,
     touches: Res<Touches>,
+    mut pp: ResMut<PlayerPos>,
 ) {
     for (mut t, mut tg, mut p) in query.iter_mut() {
         if mouse.pressed(MouseButton::Left) || mouse.pressed(MouseButton::Right) {
@@ -90,8 +94,10 @@ pub fn move_system(
                 if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
+                        pp.pp += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
                         t.translation = Vec3::new(tg.x, -50.0, 0.1);
+                        pp.pp = Vec3::new(tg.x, -50.0, 0.1);
                         p.moving = false;
                     }
                 } else {

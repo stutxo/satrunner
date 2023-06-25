@@ -23,11 +23,11 @@ fn main() {
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .add_startup_system(setup)
         .add_systems((
-            move_system.in_schedule(CoreSchedule::FixedUpdate),
             internal_server.in_schedule(CoreSchedule::FixedUpdate),
             out_server
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(internal_server),
+            move_system.in_schedule(CoreSchedule::FixedUpdate),
             spawn_dots
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(out_server),
@@ -36,6 +36,9 @@ fn main() {
                 .after(spawn_dots),
         ))
         .insert_resource(DotPos { dots: Vec::new() })
+        .insert_resource(PlayerPos {
+            pp: Vec3::new(0.0, -50., 0.1),
+        })
         .run();
 }
 
@@ -89,20 +92,24 @@ fn internal_server(mut dots: ResMut<DotPos>) {
     }
 }
 
-fn out_server(mut dots: ResMut<DotPos>) {
+fn out_server(mut dots: ResMut<DotPos>, pp: ResMut<PlayerPos>) {
     for dot in dots.dots.iter_mut() {
         dot.pos.x += FALL_SPEED * dot.direction.x;
         dot.pos.y += FALL_SPEED * dot.direction.y;
     }
+
+    let threshold_distance: f32 = 1.0;
     dots.dots.retain(|dot| {
+        let distance_to_player = (dot.pos - pp.pp).length();
         dot.pos.y >= -WORLD_BOUNDS
             && dot.pos.y <= WORLD_BOUNDS
             && dot.pos.x >= -WORLD_BOUNDS
             && dot.pos.x <= WORLD_BOUNDS
+            && distance_to_player > threshold_distance
     });
 }
 
-fn spawn_dots(mut commands: Commands, dots: ResMut<DotPos>) {
+pub fn spawn_dots(mut commands: Commands, dots: ResMut<DotPos>) {
     for dot in dots.dots.iter() {
         commands
             .spawn(SpriteBundle {
@@ -117,18 +124,23 @@ fn spawn_dots(mut commands: Commands, dots: ResMut<DotPos>) {
     }
 }
 
-fn despawn(mut commands: Commands, mut query: Query<(Entity, &FallingDot)>) {
+pub fn despawn(mut commands: Commands, mut query: Query<(Entity, &FallingDot)>) {
     for (entity, _) in query.iter_mut() {
         commands.entity(entity).despawn();
     }
 }
 
 #[derive(Resource)]
-struct DotPos {
+pub struct DotPos {
     dots: Vec<Dot>,
 }
 
-struct Dot {
+pub struct Dot {
     pos: Vec3,
     direction: Vec2,
+}
+
+#[derive(Resource)]
+pub struct PlayerPos {
+    pp: Vec3,
 }
