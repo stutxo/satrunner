@@ -13,8 +13,8 @@ pub const WORLD_BOUNDS: f32 = 300.0;
 const FALL_SPEED: f32 = 0.5;
 
 fn main() {
-    //use log::Level;
-    //console_log::init_with_level(Level::Info).expect("error initializing log");
+    // use log::Level;
+    // console_log::init_with_level(Level::Info).expect("error initializing log");
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -77,7 +77,7 @@ fn setup(
             });
         });
 
-    for _ in 0..10000 {
+    for _ in 0..5000 {
         let particle = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
@@ -86,9 +86,7 @@ fn setup(
                 },
                 ..Default::default()
             })
-            .insert(Particle {
-                position: Vec3::ZERO,
-            })
+            .insert(Particle())
             .insert(Visibility::Hidden)
             .id();
         particle_pool.particles.push(particle);
@@ -101,7 +99,7 @@ fn internal_server(mut dots: ResMut<DotPos>) {
 
     for _ in 0..num_balls {
         let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-        let y_position: f32 = 27.;
+        let y_position: f32 = 25.;
 
         let dot_start = Vec3::new(x_position, y_position, 0.1);
 
@@ -139,12 +137,12 @@ pub fn move_dot(
     dots: ResMut<DotPos>,
 ) {
     let mut pool_iter = particle_pool.particles.iter_mut();
+    // info!("dot len: {:?}", dots.dots.len());
     for dot in dots.dots.iter() {
         if let Some(pool) = pool_iter.next() {
             match particles.get_mut(*pool) {
-                Ok((mut particle, mut visibility, mut transform)) => {
+                Ok((_particle, mut visibility, mut transform)) => {
                     *visibility = Visibility::Visible;
-                    particle.position = dot.pos;
                     transform.translation = dot.pos;
                 }
                 Err(err) => {

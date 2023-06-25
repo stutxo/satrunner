@@ -12,6 +12,4 @@ pub struct Target {
 }
 
 #[derive(Component)]
-pub struct Particle {
-    pub position: Vec3,
-}
+pub struct Particle();
