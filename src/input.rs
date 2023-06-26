@@ -93,10 +93,10 @@ pub fn move_system(
                 if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
-                        pp.pp += Vec3::new(movement.x, 0.0, 0.0);
+                        pp.0 += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
                         t.translation = Vec3::new(tg.x, -50.0, 0.1);
-                        pp.pp = Vec3::new(tg.x, -50.0, 0.1);
+                        pp.0 = Vec3::new(tg.x, -50.0, 0.1);
                         p.moving = false;
                     }
                 } else {

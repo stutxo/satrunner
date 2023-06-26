@@ -1,21 +1,14 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 #[derive(Resource)]
-pub struct DotPos {
-    pub dots: Vec<Dot>,
-}
+pub struct DotPos(pub Vec<Dot>);
 
-pub struct Dot {
-    pub pos: Vec3,
-    pub direction: Vec2,
-}
+pub struct Dot(pub Vec3);
 
 #[derive(Resource)]
-pub struct PlayerPos {
-    pub pp: Vec3,
-}
+pub struct PlayerPos(pub Vec3);
 
 #[derive(Resource)]
-pub struct ParticlePool {
-    pub particles: Vec<Entity>,
-}
+pub struct ParticlePool(pub VecDeque<Entity>);
