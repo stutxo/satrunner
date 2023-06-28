@@ -1,9 +1,11 @@
 use bevy::prelude::*;
+use futures::StreamExt;
+use wasm_bindgen_futures::spawn_local;
 
 use crate::{
     components::{Player, Target},
-    resources::Server,
-    ClientMsg, InputVec2, PlayerPos, WORLD_BOUNDS,
+    resources::{ReceivedMessages, Server},
+    ClientMsg, InputVec2, PlayerPos, ServerMsg, WORLD_BOUNDS,
 };
 
 const PLAYER_SPEED: f32 = 1.0;
@@ -65,12 +67,8 @@ pub fn move_system(
                     tg.y = click_position.y;
                     p.moving = true;
 
-                    let input = ClientMsg {
-                        input: InputVec2 {
-                            x: click_position.x,
-                            y: click_position.y,
-                        },
-                    };
+                    let input = ClientMsg::new(InputVec2::new(click_position.x, click_position.y));
+
                     server.write.as_mut().unwrap().try_send(input).unwrap();
                 }
             }
@@ -87,42 +85,50 @@ pub fn move_system(
                 tg.y = touch_position.y;
                 p.moving = true;
 
-                let input = ClientMsg {
-                    input: InputVec2 {
-                        x: touch_position.x,
-                        y: touch_position.y,
-                    },
-                };
+                let input = ClientMsg::new(InputVec2::new(touch_position.x, touch_position.y));
                 server.write.as_mut().unwrap().try_send(input).unwrap();
             }
         }
 
-        if p.moving {
-            let current_position = Vec2::new(t.translation.x, t.translation.y);
-            let direction = Vec2::new(tg.x, tg.y) - current_position;
-            let distance_to_target = direction.length();
+        // if p.moving {
+        //     let current_position = Vec2::new(t.translation.x, t.translation.y);
+        //     let direction = Vec2::new(tg.x, tg.y) - current_position;
+        //     let distance_to_target = direction.length();
 
-            if distance_to_target > 0.0 {
-                let normalized_direction = direction / distance_to_target;
-                let movement = normalized_direction * PLAYER_SPEED;
+        //     if distance_to_target > 0.0 {
+        //         let normalized_direction = direction / distance_to_target;
+        //         let movement = normalized_direction * PLAYER_SPEED;
 
-                let new_position = current_position + movement;
+        //         let new_position = current_position + movement;
 
-                if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
-                    if movement.length() < distance_to_target {
-                        t.translation += Vec3::new(movement.x, 0.0, 0.0);
-                        pp.0 += Vec3::new(movement.x, 0.0, 0.0);
-                    } else {
-                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
-                        pp.0 = Vec3::new(tg.x, -50.0, 0.1);
-                        p.moving = false;
-                    }
-                } else {
-                    p.moving = false;
-                }
-            } else {
-                p.moving = false;
-            }
+        //         if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
+        //             if movement.length() < distance_to_target {
+        //                 t.translation += Vec3::new(movement.x, 0.0, 0.0);
+        //                 pp.0 += Vec3::new(movement.x, 0.0, 0.0);
+        //             } else {
+        //                 t.translation = Vec3::new(tg.x, -50.0, 0.1);
+        //                 pp.0 = Vec3::new(tg.x, -50.0, 0.1);
+        //                 p.moving = false;
+        //             }
+        //         } else {
+        //             p.moving = false;
+        //         }
+        //     } else {
+        //         p.moving = false;
+        //     }
+        // }
+    }
+}
+
+pub fn temp_move_system(
+    mut query: Query<(&mut Transform, &mut Player)>,
+    mut pp: ResMut<PlayerPos>,
+    mut pos: ResMut<ReceivedMessages>,
+) {
+    for (mut t, _p) in query.iter_mut() {
+        if let Some(pos) = pos.messages.pop_back() {
+            t.translation.x += pos;
+            pp.0.x += pos;
         }
     }
 }

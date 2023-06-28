@@ -5,6 +5,7 @@ use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 use serde::{Deserialize, Serialize};
+use std::sync::mpsc::channel;
 use wasm_bindgen_futures::spawn_local;
 
 use rand::Rng;
@@ -24,15 +25,38 @@ pub struct ClientMsg {
     pub input: InputVec2,
 }
 
+impl ClientMsg {
+    pub fn new(input: InputVec2) -> Self {
+        Self { input }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerMsg {
+    pub pos: Vec<InputVec2>,
+}
+
+impl ServerMsg {
+    pub fn new(pos: Vec<InputVec2>) -> Self {
+        Self { pos }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct InputVec2 {
     pub x: f32,
     pub y: f32,
 }
 
+impl InputVec2 {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
 fn main() {
-    use log::Level;
-    console_log::init_with_level(Level::Info).expect("error initializing log");
+    // use log::Level;
+    // console_log::init_with_level(Level::Info).expect("error initializing log");
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -47,7 +71,13 @@ fn main() {
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .add_startup_systems((setup, websocket))
         .add_systems((
+            new_pos
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .before(temp_move_system),
             move_system.in_schedule(CoreSchedule::FixedUpdate),
+            temp_move_system
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(move_system),
             move_dot.in_schedule(CoreSchedule::FixedUpdate),
             internal_server.in_schedule(CoreSchedule::FixedUpdate),
             out_server
@@ -57,7 +87,8 @@ fn main() {
         .insert_resource(DotPos(Vec::new()))
         .insert_resource(PlayerPos(Vec3::new(0., -50., 0.1)))
         .insert_resource(ParticlePool(VecDeque::new()))
-        .insert_resource(Server { write: None })
+        .insert_resource(Server::new())
+        .insert_resource(ReceivedMessages::default())
         .run();
 }
 
@@ -112,12 +143,14 @@ fn websocket(mut server: ResMut<Server>) {
     let ws = WebSocket::open("ws://localhost:3030/play").unwrap();
     let (mut write, mut read) = ws.split();
 
-    let (game_tx, mut game_rx) = futures::channel::mpsc::channel::<ClientMsg>(1000);
+    let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMsg>(1000);
+    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<f32>(1000);
 
-    server.write = Some(game_tx);
+    server.write = Some(send_tx);
+    server.read = Some(read_rx);
 
     spawn_local(async move {
-        while let Some(message) = game_rx.next().await {
+        while let Some(message) = send_rx.next().await {
             match serde_json::to_string::<ClientMsg>(&message) {
                 Ok(new_input) => {
                     write.send(Message::Text(new_input)).await.unwrap();
@@ -131,9 +164,20 @@ fn websocket(mut server: ResMut<Server>) {
 
     spawn_local(async move {
         while let Some(result) = read.next().await {
-            info!("RECEIVED {:?}", result);
             match result {
-                Ok(Message::Text(msg)) => {}
+                Ok(Message::Text(msg)) => match serde_json::from_str::<Vec<f32>>(&msg) {
+                    Ok(new_pos_vec) => {
+                        if let Some(new_pos) = new_pos_vec.first() {
+                            info!("pos {:?}", new_pos);
+                            read_tx.try_send(*new_pos).unwrap();
+                        } else {
+                            eprintln!("Received an empty array");
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to parse message: {:?}", e);
+                    }
+                },
                 Ok(Message::Bytes(_)) => {}
 
                 Err(e) => match e {
@@ -147,6 +191,16 @@ fn websocket(mut server: ResMut<Server>) {
             }
         }
     });
+}
+
+fn new_pos(mut server: ResMut<Server>, mut received_messages: ResMut<ReceivedMessages>) {
+    if let Some(ref mut receive_rx) = server.read {
+        while let Ok(message) = receive_rx.try_next() {
+            if let Some(server_msg) = message {
+                received_messages.messages.push_back(server_msg);
+            }
+        }
+    }
 }
 
 fn internal_server(mut dots: ResMut<DotPos>) {

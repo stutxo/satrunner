@@ -1,4 +1,8 @@
+use std::sync::mpsc::Sender;
+
 use bevy::prelude::*;
+
+use crate::ClientMsg;
 
 #[derive(Component)]
 pub struct Player {
