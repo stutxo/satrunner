@@ -105,6 +105,7 @@ pub fn move_system(
         //             if movement.length() < distance_to_target {
         //                 t.translation += Vec3::new(movement.x, 0.0, 0.0);
         //                 pp.0 += Vec3::new(movement.x, 0.0, 0.0);
+        //                 info!("CLIENT SAYS: {:?}", t.translation.x);
         //             } else {
         //                 t.translation = Vec3::new(tg.x, -50.0, 0.1);
         //                 pp.0 = Vec3::new(tg.x, -50.0, 0.1);
@@ -123,12 +124,19 @@ pub fn move_system(
 pub fn temp_move_system(
     mut query: Query<(&mut Transform, &mut Player)>,
     mut pp: ResMut<PlayerPos>,
-    mut pos: ResMut<ReceivedMessages>,
+    pos: ResMut<ReceivedMessages>,
 ) {
-    for (mut t, _p) in query.iter_mut() {
-        if let Some(pos) = pos.messages.pop_back() {
-            t.translation.x += pos;
-            pp.0.x += pos;
+    for (mut t, p) in query.iter_mut() {
+        match pos.messages.first() {
+            Some(pos) => {
+                //info!("SERVER SAYS {:?}", pos);
+                t.translation = Vec3::new(*pos, -50.0, 0.1);
+                pp.0 = Vec3::new(*pos, -50.0, 0.1);
+            }
+            None => {
+                // Do something else if there is no value
+                info!("Vector is empty");
+            }
         }
     }
 }

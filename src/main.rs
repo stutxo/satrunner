@@ -168,7 +168,6 @@ fn websocket(mut server: ResMut<Server>) {
                 Ok(Message::Text(msg)) => match serde_json::from_str::<Vec<f32>>(&msg) {
                     Ok(new_pos_vec) => {
                         if let Some(new_pos) = new_pos_vec.first() {
-                            info!("pos {:?}", new_pos);
                             read_tx.try_send(*new_pos).unwrap();
                         } else {
                             eprintln!("Received an empty array");
@@ -197,7 +196,8 @@ fn new_pos(mut server: ResMut<Server>, mut received_messages: ResMut<ReceivedMes
     if let Some(ref mut receive_rx) = server.read {
         while let Ok(message) = receive_rx.try_next() {
             if let Some(server_msg) = message {
-                received_messages.messages.push_back(server_msg);
+                received_messages.messages.clear();
+                received_messages.messages.push(server_msg);
             }
         }
     }

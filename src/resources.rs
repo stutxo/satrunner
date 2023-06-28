@@ -33,5 +33,5 @@ impl Server {
 
 #[derive(Resource, Default)]
 pub struct ReceivedMessages {
-    pub messages: VecDeque<f32>,
+    pub messages: Vec<f32>,
 }
