@@ -1,6 +1,11 @@
 use std::collections::VecDeque;
 
 use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
+use futures::{SinkExt, StreamExt};
+use gloo_net::websocket::WebSocketError;
+use gloo_net::websocket::{futures::WebSocket, Message};
+use serde::{Deserialize, Serialize};
+use wasm_bindgen_futures::spawn_local;
 
 use rand::Rng;
 
@@ -13,6 +18,17 @@ use input::*;
 
 pub const WORLD_BOUNDS: f32 = 300.0;
 const FALL_SPEED: f32 = 0.5;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ClientMsg {
+    pub input: InputVec2,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct InputVec2 {
+    pub x: f32,
+    pub y: f32,
+}
 
 fn main() {
     use log::Level;
@@ -29,7 +45,7 @@ fn main() {
             ..default()
         }))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
-        .add_startup_system(setup)
+        .add_startup_systems((setup, websocket))
         .add_systems((
             move_system.in_schedule(CoreSchedule::FixedUpdate),
             move_dot.in_schedule(CoreSchedule::FixedUpdate),
@@ -41,6 +57,7 @@ fn main() {
         .insert_resource(DotPos(Vec::new()))
         .insert_resource(PlayerPos(Vec3::new(0., -50., 0.1)))
         .insert_resource(ParticlePool(VecDeque::new()))
+        .insert_resource(Server { write: None })
         .run();
 }
 
@@ -89,6 +106,47 @@ fn setup(
             .id();
         particle_pool.0.push_back(particle);
     }
+}
+
+fn websocket(mut server: ResMut<Server>) {
+    let ws = WebSocket::open("ws://localhost:3030/play").unwrap();
+    let (mut write, mut read) = ws.split();
+
+    let (game_tx, mut game_rx) = futures::channel::mpsc::channel::<ClientMsg>(1000);
+
+    server.write = Some(game_tx);
+
+    spawn_local(async move {
+        while let Some(message) = game_rx.next().await {
+            match serde_json::to_string::<ClientMsg>(&message) {
+                Ok(new_input) => {
+                    write.send(Message::Text(new_input)).await.unwrap();
+                }
+                Err(e) => {
+                    eprintln!("Failed to parse message as Vec2: {:?}", e);
+                }
+            }
+        }
+    });
+
+    spawn_local(async move {
+        while let Some(result) = read.next().await {
+            info!("RECEIVED {:?}", result);
+            match result {
+                Ok(Message::Text(msg)) => {}
+                Ok(Message::Bytes(_)) => {}
+
+                Err(e) => match e {
+                    WebSocketError::ConnectionError => {}
+                    WebSocketError::ConnectionClose(_) => {
+                        //
+                    }
+                    WebSocketError::MessageSendError(_) => {}
+                    _ => {}
+                },
+            }
+        }
+    });
 }
 
 fn internal_server(mut dots: ResMut<DotPos>) {
@@ -154,33 +212,9 @@ pub fn move_dot(
     mut particle_pool: ResMut<ParticlePool>,
     mut particles: Query<(&mut Particle, &mut Visibility, &mut Transform)>,
     dots: ResMut<DotPos>,
-    // camera_query: Query<(&Camera, &GlobalTransform)>,
-    // windows: Query<&Window>,
 ) {
-    // let (_camera, camera_transform) = camera_query.single();
-    // let window = windows.single(); // Assuming there's a primary window
-
-    // let scale_factor = window.scale_factor() as f32; // Convert scale_factor to f32
-    // let win_width = window.width() / scale_factor;
-
-    // let camera_position = camera_transform.translation().x;
-
-    // // Calculate the range of allowed x positions for dot spawning
-    // let min_x = camera_position - (win_width / 2.0);
-    // let max_x = camera_position + (win_width / 2.0);
-
-    // info!("Window width: {}", win_width);
-    // info!("Camera position: {}", camera_position);
-    // info!("Allowed x range: {} - {}", min_x, max_x);
-
-    // if dots.0.len() < 1000 {
-    //     return;
-    // }
-
     for dot in dots.0.iter() {
         if let Some(pool) = particle_pool.0.pop_front() {
-            // Only spawn the dot if its x position is within the allowed range
-            // if dot.0.x >= min_x && dot.0.x <= max_x {
             match particles.get_mut(pool) {
                 Ok((_particle, mut visibility, mut transform)) => {
                     transform.translation = dot.0;
@@ -192,6 +226,7 @@ pub fn move_dot(
             }
             particle_pool.0.push_back(pool);
         }
-        // }
     }
 }
+
+//

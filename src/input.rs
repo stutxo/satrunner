@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Player, Target},
-    PlayerPos, WORLD_BOUNDS,
+    resources::Server,
+    ClientMsg, InputVec2, PlayerPos, WORLD_BOUNDS,
 };
 
 const PLAYER_SPEED: f32 = 1.0;
@@ -51,6 +52,7 @@ pub fn move_system(
     mut windows: Query<&mut Window>,
     touches: Res<Touches>,
     mut pp: ResMut<PlayerPos>,
+    mut server: ResMut<Server>,
 ) {
     for (mut t, mut tg, mut p) in query.iter_mut() {
         if mouse.pressed(MouseButton::Left) || mouse.pressed(MouseButton::Right) {
@@ -62,6 +64,14 @@ pub fn move_system(
                     tg.x = click_position.x;
                     tg.y = click_position.y;
                     p.moving = true;
+
+                    let input = ClientMsg {
+                        input: InputVec2 {
+                            x: click_position.x,
+                            y: click_position.y,
+                        },
+                    };
+                    server.write.as_mut().unwrap().try_send(input).unwrap();
                 }
             }
         }
@@ -76,6 +86,14 @@ pub fn move_system(
                 tg.x = touch_position.x;
                 tg.y = touch_position.y;
                 p.moving = true;
+
+                let input = ClientMsg {
+                    input: InputVec2 {
+                        x: touch_position.x,
+                        y: touch_position.y,
+                    },
+                };
+                server.write.as_mut().unwrap().try_send(input).unwrap();
             }
         }
 
