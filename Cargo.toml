@@ -7,8 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.10.1"
-log = "0.4"
-console_log = { version = "1"}
 rand = "0.8.5"
 serde = "1.0"
 gloo-net = "0.3.0"

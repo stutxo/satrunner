@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use futures::StreamExt;
-use wasm_bindgen_futures::spawn_local;
 
 use crate::{
     components::{Player, Target},
-    resources::{ReceivedMessages, Server},
-    ClientMsg, InputVec2, PlayerPos, ServerMsg, WORLD_BOUNDS,
+    resources::{LocalPlayerPos, Server},
+    ClientMsg, InputVec2, PlayerPos, WORLD_BOUNDS,
 };
 
 const PLAYER_SPEED: f32 = 1.0;
@@ -124,19 +122,13 @@ pub fn move_system(
 pub fn temp_move_system(
     mut query: Query<(&mut Transform, &mut Player)>,
     mut pp: ResMut<PlayerPos>,
-    pos: ResMut<ReceivedMessages>,
+    pos: ResMut<LocalPlayerPos>,
 ) {
     for (mut t, p) in query.iter_mut() {
-        match pos.messages.first() {
-            Some(pos) => {
-                //info!("SERVER SAYS {:?}", pos);
-                t.translation = Vec3::new(*pos, -50.0, 0.1);
-                pp.0 = Vec3::new(*pos, -50.0, 0.1);
-            }
-            None => {
-                // Do something else if there is no value
-                info!("Vector is empty");
-            }
-        }
+        //info!("SERVER SAYS {:?}", pos);
+        t.translation = Vec3::new(pos.0, -50.0, 0.1);
+        pp.0 = Vec3::new(pos.0, -50.0, 0.1);
     }
 }
+
+//receive just

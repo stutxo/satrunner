@@ -17,3 +17,6 @@ pub struct Target {
 
 #[derive(Component)]
 pub struct Particle();
+
+#[derive(Component)]
+pub struct Enemies();

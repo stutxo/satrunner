@@ -1,11 +1,10 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, render::camera::ScalingMode, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, render::camera::ScalingMode};
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 use serde::{Deserialize, Serialize};
-use std::sync::mpsc::channel;
 use wasm_bindgen_futures::spawn_local;
 
 use rand::Rng;
@@ -32,14 +31,9 @@ impl ClientMsg {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerMsg {
-    pub pos: Vec<InputVec2>,
-}
-
-impl ServerMsg {
-    pub fn new(pos: Vec<InputVec2>) -> Self {
-        Self { pos }
-    }
+pub struct PlayerPositions {
+    pub local_pos: f32,
+    pub other_pos: Vec<f32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -55,9 +49,6 @@ impl InputVec2 {
 }
 
 fn main() {
-    // use log::Level;
-    // console_log::init_with_level(Level::Info).expect("error initializing log");
-
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -74,6 +65,9 @@ fn main() {
             new_pos
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .before(temp_move_system),
+            move_enemies
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(new_pos),
             move_system.in_schedule(CoreSchedule::FixedUpdate),
             temp_move_system
                 .in_schedule(CoreSchedule::FixedUpdate)
@@ -85,26 +79,30 @@ fn main() {
                 .after(internal_server),
         ))
         .insert_resource(DotPos(Vec::new()))
+        .insert_resource(EnemiesPos(Vec::new()))
         .insert_resource(PlayerPos(Vec3::new(0., -50., 0.1)))
         .insert_resource(ParticlePool(VecDeque::new()))
+        .insert_resource(EnemiesPool(VecDeque::new()))
         .insert_resource(Server::new())
-        .insert_resource(ReceivedMessages::default())
+        .insert_resource(LocalPlayerPos::default())
         .run();
 }
 
 fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut clear_color: ResMut<ClearColor>,
     mut particle_pool: ResMut<ParticlePool>,
+    mut enemies_pool: ResMut<EnemiesPool>,
 ) {
     clear_color.0 = Color::BLACK;
 
     commands
-        .spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(0.3).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::ORANGE)),
+        .spawn(SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(0.5, 0.5)),
+                color: Color::ORANGE,
+                ..default()
+            },
             transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
             ..Default::default()
         })
@@ -126,7 +124,11 @@ fn setup(
             .spawn(SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(0.5, 0.5)),
-
+                    color: Color::rgb(
+                        rand::thread_rng().gen_range(0.0..1.0),
+                        rand::thread_rng().gen_range(0.0..1.0),
+                        rand::thread_rng().gen_range(0.0..1.0),
+                    ),
                     ..default()
                 },
 
@@ -137,6 +139,22 @@ fn setup(
             .id();
         particle_pool.0.push_back(particle);
     }
+
+    for _ in 0..100 {
+        let enemies = commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(0.5, 0.5)),
+                    color: Color::ANTIQUE_WHITE,
+                    ..default()
+                },
+                ..Default::default()
+            })
+            .insert(Enemies())
+            .insert(Visibility::Hidden)
+            .id();
+        enemies_pool.0.push_back(enemies);
+    }
 }
 
 fn websocket(mut server: ResMut<Server>) {
@@ -144,7 +162,7 @@ fn websocket(mut server: ResMut<Server>) {
     let (mut write, mut read) = ws.split();
 
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMsg>(1000);
-    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<f32>(1000);
+    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<PlayerPositions>(1000);
 
     server.write = Some(send_tx);
     server.read = Some(read_rx);
@@ -165,13 +183,9 @@ fn websocket(mut server: ResMut<Server>) {
     spawn_local(async move {
         while let Some(result) = read.next().await {
             match result {
-                Ok(Message::Text(msg)) => match serde_json::from_str::<Vec<f32>>(&msg) {
-                    Ok(new_pos_vec) => {
-                        if let Some(new_pos) = new_pos_vec.first() {
-                            read_tx.try_send(*new_pos).unwrap();
-                        } else {
-                            eprintln!("Received an empty array");
-                        }
+                Ok(Message::Text(msg)) => match serde_json::from_str::<PlayerPositions>(&msg) {
+                    Ok(new_player_vec) => {
+                        read_tx.try_send(new_player_vec).unwrap();
                     }
                     Err(e) => {
                         eprintln!("Failed to parse message: {:?}", e);
@@ -192,12 +206,17 @@ fn websocket(mut server: ResMut<Server>) {
     });
 }
 
-fn new_pos(mut server: ResMut<Server>, mut received_messages: ResMut<ReceivedMessages>) {
+fn new_pos(
+    mut server: ResMut<Server>,
+    mut local_player: ResMut<LocalPlayerPos>,
+    mut enemies: ResMut<EnemiesPos>,
+) {
     if let Some(ref mut receive_rx) = server.read {
         while let Ok(message) = receive_rx.try_next() {
             if let Some(server_msg) = message {
-                received_messages.messages.clear();
-                received_messages.messages.push(server_msg);
+                enemies.0 = server_msg.other_pos;
+
+                local_player.0 = server_msg.local_pos;
             }
         }
     }
@@ -234,34 +253,6 @@ fn out_server(mut dots: ResMut<DotPos>, pp: ResMut<PlayerPos>) {
     });
 }
 
-// pub fn move_dot(
-//     mut particle_pool: ResMut<ParticlePool>,
-//     mut particles: Query<(&mut Particle, &mut Visibility, &mut Transform)>,
-//     dots: ResMut<DotPos>,
-// ) {
-//     let mut pool_iter = particle_pool.0.iter_mut();
-
-//     for dot in dots.0.iter() {
-//         if let Some(pool) = pool_iter.next() {
-//             match particles.get_mut(*pool) {
-//                 Ok((_particle, mut visibility, mut transform)) => {
-//                     *visibility = Visibility::Visible;
-//                     transform.translation = dot.0;
-//                 }
-//                 Err(err) => {
-//                     info!("Error: {:?}", err);
-//                 }
-//             }
-//         }
-//     }
-
-//     for pool in pool_iter {
-//         if let Ok((_particle, mut visibility, _transform)) = particles.get_mut(*pool) {
-//             *visibility = Visibility::Hidden;
-//         }
-//     }
-// }
-
 pub fn move_dot(
     mut particle_pool: ResMut<ParticlePool>,
     mut particles: Query<(&mut Particle, &mut Visibility, &mut Transform)>,
@@ -283,4 +274,30 @@ pub fn move_dot(
     }
 }
 
-//
+pub fn move_enemies(
+    mut enemies_pool: ResMut<EnemiesPool>,
+    mut enemies: Query<(&mut Enemies, &mut Visibility, &mut Transform)>,
+    enemies_pos: ResMut<EnemiesPos>,
+) {
+    let mut pool_iter = enemies_pool.0.iter_mut();
+
+    for enemy in enemies_pos.0.iter() {
+        if let Some(pool) = pool_iter.next() {
+            match enemies.get_mut(*pool) {
+                Ok((_enemies, mut visibility, mut transform)) => {
+                    transform.translation = Vec3::new(*enemy, -50., 0.1);
+                    *visibility = Visibility::Visible;
+                }
+                Err(err) => {
+                    info!("Error: {:?}", err);
+                }
+            }
+        }
+    }
+
+    for pool in pool_iter {
+        if let Ok((_particle, mut visibility, _transform)) = enemies.get_mut(*pool) {
+            *visibility = Visibility::Hidden;
+        }
+    }
+}
