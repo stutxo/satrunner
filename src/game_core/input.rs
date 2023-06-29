@@ -1,26 +1,26 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Player, Target},
-    resources::Server,
-    ClientMsg, InputVec2,
+    game_util::components::{Player, Target},
+    game_util::resources::Server,
+    network::messages::{ClientMsg, InputVec2},
 };
 
 pub fn input(
-    mut query: Query<(&mut Transform, &mut Target, &mut Player)>,
+    mut query: Query<(&mut Target, &mut Player)>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
-    mut windows: Query<&mut Window>,
+    windows: Query<&Window>,
     touches: Res<Touches>,
     mut server: ResMut<Server>,
 ) {
-    for (t, mut tg, mut p) in query.iter_mut() {
+    for (mut tg, mut p) in query.iter_mut() {
         if mouse.pressed(MouseButton::Left) || mouse.pressed(MouseButton::Right) {
-            for window in windows.iter_mut() {
+            for window in windows.iter() {
                 if let Some(cursor) = window.cursor_position() {
                     let (camera, camera_transform) = camera_query.single();
                     let click_position =
-                        get_click_position(&window, camera, camera_transform, cursor);
+                        get_click_position(window, camera, camera_transform, cursor);
                     tg.x = click_position.x;
                     tg.y = click_position.y;
                     p.moving = true;
@@ -39,9 +39,9 @@ pub fn input(
             let touch_pos = touch.position();
             let (camera, camera_transform) = camera_query.single();
 
-            for window in windows.iter_mut() {
+            for window in windows.iter() {
                 let touch_position =
-                    get_touch_position(&window, camera, camera_transform, touch_pos);
+                    get_touch_position(window, camera, camera_transform, touch_pos);
                 tg.x = touch_position.x;
                 tg.y = touch_position.y;
                 p.moving = true;

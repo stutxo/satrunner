@@ -5,8 +5,10 @@ use gloo_net::websocket::{futures::WebSocket, Message};
 
 use wasm_bindgen_futures::spawn_local;
 
-use crate::messages::{ClientMsg, GameState};
-use crate::resources::{DotPos, EnemiesPos, LocalPlayerPos, Server};
+use crate::{
+    game_util::resources::{DotPos, EnemiesPos, LocalPlayerPos, Server},
+    network::messages::{ClientMsg, GameState},
+};
 
 pub fn websocket(mut server: ResMut<Server>) {
     let ws = WebSocket::open("ws://localhost:3030/play").unwrap();

@@ -2,8 +2,8 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use rand::Rng;
 
 use crate::{
-    components::{Enemies, Particle, Player, Target},
-    resources::{EnemiesPool, ParticlePool},
+    game_util::components::{Enemies, Particle, Player, Target},
+    game_util::resources::{EnemiesPool, ParticlePool},
 };
 
 pub const WORLD_BOUNDS: f32 = 300.0;
@@ -11,12 +11,9 @@ pub const PLAYER_SPEED: f32 = 1.0;
 
 pub fn setup(
     mut commands: Commands,
-    mut clear_color: ResMut<ClearColor>,
     mut particle_pool: ResMut<ParticlePool>,
     mut enemies_pool: ResMut<EnemiesPool>,
 ) {
-    clear_color.0 = Color::BLACK;
-
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {

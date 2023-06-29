@@ -1,15 +1,14 @@
 use crate::{
-    components::{Enemies, Particle, Player, Target},
-    resources::{DotPos, EnemiesPool, EnemiesPos, LocalPlayerPos, ParticlePool, PlayerPos},
-    setup::PLAYER_SPEED,
-    WORLD_BOUNDS,
+    game_core::setup::{PLAYER_SPEED, WORLD_BOUNDS},
+    game_util::components::{Enemies, Particle, Player, Target},
+    game_util::resources::{DotPos, EnemiesPool, EnemiesPos, LocalPlayerPos, ParticlePool},
 };
 use bevy::prelude::*;
 
 pub fn move_dot(
     mut particle_pool: ResMut<ParticlePool>,
-    mut particles: Query<(&mut Particle, &mut Visibility, &mut Transform)>,
-    dots: ResMut<DotPos>,
+    mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
+    dots: Res<DotPos>,
 ) {
     for dot in dots.0.iter() {
         if let Some(pool) = particle_pool.0.pop_front() {
@@ -28,11 +27,11 @@ pub fn move_dot(
 }
 
 pub fn move_enemies(
-    mut enemies_pool: ResMut<EnemiesPool>,
-    mut enemies: Query<(&mut Enemies, &mut Visibility, &mut Transform)>,
-    enemies_pos: ResMut<EnemiesPos>,
+    enemies_pool: Res<EnemiesPool>,
+    mut enemies: Query<(&Enemies, &mut Visibility, &mut Transform)>,
+    enemies_pos: Res<EnemiesPos>,
 ) {
-    let mut pool_iter = enemies_pool.0.iter_mut();
+    let mut pool_iter = enemies_pool.0.iter();
 
     for enemy in enemies_pos.0.iter() {
         if let Some(pool) = pool_iter.next() {
@@ -41,8 +40,8 @@ pub fn move_enemies(
                     transform.translation = Vec3::new(*enemy, -50., 0.1);
                     *visibility = Visibility::Visible;
                 }
-                Err(err) => {
-                    info!("Error: {:?}", err);
+                Err(_err) => {
+                    //info!("Error: {:?}", err);
                 }
             }
         }
@@ -58,7 +57,6 @@ pub fn move_enemies(
 //todo: add Server reconciliation
 pub fn move_local(
     mut query: Query<(&mut Transform, &mut Target, &mut Player)>,
-    mut pp: ResMut<PlayerPos>,
     //pos: ResMut<LocalPlayerPos>,
 ) {
     for (mut t, tg, mut p) in query.iter_mut() {
@@ -76,11 +74,11 @@ pub fn move_local(
                 if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
-                        pp.0 += Vec3::new(movement.x, 0.0, 0.0);
-                        info!("CLIENT SAYS: {:?}", t.translation.x);
+
+                        //info!("CLIENT SAYS: {:?}", t.translation.x);
                     } else {
                         t.translation = Vec3::new(tg.x, -50.0, 0.1);
-                        pp.0 = Vec3::new(tg.x, -50.0, 0.1);
+
                         p.moving = false;
                     }
                 } else {

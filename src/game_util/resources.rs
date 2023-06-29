@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 use futures::channel::mpsc::{Receiver, Sender};
 
-use crate::{ClientMsg, GameState};
+use crate::network::messages::{ClientMsg, GameState};
 
 //dots
 #[derive(Resource)]
@@ -19,9 +19,6 @@ pub struct EnemiesPool(pub VecDeque<Entity>);
 pub struct EnemiesPos(pub Vec<f32>);
 
 //local player
-#[derive(Resource)]
-pub struct PlayerPos(pub Vec3);
-
 #[derive(Resource, Default)]
 pub struct LocalPlayerPos(pub f32);
 

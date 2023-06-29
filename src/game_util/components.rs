@@ -5,7 +5,7 @@ pub struct Player {
     pub moving: bool,
 }
 
-#[derive(Default, Reflect, Component)]
+#[derive(Default, Component)]
 pub struct Target {
     pub x: f32,
     pub y: f32,
