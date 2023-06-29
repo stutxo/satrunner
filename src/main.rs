@@ -5,7 +5,7 @@ use game_core::{
     setup::setup,
 };
 use game_util::resources::{DotPos, EnemiesPool, EnemiesPos, LocalPlayerPos, ParticlePool, Server};
-use network::networking::{handle_server, websocket};
+use network::{handle::handle_server, websockets::websocket};
 use std::collections::VecDeque;
 
 mod game_core;
