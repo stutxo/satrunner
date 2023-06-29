@@ -1,6 +1,8 @@
 use crate::{
-    components::{Enemies, Particle},
-    resources::{DotPos, EnemiesPool, EnemiesPos, ParticlePool},
+    components::{Enemies, Particle, Player, Target},
+    resources::{DotPos, EnemiesPool, EnemiesPos, LocalPlayerPos, ParticlePool, PlayerPos},
+    setup::PLAYER_SPEED,
+    WORLD_BOUNDS,
 };
 use bevy::prelude::*;
 
@@ -52,3 +54,44 @@ pub fn move_enemies(
         }
     }
 }
+
+//todo: add Server reconciliation
+pub fn move_local(
+    mut query: Query<(&mut Transform, &mut Target, &mut Player)>,
+    mut pp: ResMut<PlayerPos>,
+    //pos: ResMut<LocalPlayerPos>,
+) {
+    for (mut t, tg, mut p) in query.iter_mut() {
+        if p.moving {
+            let current_position = Vec2::new(t.translation.x, t.translation.y);
+            let direction = Vec2::new(tg.x, tg.y) - current_position;
+            let distance_to_target = direction.length();
+
+            if distance_to_target > 0.0 {
+                let normalized_direction = direction / distance_to_target;
+                let movement = normalized_direction * PLAYER_SPEED;
+
+                let new_position = current_position + movement;
+
+                if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
+                    if movement.length() < distance_to_target {
+                        t.translation += Vec3::new(movement.x, 0.0, 0.0);
+                        pp.0 += Vec3::new(movement.x, 0.0, 0.0);
+                        info!("CLIENT SAYS: {:?}", t.translation.x);
+                    } else {
+                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
+                        pp.0 = Vec3::new(tg.x, -50.0, 0.1);
+                        p.moving = false;
+                    }
+                } else {
+                    p.moving = false;
+                }
+            } else {
+                p.moving = false;
+            }
+        }
+    }
+}
+
+//todo add client side collision
+// pub fn collision(mut pp: ResMut<PlayerPos>) {}
