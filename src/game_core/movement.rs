@@ -26,6 +26,37 @@ pub fn move_dot(
     }
 }
 
+//need to test to see if this is a better way to hide/show particles. requires 4000 sprites to spawn instead of 1000.
+
+// pub fn move_dot(
+//     particle_pool: Res<ParticlePool>,
+//     mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
+//     dots: Res<DotPos>,
+// ) {
+//     let mut pool_iter = particle_pool.0.iter();
+
+//     for dot in dots.0.iter() {
+//         if let Some(pool) = pool_iter.next() {
+//             match particles.get_mut(*pool) {
+//                 Ok((_particle, mut visibility, mut transform)) => {
+//                     transform.translation = *dot;
+//                     *visibility = Visibility::Visible;
+//                 }
+//                 Err(err) => {
+//                     info!("Error: {:?}", err);
+//                 }
+//             }
+//         }
+//     }
+
+//     // Make the remaining particles invisible
+//     for pool in pool_iter {
+//         if let Ok((_particle, mut visibility, _transform)) = particles.get_mut(*pool) {
+//             *visibility = Visibility::Hidden;
+//         }
+//     }
+// }
+
 pub fn move_enemies(
     enemies_pool: Res<EnemiesPool>,
     mut enemies: Query<(&Enemies, &mut Visibility, &mut Transform)>,
