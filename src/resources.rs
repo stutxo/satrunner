@@ -9,8 +9,6 @@ use crate::{ClientMsg, GameState};
 #[derive(Resource)]
 pub struct DotPos(pub Vec<Vec3>);
 
-pub struct Dot(pub Vec3);
-
 #[derive(Resource)]
 pub struct ParticlePool(pub VecDeque<Entity>);
 
