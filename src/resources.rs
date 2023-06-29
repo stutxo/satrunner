@@ -3,11 +3,11 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 use futures::channel::mpsc::{Receiver, Sender};
 
-use crate::{ClientMsg, PlayerPositions};
+use crate::{ClientMsg, GameState};
 
 //dots
 #[derive(Resource)]
-pub struct DotPos(pub Vec<Dot>);
+pub struct DotPos(pub Vec<Vec3>);
 
 pub struct Dot(pub Vec3);
 
@@ -31,7 +31,7 @@ pub struct LocalPlayerPos(pub f32);
 #[derive(Resource)]
 pub struct Server {
     pub write: Option<Sender<ClientMsg>>,
-    pub read: Option<Receiver<PlayerPositions>>,
+    pub read: Option<Receiver<GameState>>,
 }
 
 impl Server {

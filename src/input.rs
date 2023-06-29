@@ -67,7 +67,10 @@ pub fn move_system(
 
                     let input = ClientMsg::new(InputVec2::new(click_position.x, click_position.y));
 
-                    server.write.as_mut().unwrap().try_send(input).unwrap();
+                    match server.write.as_mut().unwrap().try_send(input) {
+                        Ok(()) => {}
+                        Err(e) => eprintln!("Error sending message: {} CHANNEL FULL???", e),
+                    };
                 }
             }
         }
@@ -84,38 +87,42 @@ pub fn move_system(
                 p.moving = true;
 
                 let input = ClientMsg::new(InputVec2::new(touch_position.x, touch_position.y));
-                server.write.as_mut().unwrap().try_send(input).unwrap();
+
+                match server.write.as_mut().unwrap().try_send(input) {
+                    Ok(()) => {}
+                    Err(e) => eprintln!("Error sending message: {} CHANNEL FULL???", e),
+                };
             }
         }
 
-        // if p.moving {
-        //     let current_position = Vec2::new(t.translation.x, t.translation.y);
-        //     let direction = Vec2::new(tg.x, tg.y) - current_position;
-        //     let distance_to_target = direction.length();
+        if p.moving {
+            let current_position = Vec2::new(t.translation.x, t.translation.y);
+            let direction = Vec2::new(tg.x, tg.y) - current_position;
+            let distance_to_target = direction.length();
 
-        //     if distance_to_target > 0.0 {
-        //         let normalized_direction = direction / distance_to_target;
-        //         let movement = normalized_direction * PLAYER_SPEED;
+            if distance_to_target > 0.0 {
+                let normalized_direction = direction / distance_to_target;
+                let movement = normalized_direction * PLAYER_SPEED;
 
-        //         let new_position = current_position + movement;
+                let new_position = current_position + movement;
 
-        //         if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
-        //             if movement.length() < distance_to_target {
-        //                 t.translation += Vec3::new(movement.x, 0.0, 0.0);
-        //                 pp.0 += Vec3::new(movement.x, 0.0, 0.0);
-        //                 info!("CLIENT SAYS: {:?}", t.translation.x);
-        //             } else {
-        //                 t.translation = Vec3::new(tg.x, -50.0, 0.1);
-        //                 pp.0 = Vec3::new(tg.x, -50.0, 0.1);
-        //                 p.moving = false;
-        //             }
-        //         } else {
-        //             p.moving = false;
-        //         }
-        //     } else {
-        //         p.moving = false;
-        //     }
-        // }
+                if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
+                    if movement.length() < distance_to_target {
+                        t.translation += Vec3::new(movement.x, 0.0, 0.0);
+                        pp.0 += Vec3::new(movement.x, 0.0, 0.0);
+                        info!("CLIENT SAYS: {:?}", t.translation.x);
+                    } else {
+                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
+                        pp.0 = Vec3::new(tg.x, -50.0, 0.1);
+                        p.moving = false;
+                    }
+                } else {
+                    p.moving = false;
+                }
+            } else {
+                p.moving = false;
+            }
+        }
     }
 }
 
@@ -131,4 +138,4 @@ pub fn temp_move_system(
     }
 }
 
-//receive just
+//1. add Server reconciliation
