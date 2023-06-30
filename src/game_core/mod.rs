@@ -1,3 +1,3 @@
-pub(crate) mod input;
-pub(crate) mod movement;
-pub(crate) mod setup;
+pub mod input;
+pub mod movement;
+pub mod setup;

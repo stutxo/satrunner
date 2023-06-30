@@ -13,7 +13,8 @@ pub fn handle_server(
             if let Some(server_msg) = message {
                 enemies.0 = server_msg.other_pos;
                 dots.0 = server_msg.dots;
-                local_player.0 = server_msg.local_pos;
+                local_player.x = server_msg.local_pos;
+                local_player.index = server_msg.index;
             }
         }
     }

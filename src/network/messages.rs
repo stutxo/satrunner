@@ -4,11 +4,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ClientMsg {
     pub input: InputVec2,
+    pub index: usize,
 }
 
 impl ClientMsg {
-    pub fn new(input: InputVec2) -> Self {
-        Self { input }
+    pub fn new(input: InputVec2, index: usize) -> Self {
+        Self { input, index }
     }
 }
 
@@ -17,6 +18,7 @@ pub struct GameState {
     pub local_pos: f32,
     pub other_pos: Vec<f32>,
     pub dots: Vec<Vec3>,
+    pub index: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

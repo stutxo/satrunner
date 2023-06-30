@@ -1,2 +1,2 @@
-pub(crate) mod components;
-pub(crate) mod resources;
+pub mod components;
+pub mod resources;

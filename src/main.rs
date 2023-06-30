@@ -25,7 +25,7 @@ fn main() {
         }))
         .add_startup_systems((setup, websocket))
         .add_systems((
-            input.in_schedule(CoreSchedule::FixedUpdate),
+            input,
             move_local.in_schedule(CoreSchedule::FixedUpdate),
             handle_server.in_schedule(CoreSchedule::FixedUpdate),
             move_enemies.in_schedule(CoreSchedule::FixedUpdate),

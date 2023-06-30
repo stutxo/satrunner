@@ -20,7 +20,10 @@ pub struct EnemiesPos(pub Vec<f32>);
 
 //local player
 #[derive(Resource, Default)]
-pub struct LocalPlayerPos(pub f32);
+pub struct LocalPlayerPos {
+    pub x: f32,
+    pub index: usize,
+}
 
 //server
 #[derive(Resource)]

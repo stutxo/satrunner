@@ -17,8 +17,8 @@ pub fn setup(
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(0.5, 0.5)),
-                color: Color::ORANGE,
+                custom_size: Some(Vec2::new(0.5, 1.0)),
+                color: Color::WHITE,
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
@@ -62,8 +62,8 @@ pub fn setup(
         let enemies = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(0.5, 0.5)),
-                    color: Color::GRAY,
+                    custom_size: Some(Vec2::new(0.5, 1.0)),
+                    color: Color::RED,
                     ..default()
                 },
                 ..Default::default()

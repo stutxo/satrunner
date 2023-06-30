@@ -15,7 +15,7 @@ pub fn websocket(mut server: ResMut<Server>) {
     let (mut write, mut read) = ws.split();
 
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMsg>(1000);
-    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<GameState>(1000);
+    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<GameState>(20000);
 
     server.write = Some(send_tx);
     server.read = Some(read_rx);
@@ -24,10 +24,11 @@ pub fn websocket(mut server: ResMut<Server>) {
         while let Some(message) = send_rx.next().await {
             match serde_json::to_string::<ClientMsg>(&message) {
                 Ok(new_input) => {
+                    //info!("Sending message: {:?}", new_input);
                     write.send(Message::Text(new_input)).await.unwrap();
                 }
                 Err(e) => {
-                    eprintln!("Failed to parse message as Vec2: {:?}", e);
+                    info!("Failed to parse message as Vec2: {:?}", e);
                 }
             }
         }
@@ -39,10 +40,10 @@ pub fn websocket(mut server: ResMut<Server>) {
                 Ok(Message::Text(msg)) => match serde_json::from_str::<GameState>(&msg) {
                     Ok(new_player_vec) => match read_tx.try_send(new_player_vec) {
                         Ok(()) => {}
-                        Err(e) => eprintln!("Error sending message: {} CHANNEL FULL???", e),
+                        Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
                     },
                     Err(e) => {
-                        eprintln!("Failed to parse message: {:?}", e);
+                        info!("Failed to parse message: {:?}", e);
                     }
                 },
                 Ok(Message::Bytes(_)) => {}
