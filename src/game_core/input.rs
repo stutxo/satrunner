@@ -30,6 +30,7 @@ pub fn input(
                     let input = ClientMsg::new(
                         InputVec2::new(click_position.x, click_position.y),
                         tg.index,
+                        p.id.clone(),
                     );
 
                     match server.write.as_mut().unwrap().try_send(input) {
@@ -53,8 +54,11 @@ pub fn input(
                 tg.last_input_time = Instant::now();
                 p.moving = true;
 
-                let input =
-                    ClientMsg::new(InputVec2::new(touch_position.x, touch_position.y), tg.index);
+                let input = ClientMsg::new(
+                    InputVec2::new(touch_position.x, touch_position.y),
+                    tg.index,
+                    p.id.clone(),
+                );
 
                 match server.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}

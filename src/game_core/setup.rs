@@ -1,5 +1,6 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
 use rand::Rng;
+use uuid::{uuid, Uuid};
 
 use crate::{
     game_util::components::{Enemies, Particle, Player, Target},
@@ -24,8 +25,11 @@ pub fn setup(
             transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
             ..Default::default()
         })
-        .insert(Player { moving: false })
-        .insert(Target::default())
+        .insert(Player {
+            moving: false,
+            id: Uuid::new_v4().to_string(),
+        })
+        .insert(Target::new())
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
@@ -71,6 +75,6 @@ pub fn setup(
             .insert(Enemies())
             .insert(Visibility::Hidden)
             .id();
-        enemies_pool.0.push_back(enemies);
+        enemies_pool.0.push(enemies);
     }
 }

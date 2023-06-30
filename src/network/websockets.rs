@@ -10,6 +10,8 @@ use crate::{
     network::messages::{ClientMsg, GameState},
 };
 
+use super::messages::ServerMsg;
+
 pub fn websocket(mut server: ResMut<Server>) {
     let ws = WebSocket::open("ws://localhost:3030/play").unwrap();
     let (mut write, mut read) = ws.split();
@@ -37,13 +39,18 @@ pub fn websocket(mut server: ResMut<Server>) {
     spawn_local(async move {
         while let Some(result) = read.next().await {
             match result {
-                Ok(Message::Text(msg)) => match serde_json::from_str::<GameState>(&msg) {
-                    Ok(new_player_vec) => match read_tx.try_send(new_player_vec) {
-                        Ok(()) => {}
-                        Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
-                    },
+                Ok(Message::Text(msg)) => match serde_json::from_str::<ServerMsg>(&msg) {
+                    Ok(ServerMsg::GameState(new_player_vec)) => {
+                        match read_tx.try_send(new_player_vec) {
+                            Ok(()) => {}
+                            Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
+                        }
+                    }
+                    Ok(ServerMsg::ClientMsg(client_msg)) => {
+                        info!("Received message: {:?}", client_msg);
+                    }
                     Err(e) => {
-                        info!("Failed to parse message: {:?}", e);
+                        info!("Failed to parse message: {:?}", msg);
                     }
                 },
                 Ok(Message::Bytes(_)) => {}

@@ -1,7 +1,10 @@
 use crate::{
     game_core::setup::{PLAYER_SPEED, WORLD_BOUNDS},
-    game_util::components::{Enemies, Particle, Player, Target},
-    game_util::resources::{DotPos, EnemiesPool, EnemiesPos, LocalPlayerPos, ParticlePool},
+    game_util::resources::{DotPos, EnemiesPool, LocalPlayerPos, ParticlePool},
+    game_util::{
+        components::{Enemies, Particle, Player, Target},
+        resources::EnemyState,
+    },
 };
 use bevy::{prelude::*, utils::Instant};
 
@@ -57,33 +60,37 @@ pub fn move_dot(
 //     }
 // }
 
-pub fn move_enemies(
-    enemies_pool: Res<EnemiesPool>,
-    mut enemies: Query<(&Enemies, &mut Visibility, &mut Transform)>,
-    enemies_pos: Res<EnemiesPos>,
-) {
-    let mut pool_iter = enemies_pool.0.iter();
+// pub fn move_enemies(
+//     enemies_pool: Res<EnemiesPool>,
+//     mut enemies: Query<(&Enemies, &mut Visibility, &mut Transform)>,
+//     enemies_state: Res<EnemyState>,
+// ) {
+//     let mut pool_iter = enemies_pool.0.iter();
 
-    for enemy in enemies_pos.0.iter() {
-        if let Some(pool) = pool_iter.next() {
-            match enemies.get_mut(*pool) {
-                Ok((_enemies, mut visibility, mut transform)) => {
-                    transform.translation = Vec3::new(*enemy, -50., 0.0);
-                    *visibility = Visibility::Visible;
-                }
-                Err(_err) => {
-                    //info!("Error: {:?}", err);
-                }
-            }
-        }
-    }
+//     for enemy in enemies_state.0.iter() {
+//         if let Some(pool) = pool_iter.next() {
+//             match enemies.get_mut(*pool) {
+//                 Ok((_, mut visibility, mut transform)) => {
+//                     let elapsed_time =
+//                         (Instant::now() - enemy.last_update_time).as_secs_f32() * 1000.0;
+//                     let t = elapsed_time / 100.0;
+//                     let interpolated_pos = enemy.prev_pos * (2.0 - t) + enemy.current_pos * t;
+//                     transform.translation = Vec3::new(interpolated_pos, -50., 0.0);
+//                     *visibility = Visibility::Visible;
+//                 }
+//                 Err(_err) => {
+//                     //info!("Error: {:?}", err);
+//                 }
+//             }
+//         }
+//     }
 
-    for pool in pool_iter {
-        if let Ok((_particle, mut visibility, _transform)) = enemies.get_mut(*pool) {
-            *visibility = Visibility::Hidden;
-        }
-    }
-}
+//     for pool in pool_iter {
+//         if let Ok((_particle, mut visibility, _)) = enemies.get_mut(*pool) {
+//             *visibility = Visibility::Hidden;
+//         }
+//     }
+// }
 
 pub fn move_local(
     mut query: Query<(&mut Transform, &Target, &mut Player)>,
@@ -132,6 +139,3 @@ pub fn move_local(
         }
     }
 }
-
-//todo add client side collision
-// pub fn collision(mut pp: ResMut<PlayerPos>) {}

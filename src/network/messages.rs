@@ -2,14 +2,22 @@ use bevy::prelude::Vec3;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type")]
+pub enum ServerMsg {
+    GameState(GameState),
+    ClientMsg(ClientMsg),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ClientMsg {
     pub input: InputVec2,
     pub index: usize,
+    pub id: String,
 }
 
 impl ClientMsg {
-    pub fn new(input: InputVec2, index: usize) -> Self {
-        Self { input, index }
+    pub fn new(input: InputVec2, index: usize, id: String) -> Self {
+        Self { input, index, id }
     }
 }
 

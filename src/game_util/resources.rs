@@ -1,9 +1,12 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use futures::channel::mpsc::{Receiver, Sender};
 
-use crate::network::messages::{ClientMsg, GameState};
+use crate::network::{
+    handle::EnemyPos,
+    messages::{ClientMsg, GameState},
+};
 
 //dots
 #[derive(Resource)]
@@ -14,9 +17,9 @@ pub struct ParticlePool(pub VecDeque<Entity>);
 
 //enemies
 #[derive(Resource)]
-pub struct EnemiesPool(pub VecDeque<Entity>);
+pub struct EnemiesPool(pub Vec<Entity>);
 #[derive(Resource)]
-pub struct EnemiesPos(pub Vec<f32>);
+pub struct EnemyState(pub HashMap<Entity, EnemyPos>);
 
 //local player
 #[derive(Resource, Default)]
