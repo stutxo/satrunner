@@ -1,10 +1,16 @@
 use bevy::{prelude::*, utils::Instant};
 
+//player stuff
 #[derive(Component)]
 pub struct Player {
     pub moving: bool,
-    pub id: String,
+    pub id: Option<String>,
+    pub server_pos: f32,
+    pub server_index: usize,
 }
+
+#[derive(Component)]
+pub struct LocalPlayer;
 
 #[derive(Component)]
 pub struct Target {
@@ -25,8 +31,6 @@ impl Target {
     }
 }
 
+//dots stuff
 #[derive(Component)]
-pub struct Particle();
-
-#[derive(Component)]
-pub struct Enemies();
+pub struct Particle;

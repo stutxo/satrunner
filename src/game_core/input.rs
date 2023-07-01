@@ -2,19 +2,19 @@ use bevy::{prelude::*, utils::Instant};
 
 use crate::{
     game_util::components::{Player, Target},
-    game_util::resources::Server,
+    game_util::{components::LocalPlayer, resources::Server},
     network::messages::{ClientMsg, InputVec2},
 };
 
 pub fn input(
-    mut query: Query<(&mut Target, &mut Player)>,
+    mut query: Query<(&mut Target, &mut Player, With<LocalPlayer>)>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut server: ResMut<Server>,
 ) {
-    for (mut tg, mut p) in query.iter_mut() {
+    for (mut tg, mut p, _local) in query.iter_mut() {
         if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
             for window in windows.iter() {
                 if let Some(cursor) = window.cursor_position() {
@@ -30,7 +30,6 @@ pub fn input(
                     let input = ClientMsg::new(
                         InputVec2::new(click_position.x, click_position.y),
                         tg.index,
-                        p.id.clone(),
                     );
 
                     match server.write.as_mut().unwrap().try_send(input) {
@@ -54,11 +53,8 @@ pub fn input(
                 tg.last_input_time = Instant::now();
                 p.moving = true;
 
-                let input = ClientMsg::new(
-                    InputVec2::new(touch_position.x, touch_position.y),
-                    tg.index,
-                    p.id.clone(),
-                );
+                let input =
+                    ClientMsg::new(InputVec2::new(touch_position.x, touch_position.y), tg.index);
 
                 match server.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}

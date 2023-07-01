@@ -1,14 +1,14 @@
-use bevy::{
-    prelude::*,
-    utils::{hashbrown::hash_map, HashMap},
-};
+use bevy::prelude::*;
 use game_core::{
     input::input,
     movement::{move_dot, move_local},
     setup::setup,
 };
-use game_util::resources::{DotPos, EnemiesPool, EnemyState, LocalPlayerPos, ParticlePool, Server};
-use network::{handle::handle_server, websockets::websocket};
+use game_util::resources::{DotPos, ParticlePool, Server};
+use network::{
+    handle::{handle_server, new_player},
+    websockets::websocket,
+};
 use std::collections::VecDeque;
 
 mod game_core;
@@ -30,17 +30,14 @@ fn main() {
         .add_systems((
             input,
             move_local.in_schedule(CoreSchedule::FixedUpdate),
+            new_player.in_schedule(CoreSchedule::FixedUpdate),
             handle_server.in_schedule(CoreSchedule::FixedUpdate),
-            //move_enemies.in_schedule(CoreSchedule::FixedUpdate),
             move_dot.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(DotPos(Vec::new()))
-        .insert_resource(EnemyState(HashMap::new()))
         .insert_resource(ParticlePool(VecDeque::new()))
-        .insert_resource(EnemiesPool(Vec::new()))
         .insert_resource(Server::new())
-        .insert_resource(LocalPlayerPos::default())
         .run();
 }

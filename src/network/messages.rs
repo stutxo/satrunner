@@ -1,10 +1,10 @@
-use bevy::prelude::Vec3;
+use bevy::prelude::{Vec2, Vec3};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum ServerMsg {
-    GameState(GameState),
+    ServerMsg(GameState),
     ClientMsg(ClientMsg),
 }
 
@@ -12,20 +12,28 @@ pub enum ServerMsg {
 pub struct ClientMsg {
     pub input: InputVec2,
     pub index: usize,
-    pub id: String,
+    pub id: Option<String>,
 }
 
 impl ClientMsg {
-    pub fn new(input: InputVec2, index: usize, id: String) -> Self {
-        Self { input, index, id }
+    pub fn new(input: InputVec2, index: usize) -> Self {
+        Self {
+            input,
+            index,
+            id: None,
+        }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GameState {
-    pub local_pos: f32,
-    pub other_pos: Vec<f32>,
+    pub players_pos: Vec<Index>,
     pub dots: Vec<Vec3>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Index {
+    pub position: Vec2,
     pub index: usize,
 }
 
