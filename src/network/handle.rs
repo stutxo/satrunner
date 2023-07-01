@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::Instant};
 
 use crate::game_util::{
     components::{Player, Target},
-    resources::{DotPos, Server, ServerPlayerPos},
+    resources::{DotPos, Server},
 };
 
 pub fn handle_server(
@@ -15,7 +15,7 @@ pub fn handle_server(
             if let Some(server_msg) = message {
                 dots.0 = server_msg.dots;
                 for mut player in query.iter_mut() {
-                    // server_msg.player_pos;
+                    // todo: insert server input index and server player pos to player component
                 }
             }
         }
