@@ -22,7 +22,7 @@ pub fn setup(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>) {
         })
         .insert(Player {
             moving: false,
-            id: None,
+            id: Some("local".to_string()),
             server_pos: 0.0,
             server_index: 0,
         })

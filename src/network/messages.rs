@@ -1,4 +1,7 @@
-use bevy::prelude::{Vec2, Vec3};
+use bevy::{
+    prelude::{Vec2, Vec3},
+    utils::HashMap,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -27,8 +30,17 @@ impl ClientMsg {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GameState {
-    pub players_pos: Vec<Index>,
+    pub players_pos: HashMap<String, Index>,
     pub dots: Vec<Vec3>,
+}
+
+impl GameState {
+    pub fn new() -> Self {
+        Self {
+            players_pos: HashMap::new(),
+            dots: Vec::new(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

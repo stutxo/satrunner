@@ -1,10 +1,9 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use futures::channel::mpsc::{Receiver, Sender};
-use serde::{Deserialize, Serialize};
 
-use crate::network::messages::{ClientMsg, GameState};
+use crate::network::messages::{ClientMsg, GameState, Index};
 
 //dots
 #[derive(Resource)]
@@ -12,6 +11,9 @@ pub struct DotPos(pub Vec<Vec3>);
 
 #[derive(Resource)]
 pub struct ParticlePool(pub VecDeque<Entity>);
+
+#[derive(Resource)]
+pub struct ActivePlayers(pub HashMap<String, Index>);
 //server
 #[derive(Resource)]
 pub struct Server {
@@ -28,16 +30,4 @@ impl Server {
             input: None,
         }
     }
-}
-
-#[derive(Resource, Default)]
-pub struct ServerPlayerPos {
-    pub x: f32,
-    pub index: usize,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Index {
-    pub position: Vec2,
-    index: usize,
 }
