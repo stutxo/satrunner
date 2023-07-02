@@ -3,15 +3,13 @@ use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 
-use uuid::Uuid;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::game_util::resources::PlayerId;
-use crate::{game_util::resources::Server, network::messages::NetworkMessage};
+use crate::game_util::resources::Server;
 
-use super::messages::{PlayerInput, WorldUpdate};
+use super::messages::PlayerInput;
 
-pub fn websocket(mut server: ResMut<Server>, player_id: Res<PlayerId>) {
+pub fn websocket(mut server: ResMut<Server>) {
     let ws = WebSocket::open("ws://localhost:3030/run").unwrap();
     let (mut write, mut read) = ws.split();
 
@@ -25,7 +23,6 @@ pub fn websocket(mut server: ResMut<Server>, player_id: Res<PlayerId>) {
         while let Some(message) = send_rx.next().await {
             match serde_json::to_string::<PlayerInput>(&message) {
                 Ok(new_input) => {
-                    info!("Sending message: {:?}", new_input);
                     write.send(Message::Text(new_input)).await.unwrap();
                 }
                 Err(e) => {
@@ -40,16 +37,14 @@ pub fn websocket(mut server: ResMut<Server>, player_id: Res<PlayerId>) {
             match result {
                 Ok(Message::Text(msg)) => match read_tx.try_send(msg) {
                     Ok(()) => {}
-                    Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
+                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                 },
 
                 Ok(Message::Bytes(_)) => {}
 
                 Err(e) => match e {
                     WebSocketError::ConnectionError => {}
-                    WebSocketError::ConnectionClose(_) => {
-                        //
-                    }
+                    WebSocketError::ConnectionClose(_) => {}
                     WebSocketError::MessageSendError(_) => {}
                     _ => {}
                 },

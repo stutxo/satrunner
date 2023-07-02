@@ -14,11 +14,13 @@ pub struct DotPos(pub Vec<Vec3>);
 pub struct ParticlePool(pub VecDeque<Entity>);
 
 #[derive(Resource)]
-pub struct PlayerId(pub Uuid);
+pub struct PlayerInit {
+    pub id: Option<Uuid>,
+}
 
-impl PlayerId {
+impl PlayerInit {
     pub fn new() -> Self {
-        Self(Uuid::new_v4())
+        Self { id: None }
     }
 }
 

@@ -18,7 +18,7 @@ pub fn move_dot(
                     *visibility = Visibility::Visible;
                 }
                 Err(err) => {
-                    info!("Error: {:?}", err);
+                    error!("Error: {:?}", err);
                 }
             }
             particle_pool.0.push_back(pool);
@@ -74,7 +74,7 @@ pub fn move_local(mut query: Query<(&mut Transform, &Target, &mut Player)>) {
                     if movement.length() < distance_to_target {
                         t.translation += Vec3::new(movement.x, 0.0, 0.0);
                     } else {
-                        t.translation = Vec3::new(tg.x, -50.0, 0.1);
+                        t.translation = Vec3::new(tg.x, -50.0, 0.0);
 
                         p.moving = false;
                     }
@@ -88,13 +88,10 @@ pub fn move_local(mut query: Query<(&mut Transform, &Target, &mut Player)>) {
         if Instant::now()
             .duration_since(tg.last_input_time)
             .as_millis()
-            > 200
+            > 100
             && p.server_index != tg.index
         {
-            info!(
-                "ROLL BACK!!!!! SERVER INDEX: {:?}, LOCAL INDEX {:?}, SERVER X: {:?}, LOCAL X: {:?},",
-                p.server_index, tg.index, p.server_pos, t.translation.x,
-            );
+            info!("ROLL BACK: {:?} -> {:?}", tg.index, p.server_index,);
             t.translation.x = p.server_pos;
         }
     }

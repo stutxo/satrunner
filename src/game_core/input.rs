@@ -2,22 +2,22 @@ use bevy::{prelude::*, utils::Instant};
 
 use crate::{
     game_util::components::{Player, Target},
-    game_util::{
-        components::LocalPlayer,
-        resources::{PlayerId, Server},
-    },
+    game_util::{components::LocalPlayer, resources::Server},
     network::messages::PlayerInput,
 };
 
 pub fn input(
-    mut query: Query<(&mut Target, &mut Player, &Transform, With<LocalPlayer>)>,
+    mut query: Query<(&mut Target, &mut Player, &mut Transform, With<LocalPlayer>)>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut server: ResMut<Server>,
 ) {
-    for (mut target, mut player, transform, _local) in query.iter_mut() {
+    for (mut target, mut player, mut transform, _local) in query.iter_mut() {
+        //always set local player above other players
+        transform.translation.z = 0.1;
+
         if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
             for window in windows.iter() {
                 if let Some(cursor) = window.cursor_position() {
@@ -33,7 +33,7 @@ pub fn input(
                     let input = PlayerInput::new(Vec2::new(target.x, target.y), player.id);
                     match server.write.as_mut().unwrap().try_send(input) {
                         Ok(()) => {}
-                        Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
+                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                     };
                 }
             }
@@ -56,7 +56,7 @@ pub fn input(
 
                 match server.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}
-                    Err(e) => info!("Error sending message: {} CHANNEL FULL???", e),
+                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                 };
             }
         }
