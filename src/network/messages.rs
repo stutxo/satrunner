@@ -1,62 +1,42 @@
-use bevy::{
-    prelude::{Vec2, Vec3},
-    utils::HashMap,
-};
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
+use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+// Network messages
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
-pub enum ServerMsg {
-    ServerMsg(GameState),
-    ClientMsg(ClientMsg),
+pub enum NetworkMessage {
+    GameUpdate(WorldUpdate),
+    NewInput(PlayerInput),
+    NewGame(NewGame),
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ClientMsg {
-    pub input: InputVec2,
+pub struct WorldUpdate {
+    pub players: HashMap<Uuid, PlayerInfo>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PlayerInfo {
     pub index: usize,
-    pub id: Option<String>,
+    pub pos: Vec2,
 }
 
-impl ClientMsg {
-    pub fn new(input: InputVec2, index: usize) -> Self {
-        Self {
-            input,
-            index,
-            id: None,
-        }
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PlayerInput {
+    pub target: Vec2,
+    pub id: Uuid,
+}
+
+impl PlayerInput {
+    pub fn new(target: Vec2, id: Uuid) -> Self {
+        Self { target, id }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GameState {
-    pub players_pos: HashMap<String, Index>,
-    pub dots: Vec<Vec3>,
-}
-
-impl GameState {
-    pub fn new() -> Self {
-        Self {
-            players_pos: HashMap::new(),
-            dots: Vec::new(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Index {
-    pub position: Vec2,
-    pub index: usize,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct InputVec2 {
-    pub x: f32,
-    pub y: f32,
-}
-
-impl InputVec2 {
-    pub fn new(x: f32, y: f32) -> Self {
-        Self { x, y }
-    }
+pub struct NewGame {
+    pub id: Uuid,
 }

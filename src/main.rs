@@ -4,12 +4,11 @@ use game_core::{
     movement::{move_dot, move_local},
     setup::setup,
 };
-use game_util::resources::{ActivePlayers, DotPos, ParticlePool, Server};
-use network::{
-    handle::{handle_server, new_player},
-    messages::GameState,
-    websockets::websocket,
+use game_util::{
+    components::Player,
+    resources::{DotPos, ParticlePool, PlayerId, Server},
 };
+use network::{handle::handle_server, websockets::websocket};
 use std::collections::VecDeque;
 
 mod game_core;
@@ -27,19 +26,18 @@ fn main() {
             }),
             ..default()
         }))
-        .add_startup_systems((setup, websocket))
+        .add_startup_system(websocket)
         .add_systems((
             input,
-            new_player,
-            handle_server.in_schedule(CoreSchedule::FixedUpdate),
+            handle_server,
             move_local.in_schedule(CoreSchedule::FixedUpdate),
-            move_dot.in_schedule(CoreSchedule::FixedUpdate),
+            //move_dot.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(DotPos(Vec::new()))
         .insert_resource(ParticlePool(VecDeque::new()))
         .insert_resource(Server::new())
-        .insert_resource(ActivePlayers(HashMap::new()))
+        .insert_resource(PlayerId::new())
         .run();
 }

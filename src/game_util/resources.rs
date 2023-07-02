@@ -1,9 +1,10 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::prelude::*;
 use futures::channel::mpsc::{Receiver, Sender};
+use uuid::Uuid;
 
-use crate::network::messages::{ClientMsg, GameState, Index};
+use crate::network::messages::PlayerInput;
 
 //dots
 #[derive(Resource)]
@@ -13,13 +14,19 @@ pub struct DotPos(pub Vec<Vec3>);
 pub struct ParticlePool(pub VecDeque<Entity>);
 
 #[derive(Resource)]
-pub struct ActivePlayers(pub HashMap<String, Index>);
+pub struct PlayerId(pub Uuid);
+
+impl PlayerId {
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+}
+
 //server
 #[derive(Resource)]
 pub struct Server {
-    pub write: Option<Sender<ClientMsg>>,
-    pub read: Option<Receiver<GameState>>,
-    pub input: Option<Receiver<ClientMsg>>,
+    pub write: Option<Sender<PlayerInput>>,
+    pub read: Option<Receiver<String>>,
 }
 
 impl Server {
@@ -27,7 +34,6 @@ impl Server {
         Self {
             write: None,
             read: None,
-            input: None,
         }
     }
 }

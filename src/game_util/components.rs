@@ -1,10 +1,11 @@
 use bevy::{prelude::*, utils::Instant};
+use uuid::Uuid;
 
 //player stuff
 #[derive(Component)]
 pub struct Player {
     pub moving: bool,
-    pub id: Option<String>,
+    pub id: Uuid,
     pub server_pos: f32,
     pub server_index: usize,
 }
