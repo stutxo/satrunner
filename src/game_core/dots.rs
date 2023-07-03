@@ -4,7 +4,10 @@ use rand_chacha::ChaCha8Rng;
 
 use crate::{
     game_util::components::Particle,
-    game_util::resources::{Dots, ParticlePool},
+    game_util::{
+        components::Player,
+        resources::{Dots, ParticlePool},
+    },
 };
 
 pub const WORLD_BOUNDS: f32 = 300.0;
@@ -36,15 +39,17 @@ pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>
 pub fn handle_dots(
     mut dots: ResMut<Dots>,
     mut particle_pool: ResMut<ParticlePool>,
-    mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
+    mut particles: Query<(&Particle, &mut Visibility, &mut Transform), Without<Player>>,
+    players: Query<(&Player, &Transform)>,
 ) {
     if let Some(rng_seed) = dots.rng_seed {
-        let seed = rng_seed ^ dots.game_tick;
+        dots.client_tick += 1;
+        let seed = rng_seed ^ dots.client_tick;
         let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
         for _ in 0..1 {
             let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-            info!("game_tick {:?}, rng: {:?}", dots.game_tick, x_position,);
+            //info!("game_tick {:?}, rng: {:?}", dots.client_tick, x_position,);
             let y_position: f32 = 25.;
 
             let dot_start = Vec3::new(x_position, y_position, 0.1);
@@ -56,12 +61,19 @@ pub fn handle_dots(
             dot.y += FALL_SPEED * -1.0;
         }
 
-        dots.pos.retain(|dot| {
-            dot.y >= -WORLD_BOUNDS
-                && dot.y <= WORLD_BOUNDS
-                && dot.x >= -WORLD_BOUNDS
-                && dot.x <= WORLD_BOUNDS
-        });
+        let pp: Vec<Vec3> = players.iter().map(|(_, t)| t.translation).collect();
+
+        let threshold_distance: f32 = 1.0;
+        for pp in pp {
+            dots.pos.retain(|dot| {
+                let distance_to_player = (*dot - pp).length();
+                dot.y >= -WORLD_BOUNDS
+                    && dot.y <= WORLD_BOUNDS
+                    && dot.x >= -WORLD_BOUNDS
+                    && dot.x <= WORLD_BOUNDS
+                    && distance_to_player > threshold_distance
+            });
+        }
 
         for dot in dots.pos.iter() {
             if let Some(pool) = particle_pool.0.pop_front() {

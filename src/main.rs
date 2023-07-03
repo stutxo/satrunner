@@ -28,8 +28,10 @@ fn main() {
         .add_systems((
             input,
             handle_server.in_schedule(CoreSchedule::FixedUpdate),
-            handle_dots.in_schedule(CoreSchedule::FixedUpdate),
             move_players.in_schedule(CoreSchedule::FixedUpdate),
+            handle_dots
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(move_players),
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))

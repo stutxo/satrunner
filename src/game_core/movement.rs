@@ -26,7 +26,7 @@ pub fn move_players(mut query: Query<(&mut Transform, &Player)>) {
         if Instant::now()
             .duration_since(player.last_input_time)
             .as_millis()
-            > 100
+            > 200
             && player.server_index != player.index
         {
             info!("ROLL BACK: {:?} -> {:?}", player.index, player.server_index,);

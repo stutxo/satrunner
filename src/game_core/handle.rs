@@ -24,7 +24,10 @@ pub fn handle_server(
         while let Ok(Some(message)) = receive_rx.try_next() {
             match serde_json::from_str::<NetworkMessage>(&message) {
                 Ok(NetworkMessage::GameUpdate(mut game_update)) => {
-                    dots.game_tick = game_update.game_tick;
+                    dots.server_tick = game_update.game_tick;
+                    if dots.client_tick == 0 {
+                        dots.client_tick = game_update.game_tick;
+                    }
                     dots.rng_seed = Some(game_update.rng_seed);
 
                     for (_, mut player, _) in query.iter_mut() {
