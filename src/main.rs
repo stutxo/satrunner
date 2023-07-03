@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use game_core::{
+    dots::{handle_dots, pool_dots},
+    handle::handle_server,
     input::input,
-    movement::{move_dot, move_local},
-    setup::{internal_server, out_server, setup},
+    movement::move_players,
 };
 use game_util::resources::{DotPos, ParticlePool, PlayerInit, Server};
-use network::{handle::handle_server, websockets::websocket};
+use network::websockets::websocket;
 use std::collections::VecDeque;
 
 mod game_core;
@@ -23,14 +24,12 @@ fn main() {
             }),
             ..default()
         }))
-        .add_startup_systems((websocket, setup))
+        .add_startup_systems((websocket, pool_dots))
         .add_systems((
             input,
-            internal_server.in_schedule(CoreSchedule::FixedUpdate),
-            out_server.in_schedule(CoreSchedule::FixedUpdate),
             handle_server.in_schedule(CoreSchedule::FixedUpdate),
-            move_local.in_schedule(CoreSchedule::FixedUpdate),
-            move_dot.in_schedule(CoreSchedule::FixedUpdate),
+            handle_dots.in_schedule(CoreSchedule::FixedUpdate),
+            move_players.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))

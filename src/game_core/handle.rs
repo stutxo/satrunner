@@ -5,12 +5,13 @@ use bevy::{
 };
 use uuid::Uuid;
 
-use crate::game_util::{
-    components::{LocalPlayer, Player},
-    resources::{PlayerInit, Server},
+use crate::{
+    game_util::{
+        components::{LocalPlayer, Player},
+        resources::{PlayerInit, Server},
+    },
+    network::messages::NetworkMessage,
 };
-
-use super::messages::NetworkMessage;
 
 pub fn handle_server(
     mut server: ResMut<Server>,
@@ -34,23 +35,16 @@ pub fn handle_server(
                         .map(|(entity, player, _)| (player.id, entity))
                         .collect::<HashMap<Uuid, Entity>>();
 
-                    // despawn entities not in the game_update
                     for (player_id, entity) in &player_ids {
                         if !game_update.players.contains_key(player_id) {
                             commands.entity(*entity).despawn();
-                            //info!("Player {:?} does not exist in the game_update", player_id)
                         }
                     }
 
-                    // create entities present in the game_update but not in player_ids
                     for player_key in game_update.players.keys() {
                         if !player_ids.contains_key(player_key)
                             && Some(*player_key) != local_player.id
                         {
-                            // info!(
-                            //     "Key {:?} does not exist in the player_ids vector",
-                            //     player_key
-                            // );
                             if let Some(player_info) = game_update.players.get(player_key) {
                                 commands
                                     .spawn(SpriteBundle {

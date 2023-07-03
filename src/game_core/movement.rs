@@ -1,32 +1,10 @@
 use crate::{
-    game_core::setup::{PLAYER_SPEED, WORLD_BOUNDS},
-    game_util::components::{Particle, Player},
-    game_util::resources::{DotPos, ParticlePool},
+    game_core::dots::{PLAYER_SPEED, WORLD_BOUNDS},
+    game_util::components::Player,
 };
 use bevy::{prelude::*, utils::Instant};
 
-pub fn move_dot(
-    mut particle_pool: ResMut<ParticlePool>,
-    mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
-    dots: Res<DotPos>,
-) {
-    for dot in dots.0.iter() {
-        if let Some(pool) = particle_pool.0.pop_front() {
-            match particles.get_mut(pool) {
-                Ok((_particle, mut visibility, mut transform)) => {
-                    transform.translation = *dot;
-                    *visibility = Visibility::Visible;
-                }
-                Err(err) => {
-                    error!("Error: {:?}", err);
-                }
-            }
-            particle_pool.0.push_back(pool);
-        }
-    }
-}
-
-pub fn move_local(mut query: Query<(&mut Transform, &Player)>) {
+pub fn move_players(mut query: Query<(&mut Transform, &Player)>) {
     for (mut t, player) in query.iter_mut() {
         let direction = player.target - Vec2::new(t.translation.x, t.translation.y);
         let distance_to_target = direction.length();
