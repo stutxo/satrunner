@@ -5,7 +5,7 @@ use game_core::{
     input::input,
     movement::move_players,
 };
-use game_util::resources::{DotPos, ParticlePool, PlayerInit, Server};
+use game_util::resources::{Dots, ParticlePool, PlayerInit, Server};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -33,7 +33,7 @@ fn main() {
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))
-        .insert_resource(DotPos(Vec::new()))
+        .insert_resource(Dots::new())
         .insert_resource(ParticlePool(VecDeque::new()))
         .insert_resource(Server::new())
         .insert_resource(PlayerInit::new())

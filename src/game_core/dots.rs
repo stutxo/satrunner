@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use rand::Rng;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 
 use crate::{
     game_util::components::Particle,
-    game_util::resources::{DotPos, ParticlePool},
+    game_util::resources::{Dots, ParticlePool},
 };
 
 pub const WORLD_BOUNDS: f32 = 300.0;
@@ -33,43 +34,48 @@ pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>
 }
 
 pub fn handle_dots(
-    mut dots: ResMut<DotPos>,
+    mut dots: ResMut<Dots>,
     mut particle_pool: ResMut<ParticlePool>,
     mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
 ) {
-    let mut rng = rand::thread_rng();
+    if let Some(rng_seed) = dots.rng_seed {
+        let seed = rng_seed ^ dots.game_tick;
+        let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
-    for _ in 0..5 {
-        let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
-        let y_position: f32 = 25.;
-        let dot_start = Vec3::new(x_position, y_position, 0.1);
-        dots.0.push(dot_start);
-    }
+        for _ in 0..1 {
+            let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
+            info!("game_tick {:?}, rng: {:?}", dots.game_tick, x_position,);
+            let y_position: f32 = 25.;
 
-    for dot in dots.0.iter_mut() {
-        dot.x += FALL_SPEED * 0.0;
-        dot.y += FALL_SPEED * -1.0;
-    }
+            let dot_start = Vec3::new(x_position, y_position, 0.1);
+            dots.pos.push(dot_start);
+        }
 
-    dots.0.retain(|dot| {
-        dot.y >= -WORLD_BOUNDS
-            && dot.y <= WORLD_BOUNDS
-            && dot.x >= -WORLD_BOUNDS
-            && dot.x <= WORLD_BOUNDS
-    });
+        for dot in dots.pos.iter_mut() {
+            dot.x += FALL_SPEED * 0.0;
+            dot.y += FALL_SPEED * -1.0;
+        }
 
-    for dot in dots.0.iter() {
-        if let Some(pool) = particle_pool.0.pop_front() {
-            match particles.get_mut(pool) {
-                Ok((_particle, mut visibility, mut transform)) => {
-                    transform.translation = *dot;
-                    *visibility = Visibility::Visible;
+        dots.pos.retain(|dot| {
+            dot.y >= -WORLD_BOUNDS
+                && dot.y <= WORLD_BOUNDS
+                && dot.x >= -WORLD_BOUNDS
+                && dot.x <= WORLD_BOUNDS
+        });
+
+        for dot in dots.pos.iter() {
+            if let Some(pool) = particle_pool.0.pop_front() {
+                match particles.get_mut(pool) {
+                    Ok((_particle, mut visibility, mut transform)) => {
+                        transform.translation = *dot;
+                        *visibility = Visibility::Visible;
+                    }
+                    Err(err) => {
+                        error!("Error: {:?}", err);
+                    }
                 }
-                Err(err) => {
-                    error!("Error: {:?}", err);
-                }
+                particle_pool.0.push_back(pool);
             }
-            particle_pool.0.push_back(pool);
         }
     }
 }

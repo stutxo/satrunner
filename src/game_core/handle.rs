@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     game_util::{
         components::{LocalPlayer, Player},
-        resources::{PlayerInit, Server},
+        resources::{Dots, PlayerInit, Server},
     },
     network::messages::NetworkMessage,
 };
@@ -18,11 +18,15 @@ pub fn handle_server(
     mut local_player: ResMut<PlayerInit>,
     mut query: Query<(Entity, &mut Player, &mut Transform)>,
     mut commands: Commands,
+    mut dots: ResMut<Dots>,
 ) {
     if let Some(ref mut receive_rx) = server.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
             match serde_json::from_str::<NetworkMessage>(&message) {
                 Ok(NetworkMessage::GameUpdate(mut game_update)) => {
+                    dots.game_tick = game_update.game_tick;
+                    dots.rng_seed = Some(game_update.rng_seed);
+
                     for (_, mut player, _) in query.iter_mut() {
                         if let Some(player_info) = game_update.players.get_mut(&player.id) {
                             player.server_pos = player_info.pos.x;

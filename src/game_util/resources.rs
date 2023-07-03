@@ -8,7 +8,21 @@ use crate::network::messages::PlayerInput;
 
 //dots
 #[derive(Resource)]
-pub struct DotPos(pub Vec<Vec3>);
+pub struct Dots {
+    pub pos: Vec<Vec3>,
+    pub rng_seed: Option<u64>,
+    pub game_tick: u64,
+}
+
+impl Dots {
+    pub fn new() -> Self {
+        Self {
+            pos: Vec::new(),
+            rng_seed: None,
+            game_tick: 0,
+        }
+    }
+}
 
 #[derive(Resource)]
 pub struct ParticlePool(pub VecDeque<Entity>);
