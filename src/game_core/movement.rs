@@ -1,6 +1,6 @@
 use crate::{
     game_core::setup::{PLAYER_SPEED, WORLD_BOUNDS},
-    game_util::components::{Particle, Player, Target},
+    game_util::components::{Particle, Player},
     game_util::resources::{DotPos, ParticlePool},
 };
 use bevy::{prelude::*, utils::Instant};
@@ -26,73 +26,33 @@ pub fn move_dot(
     }
 }
 
-//need to test to see if this is a better way to hide/show particles. requires 4000 sprites to spawn instead of 1000.
+pub fn move_local(mut query: Query<(&mut Transform, &Player)>) {
+    for (mut t, player) in query.iter_mut() {
+        let direction = player.target - Vec2::new(t.translation.x, t.translation.y);
+        let distance_to_target = direction.length();
 
-// pub fn move_dot(
-//     particle_pool: Res<ParticlePool>,
-//     mut particles: Query<(&Particle, &mut Visibility, &mut Transform)>,
-//     dots: Res<DotPos>,
-// ) {
-//     let mut pool_iter = particle_pool.0.iter();
-
-//     for dot in dots.0.iter() {
-//         if let Some(pool) = pool_iter.next() {
-//             match particles.get_mut(*pool) {
-//                 Ok((_particle, mut visibility, mut transform)) => {
-//                     transform.translation = *dot;
-//                     *visibility = Visibility::Visible;
-//                 }
-//                 Err(err) => {
-//                     info!("Error: {:?}", err);
-//                 }
-//             }
-//         }
-//     }
-
-//     // Make the remaining particles invisible
-//     for pool in pool_iter {
-//         if let Ok((_particle, mut visibility, _transform)) = particles.get_mut(*pool) {
-//             *visibility = Visibility::Hidden;
-//         }
-//     }
-// }
-
-pub fn move_local(mut query: Query<(&mut Transform, &Target, &mut Player)>) {
-    for (mut t, tg, mut p) in query.iter_mut() {
-        if p.moving {
-            let current_position = Vec2::new(t.translation.x, t.translation.y);
-            let direction = Vec2::new(tg.x, tg.y) - current_position;
-            let distance_to_target = direction.length();
-
-            if distance_to_target > 0.0 {
-                let normalized_direction = direction / distance_to_target;
-                let movement = normalized_direction * PLAYER_SPEED;
-
-                let new_position = current_position + movement;
-
-                if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
-                    if movement.length() < distance_to_target {
-                        t.translation += Vec3::new(movement.x, 0.0, 0.0);
-                    } else {
-                        t.translation = Vec3::new(tg.x, -50.0, 0.0);
-
-                        p.moving = false;
-                    }
-                } else {
-                    p.moving = false;
-                }
+        if distance_to_target > 0.0 {
+            let movement = if distance_to_target <= PLAYER_SPEED {
+                direction
             } else {
-                p.moving = false;
+                direction.normalize() * PLAYER_SPEED
+            };
+
+            let new_position = Vec2::new(t.translation.x, t.translation.y) + movement;
+
+            if new_position.x.abs() <= WORLD_BOUNDS && new_position.y.abs() <= WORLD_BOUNDS {
+                t.translation += Vec2::new(movement.x, 0.0).extend(0.0);
             }
         }
+
         if Instant::now()
-            .duration_since(tg.last_input_time)
+            .duration_since(player.last_input_time)
             .as_millis()
             > 100
-            && p.server_index != tg.index
+            && player.server_index != player.index
         {
-            info!("ROLL BACK: {:?} -> {:?}", tg.index, p.server_index,);
-            t.translation.x = p.server_pos;
+            info!("ROLL BACK: {:?} -> {:?}", player.index, player.server_index,);
+            t.translation.x = player.server_pos;
         }
     }
 }

@@ -1,20 +1,20 @@
 use bevy::{prelude::*, utils::Instant};
 
 use crate::{
-    game_util::components::{Player, Target},
+    game_util::components::Player,
     game_util::{components::LocalPlayer, resources::Server},
     network::messages::PlayerInput,
 };
 
 pub fn input(
-    mut query: Query<(&mut Target, &mut Player, &mut Transform, With<LocalPlayer>)>,
+    mut query: Query<(&mut Player, &mut Transform, With<LocalPlayer>)>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut server: ResMut<Server>,
 ) {
-    for (mut target, mut player, mut transform, _local) in query.iter_mut() {
+    for (mut player, mut transform, _local) in query.iter_mut() {
         //always set local player above other players
         transform.translation.z = 0.1;
 
@@ -24,13 +24,11 @@ pub fn input(
                     let (camera, camera_transform) = camera_query.single();
                     let click_position =
                         get_click_position(window, camera, camera_transform, cursor);
-                    target.x = click_position.x;
-                    target.y = click_position.y;
-                    target.index += 1;
-                    target.last_input_time = Instant::now();
-                    player.moving = true;
+                    player.target = click_position;
+                    player.index += 1;
+                    player.last_input_time = Instant::now();
 
-                    let input = PlayerInput::new(Vec2::new(target.x, target.y), player.id);
+                    let input = PlayerInput::new(player.target, player.id);
                     match server.write.as_mut().unwrap().try_send(input) {
                         Ok(()) => {}
                         Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
@@ -46,13 +44,12 @@ pub fn input(
             for window in windows.iter() {
                 let touch_position =
                     get_touch_position(window, camera, camera_transform, touch_pos);
-                target.x = touch_position.x;
-                target.y = touch_position.y;
-                target.index += 1;
-                target.last_input_time = Instant::now();
-                player.moving = true;
+                player.target = touch_position;
 
-                let input = PlayerInput::new(Vec2::new(target.x, target.y), player.id);
+                player.index += 1;
+                player.last_input_time = Instant::now();
+
+                let input = PlayerInput::new(player.target, player.id);
 
                 match server.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}

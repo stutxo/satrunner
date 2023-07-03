@@ -1,12 +1,10 @@
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::prelude::*;
 use game_core::{
     input::input,
     movement::{move_dot, move_local},
+    setup::{internal_server, out_server, setup},
 };
-use game_util::{
-    components::Player,
-    resources::{DotPos, ParticlePool, PlayerInit, Server},
-};
+use game_util::resources::{DotPos, ParticlePool, PlayerInit, Server};
 use network::{handle::handle_server, websockets::websocket};
 use std::collections::VecDeque;
 
@@ -25,12 +23,14 @@ fn main() {
             }),
             ..default()
         }))
-        .add_startup_system(websocket)
+        .add_startup_systems((websocket, setup))
         .add_systems((
             input,
+            internal_server.in_schedule(CoreSchedule::FixedUpdate),
+            out_server.in_schedule(CoreSchedule::FixedUpdate),
             handle_server.in_schedule(CoreSchedule::FixedUpdate),
             move_local.in_schedule(CoreSchedule::FixedUpdate),
-            //move_dot.in_schedule(CoreSchedule::FixedUpdate),
+            move_dot.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(1. / 30.))
         .insert_resource(ClearColor(Color::BLACK))
