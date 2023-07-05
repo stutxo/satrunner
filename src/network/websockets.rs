@@ -1,15 +1,15 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, time};
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 
 use wasm_bindgen_futures::spawn_local;
 
-use crate::game_util::resources::Server;
+use crate::game_util::resources::NetworkStuff;
 
 use super::messages::PlayerInput;
 
-pub fn websocket(mut server: ResMut<Server>) {
+pub fn websocket(mut server: ResMut<NetworkStuff>) {
     let ws = WebSocket::open("ws://localhost:3030/run").unwrap();
     let (mut write, mut read) = ws.split();
 

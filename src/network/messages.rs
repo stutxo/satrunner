@@ -30,11 +30,12 @@ pub struct PlayerInfo {
 pub struct PlayerInput {
     pub target: Vec2,
     pub id: Uuid,
+    pub tick: u64,
 }
 
 impl PlayerInput {
-    pub fn new(target: Vec2, id: Uuid) -> Self {
-        Self { target, id }
+    pub fn new(target: Vec2, id: Uuid, tick: u64) -> Self {
+        Self { target, id, tick }
     }
 }
 

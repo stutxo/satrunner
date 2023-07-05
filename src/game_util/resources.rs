@@ -42,16 +42,31 @@ impl PlayerInit {
 
 //server
 #[derive(Resource)]
-pub struct Server {
+pub struct NetworkStuff {
     pub write: Option<Sender<PlayerInput>>,
     pub read: Option<Receiver<String>>,
 }
 
-impl Server {
+impl NetworkStuff {
     pub fn new() -> Self {
         Self {
             write: None,
             read: None,
+        }
+    }
+}
+
+#[derive(Resource, Clone, Copy)]
+pub struct TickManager {
+    pub client_tick: u64,
+    pub server_tick: u64,
+}
+
+impl TickManager {
+    pub fn new() -> Self {
+        Self {
+            client_tick: 0,
+            server_tick: 0,
         }
     }
 }

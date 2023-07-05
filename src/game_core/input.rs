@@ -2,7 +2,10 @@ use bevy::{prelude::*, utils::Instant};
 
 use crate::{
     game_util::components::Player,
-    game_util::{components::LocalPlayer, resources::Server},
+    game_util::{
+        components::{LocalPlayer, NewInput},
+        resources::{NetworkStuff, TickManager},
+    },
     network::messages::PlayerInput,
 };
 
@@ -12,7 +15,8 @@ pub fn input(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     touches: Res<Touches>,
-    mut server: ResMut<Server>,
+    mut outgoing: ResMut<NetworkStuff>,
+    ticks: Res<TickManager>,
 ) {
     for (mut player, mut transform, _local) in query.iter_mut() {
         //always set local player above other players
@@ -25,11 +29,17 @@ pub fn input(
                     let click_position =
                         get_click_position(window, camera, camera_transform, cursor);
                     player.target = click_position;
-                    player.index += 1;
+                    player.input_index += 1;
                     player.last_input_time = Instant::now();
 
-                    let input = PlayerInput::new(player.target, player.id);
-                    match server.write.as_mut().unwrap().try_send(input) {
+                    let target = player.target;
+
+                    player
+                        .pending_inputs
+                        .push(NewInput::new(ticks.client_tick, target));
+
+                    let input = PlayerInput::new(player.target, player.id, ticks.client_tick);
+                    match outgoing.write.as_mut().unwrap().try_send(input) {
                         Ok(()) => {}
                         Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                     };
@@ -46,12 +56,18 @@ pub fn input(
                     get_touch_position(window, camera, camera_transform, touch_pos);
                 player.target = touch_position;
 
-                player.index += 1;
+                player.input_index += 1;
                 player.last_input_time = Instant::now();
 
-                let input = PlayerInput::new(player.target, player.id);
+                let target = player.target;
 
-                match server.write.as_mut().unwrap().try_send(input) {
+                player
+                    .pending_inputs
+                    .push(NewInput::new(ticks.client_tick, target));
+
+                let input = PlayerInput::new(player.target, player.id, ticks.client_tick);
+
+                match outgoing.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}
                     Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                 };
