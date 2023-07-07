@@ -1,7 +1,4 @@
-use std::thread;
-use std::time::Duration;
-
-use bevy::{prelude::*, time};
+use bevy::prelude::*;
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
@@ -14,7 +11,7 @@ use crate::game_util::resources::NetworkStuff;
 
 use super::messages::PlayerInput;
 
-pub const DELAY: u32 = 1_00;
+pub const DELAY: u32 = 30;
 
 pub fn websocket(mut server: ResMut<NetworkStuff>) {
     let ws = WebSocket::open("ws://localhost:3030/run").unwrap();

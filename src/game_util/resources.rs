@@ -29,6 +29,7 @@ impl Dots {
 #[derive(Resource)]
 pub struct ParticlePool(pub VecDeque<Entity>);
 
+//player
 #[derive(Resource)]
 pub struct PlayerInit {
     pub id: Option<Uuid>,
@@ -55,18 +56,3 @@ impl NetworkStuff {
         }
     }
 }
-
-// #[derive(Resource, Clone)]
-// pub struct TickManager {
-//     pub client_tick: u64,
-//     pub server_tick: u64,
-// }
-
-// impl TickManager {
-//     pub fn new() -> Self {
-//         Self {
-//             client_tick: 0,
-//             server_tick: 0,
-//         }
-//     }
-// }

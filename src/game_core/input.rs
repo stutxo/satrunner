@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
 
 use crate::{
     game_util::components::Player,
@@ -10,8 +8,6 @@ use crate::{
     },
     network::messages::PlayerInput,
 };
-
-use super::movement::apply_input;
 
 pub fn input(
     mut query: Query<(&mut Player, &mut Transform, With<LocalPlayer>)>,
@@ -32,8 +28,7 @@ pub fn input(
                     let click_position =
                         get_click_position(window, camera, camera_transform, cursor);
                     player.target = click_position;
-                    player.input_index += 1;
-                    player.last_input_time = Instant::now();
+
                     let client_tick = player.client_tick;
                     let target = player.target;
 
@@ -60,8 +55,6 @@ pub fn input(
                     get_touch_position(window, camera, camera_transform, touch_pos);
                 player.target = touch_position;
 
-                player.input_index += 1;
-                player.last_input_time = Instant::now();
                 let client_tick = player.client_tick;
                 let target = player.target;
 

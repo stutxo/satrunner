@@ -3,7 +3,7 @@ use game_core::{
     dots::{handle_dots, pool_dots},
     handle::handle_server,
     input::input,
-    movement::move_players,
+    movement::game_loop,
 };
 use game_util::resources::{Dots, NetworkStuff, ParticlePool, PlayerInit};
 use network::websockets::websocket;
@@ -29,7 +29,9 @@ fn main() {
         .add_startup_systems((websocket, pool_dots))
         .add_systems((
             input,
-            move_players.in_schedule(CoreSchedule::FixedUpdate),
+            game_loop
+                .in_schedule(CoreSchedule::FixedUpdate)
+                .after(input),
             handle_server,
             handle_dots.in_schedule(CoreSchedule::FixedUpdate),
         ))
