@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     game_util::{
         components::{LocalPlayer, NewInput, Player},
-        resources::{Dots, NetworkStuff, PlayerInit, TickManager},
+        resources::{Dots, NetworkStuff, PlayerInit},
     },
     network::messages::NetworkMessage,
 };
@@ -19,33 +19,30 @@ pub fn handle_server(
     mut query: Query<(Entity, &mut Player, &mut Transform)>,
     mut commands: Commands,
     mut dots: ResMut<Dots>,
-    mut ticks: ResMut<TickManager>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
             match serde_json::from_str::<NetworkMessage>(&message) {
                 Ok(NetworkMessage::GameUpdate(mut game_update)) => {
-                    // ticks.server_tick = game_update.game_tick;
-                    if ticks.client_tick < game_update.game_tick {
-                        ticks.client_tick = game_update.game_tick;
-                    }
-
                     dots.server_tick = game_update.game_tick;
                     if dots.client_tick == 0 {
                         dots.client_tick = game_update.game_tick;
                     }
                     dots.rng_seed = Some(game_update.rng_seed);
 
-                    for (_, mut player, mut transform) in query.iter_mut() {
+                    for (_, mut player, mut t) in query.iter_mut() {
                         if let Some(player_info) = game_update.players.get_mut(&player.id) {
-                            player.server_pos = player_info.pos.x;
-                            player.server_index = player_info.index;
+                            if player.client_tick < game_update.game_tick {
+                                player.client_tick = game_update.game_tick;
+                            }
 
-                            player.reconcile_server(
-                                &mut transform,
-                                player_info,
-                                game_update.game_tick,
-                            );
+                            player.server_pos = player_info.pos.x;
+                            player.server_tick = game_update.game_tick;
+
+                            // if player.client_tick >= game_update.game_tick {
+                            t.translation.x = player_info.pos.x;
+                            player.reconcile_server(&mut t);
+                            // }
                         }
                     }
 
@@ -82,7 +79,7 @@ pub fn handle_server(
                                     .insert(Player {
                                         id: *player_key,
                                         server_pos: player_info.pos.x,
-                                        server_index: player_info.index,
+                                        server_tick: game_update.game_tick,
                                         input_index: player_info.index,
                                         last_input_time: Instant::now(),
                                         target: player_info.pos,
@@ -90,6 +87,7 @@ pub fn handle_server(
                                         pending_inputs: vec![
                                             (NewInput::new(game_update.game_tick, player_info.pos)),
                                         ],
+                                        client_tick: game_update.game_tick,
                                     });
                             }
                         }
@@ -98,6 +96,8 @@ pub fn handle_server(
                 Ok(NetworkMessage::NewInput(new_input)) => {
                     for (_, mut player, _) in query.iter_mut() {
                         if new_input.id == player.id {
+                            player.input_index += 1;
+                            let new_player_input = player.input_index;
                             player.target = new_input.target;
                             player
                                 .pending_inputs
@@ -120,13 +120,14 @@ pub fn handle_server(
                         })
                         .insert(Player {
                             id: new_game.id,
-                            server_pos: 0.0,
-                            server_index: 0,
+                            server_pos: 0.,
+                            server_tick: 0,
                             input_index: 0,
                             last_input_time: Instant::now(),
                             target: Vec2::ZERO,
                             score: 0,
                             pending_inputs: Vec::new(),
+                            client_tick: 0,
                         })
                         .insert(LocalPlayer)
                         .with_children(|parent| {

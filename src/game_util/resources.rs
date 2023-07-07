@@ -56,17 +56,17 @@ impl NetworkStuff {
     }
 }
 
-#[derive(Resource, Clone, Copy)]
-pub struct TickManager {
-    pub client_tick: u64,
-    pub server_tick: u64,
-}
+// #[derive(Resource, Clone)]
+// pub struct TickManager {
+//     pub client_tick: u64,
+//     pub server_tick: u64,
+// }
 
-impl TickManager {
-    pub fn new() -> Self {
-        Self {
-            client_tick: 0,
-            server_tick: 0,
-        }
-    }
-}
+// impl TickManager {
+//     pub fn new() -> Self {
+//         Self {
+//             client_tick: 0,
+//             server_tick: 0,
+//         }
+//     }
+// }

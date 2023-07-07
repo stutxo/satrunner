@@ -1,13 +1,17 @@
+use std::time::Duration;
+
 use bevy::{prelude::*, utils::Instant};
 
 use crate::{
     game_util::components::Player,
     game_util::{
         components::{LocalPlayer, NewInput},
-        resources::{NetworkStuff, TickManager},
+        resources::NetworkStuff,
     },
     network::messages::PlayerInput,
 };
+
+use super::movement::apply_input;
 
 pub fn input(
     mut query: Query<(&mut Player, &mut Transform, With<LocalPlayer>)>,
@@ -16,7 +20,6 @@ pub fn input(
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut outgoing: ResMut<NetworkStuff>,
-    ticks: Res<TickManager>,
 ) {
     for (mut player, mut transform, _local) in query.iter_mut() {
         //always set local player above other players
@@ -31,14 +34,15 @@ pub fn input(
                     player.target = click_position;
                     player.input_index += 1;
                     player.last_input_time = Instant::now();
-
+                    let client_tick = player.client_tick;
                     let target = player.target;
 
                     player
                         .pending_inputs
-                        .push(NewInput::new(ticks.client_tick, target));
+                        .push(NewInput::new(client_tick, target));
 
-                    let input = PlayerInput::new(player.target, player.id, ticks.client_tick);
+                    let input = PlayerInput::new(player.target, player.id, player.client_tick);
+
                     match outgoing.write.as_mut().unwrap().try_send(input) {
                         Ok(()) => {}
                         Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
@@ -58,14 +62,14 @@ pub fn input(
 
                 player.input_index += 1;
                 player.last_input_time = Instant::now();
-
+                let client_tick = player.client_tick;
                 let target = player.target;
 
                 player
                     .pending_inputs
-                    .push(NewInput::new(ticks.client_tick, target));
+                    .push(NewInput::new(client_tick, target));
 
-                let input = PlayerInput::new(player.target, player.id, ticks.client_tick);
+                let input = PlayerInput::new(player.target, player.id, player.client_tick);
 
                 match outgoing.write.as_mut().unwrap().try_send(input) {
                     Ok(()) => {}

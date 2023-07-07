@@ -5,7 +5,7 @@ use game_core::{
     input::input,
     movement::move_players,
 };
-use game_util::resources::{Dots, NetworkStuff, ParticlePool, PlayerInit, TickManager};
+use game_util::resources::{Dots, NetworkStuff, ParticlePool, PlayerInit};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -29,10 +29,8 @@ fn main() {
         .add_startup_systems((websocket, pool_dots))
         .add_systems((
             input,
-            move_players
-                .in_schedule(CoreSchedule::FixedUpdate)
-                .before(handle_server),
-            handle_server.in_schedule(CoreSchedule::FixedUpdate),
+            move_players.in_schedule(CoreSchedule::FixedUpdate),
+            handle_server,
             handle_dots.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
@@ -41,6 +39,5 @@ fn main() {
         .insert_resource(ParticlePool(VecDeque::new()))
         .insert_resource(NetworkStuff::new())
         .insert_resource(PlayerInit::new())
-        .insert_resource(TickManager::new())
         .run();
 }
