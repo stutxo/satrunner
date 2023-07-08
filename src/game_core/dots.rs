@@ -14,28 +14,6 @@ pub const WORLD_BOUNDS: f32 = 300.0;
 pub const PLAYER_SPEED: f32 = 1.0;
 pub const FALL_SPEED: f32 = 0.4;
 
-pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>) {
-    for _ in 0..1000 {
-        let particle = commands
-            .spawn(SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(0.5, 0.5)),
-                    color: Color::rgb(
-                        rand::thread_rng().gen_range(0.0..1.0),
-                        rand::thread_rng().gen_range(0.0..2.0),
-                        rand::thread_rng().gen_range(0.0..3.0),
-                    ),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
-            .insert(Particle)
-            .insert(Visibility::Hidden)
-            .id();
-        particle_pool.0.push_back(particle);
-    }
-}
-
 pub fn handle_dots(
     mut dots: ResMut<Dots>,
     mut particle_pool: ResMut<ParticlePool>,

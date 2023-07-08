@@ -18,7 +18,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn reconcile_server(&mut self, t: &mut Transform) {
+    pub fn server_reconciliation(&mut self, t: &mut Transform) {
         self.pending_inputs
             .retain(|input| input.tick >= self.server_tick);
 
