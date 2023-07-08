@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use game_core::{
     dots::{handle_dots, pool_dots},
+    game_loop::game_loop,
     handle::handle_server,
     input::input,
-    movement::game_loop,
 };
 use game_util::resources::{Dots, NetworkStuff, ParticlePool, PlayerInit};
 use network::websockets::websocket;

@@ -43,10 +43,6 @@ pub fn handle_dots(
 ) {
     if let Some(rng_seed) = dots.rng_seed {
         dots.client_tick += 1;
-        // info!(
-        //     "Client tick: {}, Server tick {}",
-        //     dots.client_tick, dots.server_tick
-        // );
 
         let seed = rng_seed ^ dots.client_tick;
         let mut rng = ChaCha8Rng::seed_from_u64(seed);
