@@ -1,12 +1,10 @@
-use crate::game_util::{components::Player, resources::Dots};
+use crate::game_util::resources::Dots;
 use bevy::prelude::*;
 
-pub fn game_loop(mut query: Query<(&mut Transform, &mut Player)>, mut dots: ResMut<Dots>) {
-    for (mut t, mut player) in query.iter_mut() {
-        player.client_tick += 1;
+use super::player::Player;
 
-        player.apply_input(&mut t);
-
+pub fn game_loop(mut query: Query<(&Transform, &mut Player)>, mut dots: ResMut<Dots>) {
+    for (t, mut player) in query.iter_mut() {
         for i in (0..dots.pos.len()).rev() {
             let dot = &dots.pos[i];
             if (dot.x - t.translation.x).abs() < 1.0 && (dot.y - t.translation.y).abs() < 1.0 {

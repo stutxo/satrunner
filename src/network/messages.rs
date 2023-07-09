@@ -8,9 +8,16 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum NetworkMessage {
-    GameUpdate(WorldUpdate),
+    GameUpdate(NewPos),
     NewInput(PlayerInput),
     NewGame(NewGame),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct NewPos {
+    pub pos: f32,
+    pub tick: u64,
+    pub id: Uuid,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -42,4 +49,5 @@ impl PlayerInput {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NewGame {
     pub id: Uuid,
+    pub server_tick: u64,
 }

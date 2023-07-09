@@ -26,7 +26,7 @@ fn main() {
         }))
         .add_startup_systems((websocket, pool_dots))
         .add_systems((
-            input,
+            input.in_schedule(CoreSchedule::FixedUpdate),
             game_loop
                 .in_schedule(CoreSchedule::FixedUpdate)
                 .after(input),

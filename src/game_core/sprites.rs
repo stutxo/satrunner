@@ -4,34 +4,43 @@ use uuid::Uuid;
 
 use crate::{
     game_util::{
-        components::{LocalPlayer, Particle, Player},
+        components::{LocalPlayer, Particle},
         resources::ParticlePool,
     },
     network::messages::{NewGame, PlayerInfo, PlayerInput},
 };
 
-pub fn spawn_players(
-    commands: &mut Commands,
-    server_tick: u64,
-    player_id: &Uuid,
-    player_info: &PlayerInfo,
-) {
+use super::player::Player;
+
+pub fn spawn_players(commands: &mut Commands, server_tick: u64, player_id: &Uuid, player_pos: f32) {
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(0.5, 1.0)),
-                color: Color::GRAY,
+                color: Color::RED,
                 ..Default::default()
             },
-            transform: Transform::from_translation(Vec3::new(player_info.pos.x, -50., 0.0)),
+            transform: Transform::from_translation(Vec3::new(player_pos, -50., 0.0)),
             ..Default::default()
         })
         .insert(Player {
             id: *player_id,
             server_tick,
-            target: player_info.pos,
+            target: Vec2 {
+                x: player_pos,
+                y: -50.,
+            },
             score: 0,
-            pending_inputs: vec![(PlayerInput::new(player_info.pos, *player_id, server_tick))],
+            pending_inputs: vec![
+                (PlayerInput::new(
+                    Vec2 {
+                        x: player_pos,
+                        y: -50.,
+                    },
+                    *player_id,
+                    server_tick,
+                )),
+            ],
             client_tick: server_tick,
         });
 }
@@ -41,7 +50,7 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
         .spawn(SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(0.5, 1.0)),
-                color: Color::ORANGE_RED,
+                color: Color::LIME_GREEN,
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(0., -50., 0.0)),
@@ -49,11 +58,11 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
         })
         .insert(Player {
             id: new_game.id,
-            server_tick: 0,
+            server_tick: new_game.server_tick,
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
-            client_tick: 0,
+            client_tick: new_game.server_tick + 5,
         })
         .insert(LocalPlayer)
         .with_children(|parent| {
