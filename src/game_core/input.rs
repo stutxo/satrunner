@@ -19,7 +19,11 @@ pub fn input(
         //always set local player above other players
         t.translation.z = 0.1;
         player.client_tick += 1;
-        info!("client tick: {}", player.client_tick);
+        let diff = player.client_tick - player.server_tick;
+        info!(
+            "server tick diff: {}, client {} server {}",
+            diff, player.client_tick, player.server_tick
+        );
 
         let (camera, camera_transform) = camera_query.single();
 
@@ -53,9 +57,8 @@ pub fn input(
                 Ok(()) => {}
                 Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
             };
-
-            player.apply_input(&mut t);
         };
+        player.apply_input(&mut t);
 
         if mouse.pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
             if let Some(window) = windows.iter().next() {
