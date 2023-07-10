@@ -11,7 +11,7 @@ use crate::game_util::resources::NetworkStuff;
 
 use super::messages::PlayerInput;
 
-pub const DELAY: u32 = 0;
+pub const DELAY: u32 = 100 / 2;
 
 pub fn websocket(mut server: ResMut<NetworkStuff>) {
     let ws = WebSocket::open("ws://localhost:3030/run").unwrap();
@@ -35,7 +35,6 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
                     /// //
                     TimeoutFuture::new(DELAY).await;
                     // info!("sending message");
-
                     write.send(Message::Text(new_input)).await.unwrap();
                 }
                 Err(e) => {
@@ -54,7 +53,7 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
             ///
             ///
             TimeoutFuture::new(DELAY).await;
-            info!("Got message {:?}", result);
+            //info!("Got message {:?}", result);
             match result {
                 Ok(Message::Text(msg)) => match read_tx.try_send(msg) {
                     Ok(()) => {}

@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    game_util::{components::LocalPlayer, resources::NetworkStuff},
+    game_util::{
+        components::LocalPlayer,
+        resources::{ClientTick, NetworkStuff},
+    },
     network::messages::PlayerInput,
 };
 
@@ -14,16 +17,11 @@ pub fn input(
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut outgoing: ResMut<NetworkStuff>,
+    mut client_tick: Res<ClientTick>,
 ) {
     for (mut player, mut t, _local) in query.iter_mut() {
         //always set local player above other players
         t.translation.z = 0.1;
-        player.client_tick += 1;
-        let diff = player.client_tick - player.server_tick;
-        info!(
-            "server tick diff: {}, client {} server {}",
-            diff, player.client_tick, player.server_tick
-        );
 
         let (camera, camera_transform) = camera_query.single();
 
@@ -49,16 +47,20 @@ pub fn input(
         let mut handle_input = |cursor_position: Vec2, player: &mut Player| {
             player.target = cursor_position;
 
-            let input = PlayerInput::new(player.target, player.id, player.client_tick);
+            let input = PlayerInput::new(player.target, player.id, client_tick.tick);
 
             player.pending_inputs.push(input.clone());
+
+            info!(
+                "Sending input: {:?}, player pos: {:?}",
+                input, t.translation.x
+            );
 
             match outgoing.write.as_mut().unwrap().try_send(input) {
                 Ok(()) => {}
                 Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
             };
         };
-        player.apply_input(&mut t);
 
         if mouse.pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
             if let Some(window) = windows.iter().next() {

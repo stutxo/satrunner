@@ -3,7 +3,7 @@ use game_core::{
     dots::handle_dots, game_loop::game_loop, handle::handle_server, input::input,
     sprites::pool_dots,
 };
-use game_util::resources::{Dots, NetworkStuff, ParticlePool, PlayerInit};
+use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool, PlayerInit};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -11,7 +11,7 @@ mod game_core;
 mod game_util;
 mod network;
 
-pub const TICK_RATE: f32 = 1.0 / 30.;
+pub const TICK_RATE: f32 = 1. / 10.;
 
 fn main() {
     App::new()
@@ -26,11 +26,9 @@ fn main() {
         }))
         .add_startup_systems((websocket, pool_dots))
         .add_systems((
-            input.in_schedule(CoreSchedule::FixedUpdate),
-            game_loop
-                .in_schedule(CoreSchedule::FixedUpdate)
-                .after(input),
             handle_server,
+            input.in_schedule(CoreSchedule::FixedUpdate),
+            game_loop.in_schedule(CoreSchedule::FixedUpdate),
             handle_dots.in_schedule(CoreSchedule::FixedUpdate),
         ))
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
@@ -39,5 +37,6 @@ fn main() {
         .insert_resource(ParticlePool(VecDeque::new()))
         .insert_resource(NetworkStuff::new())
         .insert_resource(PlayerInit::new())
+        .insert_resource(ClientTick::new())
         .run();
 }

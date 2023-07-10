@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashSet};
 use uuid::Uuid;
 
 use crate::{
-    game_util::resources::{Dots, NetworkStuff, PlayerInit},
+    game_util::resources::{ClientTick, Dots, NetworkStuff, PlayerInit},
     network::messages::{NetworkMessage, PlayerInput},
 };
 
@@ -16,6 +16,7 @@ pub fn handle_server(
     mut local_player: ResMut<PlayerInit>,
     mut query: Query<(Entity, &mut Player, &mut Transform)>,
     mut commands: Commands,
+    mut client_tick: ResMut<ClientTick>,
     //mut dots: ResMut<Dots>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
@@ -27,10 +28,12 @@ pub fn handle_server(
                     for (_entity, mut player, mut t) in query.iter_mut() {
                         existing_players.insert(player.id);
 
-                        t.translation.x = game_update.pos;
+                        info!("update: {:?}", game_update);
+                        player.recon_target = game_update.input;
                         player.server_tick = game_update.tick;
-                        player.server_reconciliation(&mut t);
+                        player.server_reconciliation(&mut t, client_tick.tick, game_update.pos);
                     }
+                    // client_tick.tick = game_update.tick + 5;
 
                     // if !existing_players.contains(&game_update.id)
                     //     && Some(game_update.id) != local_player.id
@@ -63,7 +66,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     spawn_local(&mut commands, &new_game);
-
+                    client_tick.tick = new_game.server_tick + 50;
                     local_player.id = Some(new_game.id);
                 }
                 Err(_) => {}

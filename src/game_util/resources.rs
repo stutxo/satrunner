@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 
@@ -53,6 +53,21 @@ impl NetworkStuff {
         Self {
             write: None,
             read: None,
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct ClientTick {
+    pub tick: u64,
+    pub time: Instant,
+}
+
+impl ClientTick {
+    pub fn new() -> Self {
+        Self {
+            tick: 0,
+            time: Instant::now(),
         }
     }
 }

@@ -15,9 +15,12 @@ pub enum NetworkMessage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct NewPos {
-    pub pos: f32,
+    pub input: Vec2,
     pub tick: u64,
     pub id: Uuid,
+    pub pos: f32,
+    pub tick_adjustment: f64,
+    pub adjustment_iteration: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
