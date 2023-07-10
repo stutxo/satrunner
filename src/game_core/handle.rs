@@ -29,7 +29,7 @@ pub fn handle_server(
                         existing_players.insert(player.id);
 
                         info!("update: {:?}", game_update);
-                        player.recon_target = game_update.input;
+
                         player.server_tick = game_update.tick;
                         player.server_reconciliation(&mut t, client_tick.tick, game_update.pos);
                     }
@@ -66,7 +66,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     spawn_local(&mut commands, &new_game);
-                    client_tick.tick = new_game.server_tick + 50;
+                    client_tick.tick = new_game.server_tick + 5;
                     local_player.id = Some(new_game.id);
                 }
                 Err(_) => {}

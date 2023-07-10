@@ -30,7 +30,7 @@ pub fn spawn_players(commands: &mut Commands, server_tick: u64, player_id: &Uuid
                 x: player_pos,
                 y: -50.,
             },
-            recon_target: Vec2::ZERO,
+
             score: 0,
             pending_inputs: vec![
                 (PlayerInput::new(
@@ -62,7 +62,6 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
-            recon_target: Vec2::ZERO,
         })
         .insert(LocalPlayer)
         .with_children(|parent| {

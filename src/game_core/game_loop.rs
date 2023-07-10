@@ -14,7 +14,7 @@ pub fn game_loop(
     client_tick.tick += 1;
     //info!("tick: {}", client_tick.tick);
     for (mut t, mut player) in query.iter_mut() {
-        player.client_side_prediction(&mut t);
+        player.apply_input(&mut t);
         if client_tick.tick % 100 == 0 {
             info!(
                 "player pos: {:?}, tick {:?}",
