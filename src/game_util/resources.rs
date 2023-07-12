@@ -11,8 +11,7 @@ use crate::network::messages::PlayerInput;
 pub struct Dots {
     pub pos: Vec<Vec3>,
     pub rng_seed: Option<u64>,
-    pub server_tick: u64,
-    pub client_tick: u64,
+    // pub server_tick: u64,
 }
 
 impl Dots {
@@ -20,8 +19,7 @@ impl Dots {
         Self {
             pos: Vec::new(),
             rng_seed: None,
-            server_tick: 0,
-            client_tick: 0,
+            // server_tick: 0,
         }
     }
 }

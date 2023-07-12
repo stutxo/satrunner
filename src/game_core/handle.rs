@@ -14,7 +14,7 @@ pub fn handle_server(
     mut query: Query<(Entity, &mut Player, &mut Transform)>,
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
-    //mut dots: ResMut<Dots>,
+    mut dots: ResMut<Dots>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -36,6 +36,7 @@ pub fn handle_server(
                         {
                             let mut ticks_behind = game_update.tick_adjustment - 4.0;
                             player.adjust_iter = game_update.adjustment_iteration;
+
                             while ticks_behind < -0.0 {
                                 player.apply_input(&mut t);
                                 ticks_behind += 1.0;
@@ -49,24 +50,6 @@ pub fn handle_server(
                             player.server_reconciliation(&mut t, client_tick.tick, game_update.pos);
                         }
                     }
-                    // client_tick.tick = game_update.tick + 5;
-
-                    // if !existing_players.contains(&game_update.id)
-                    //     && Some(game_update.id) != local_player.id
-                    // {
-                    //     spawn_players(
-                    //         &mut commands,
-                    //         game_update.tick,
-                    //         &game_update.id,
-                    //         game_update.pos,
-                    //     );
-                    // }
-
-                    // dots.server_tick = game_update.game_tick;
-                    // if dots.client_tick == 0 {
-                    //     dots.client_tick = game_update.game_tick;
-                    // }
-                    // dots.rng_seed = Some(game_update.rng_seed);
                 }
                 Ok(NetworkMessage::NewInput(new_input)) => {
                     for (_, mut player, _) in query.iter_mut() {
@@ -84,6 +67,7 @@ pub fn handle_server(
                     spawn_local(&mut commands, &new_game);
                     client_tick.tick = new_game.server_tick + 4;
                     local_player.id = Some(new_game.id);
+                    dots.rng_seed = Some(new_game.rng_seed);
                 }
                 Err(_) => {}
             }

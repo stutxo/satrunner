@@ -53,4 +53,5 @@ impl PlayerInput {
 pub struct NewGame {
     pub id: Uuid,
     pub server_tick: u64,
+    pub rng_seed: u64,
 }

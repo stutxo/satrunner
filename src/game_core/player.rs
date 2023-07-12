@@ -13,7 +13,7 @@ pub struct Player {
     pub pending_inputs: Vec<PlayerInput>,
     pub server_tick: u64,
     pub pause: f64,
-    pub catchup: bool,
+
     pub adjust_iter: u64,
 }
 

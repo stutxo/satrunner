@@ -32,6 +32,7 @@ pub fn game_loop(
             if (dot.x - t.translation.x).abs() < 1.0 && (dot.y - t.translation.y).abs() < 1.0 {
                 player.score += 1;
                 dots.pos.remove(i);
+                info!("PLAYER HIT A DOT!!!: {}", t.translation.x);
             }
         }
     }
