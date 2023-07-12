@@ -6,10 +6,7 @@ use crate::{
     network::messages::{NetworkMessage, PlayerInput},
 };
 
-use super::{
-    player::Player,
-    sprites::{spawn_local, spawn_players},
-};
+use super::{player::Player, sprites::spawn_local};
 
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
@@ -28,10 +25,29 @@ pub fn handle_server(
                     for (_entity, mut player, mut t) in query.iter_mut() {
                         existing_players.insert(player.id);
 
-                        info!("update: {:?}", game_update);
-
                         player.server_tick = game_update.tick;
-                        player.server_reconciliation(&mut t, client_tick.tick, game_update.pos);
+                        //if we are ahead of the server, then pause the game for how many ticks we are ahead.
+                        if game_update.tick_adjustment > 0.0 {
+                            player.pause = game_update.tick_adjustment - 4.0;
+                            player.adjust_iter = game_update.adjustment_iteration;
+                        // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
+                        } else if game_update.tick_adjustment < -0.0
+                            && player.adjust_iter < game_update.adjustment_iteration
+                        {
+                            let mut ticks_behind = game_update.tick_adjustment - 4.0;
+                            player.adjust_iter = game_update.adjustment_iteration;
+                            while ticks_behind < -0.0 {
+                                player.apply_input(&mut t);
+                                ticks_behind += 1.0;
+                                info!(
+                                    "adjusting: {}, player iter {:?}",
+                                    ticks_behind, player.adjust_iter
+                                );
+                                client_tick.tick += 1;
+                            }
+                        } else {
+                            player.server_reconciliation(&mut t, client_tick.tick, game_update.pos);
+                        }
                     }
                     // client_tick.tick = game_update.tick + 5;
 
@@ -66,7 +82,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     spawn_local(&mut commands, &new_game);
-                    client_tick.tick = new_game.server_tick + 5;
+                    client_tick.tick = new_game.server_tick + 4;
                     local_player.id = Some(new_game.id);
                 }
                 Err(_) => {}

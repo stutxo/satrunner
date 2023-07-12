@@ -11,9 +11,14 @@ pub fn game_loop(
     mut dots: ResMut<Dots>,
     mut client_tick: ResMut<ClientTick>,
 ) {
-    client_tick.tick += 1;
     //info!("tick: {}", client_tick.tick);
     for (mut t, mut player) in query.iter_mut() {
+        if player.pause > 0.0 {
+            player.pause -= 1.0;
+        } else {
+            client_tick.tick += 1;
+        }
+
         player.apply_input(&mut t);
         if client_tick.tick % 100 == 0 {
             info!(

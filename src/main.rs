@@ -11,7 +11,7 @@ mod game_core;
 mod game_util;
 mod network;
 
-pub const TICK_RATE: f32 = 1. / 10.;
+pub const TICK_RATE: f32 = 1. / 30.;
 
 fn main() {
     App::new()
@@ -27,7 +27,7 @@ fn main() {
         .add_startup_systems((websocket, pool_dots))
         .add_systems((
             handle_server,
-            input.in_schedule(CoreSchedule::FixedUpdate),
+            input,
             game_loop.in_schedule(CoreSchedule::FixedUpdate),
             handle_dots.in_schedule(CoreSchedule::FixedUpdate),
         ))

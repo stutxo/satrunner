@@ -44,37 +44,39 @@ pub fn input(
             position.truncate()
         };
 
-        let mut handle_input = |cursor_position: Vec2, player: &mut Player| {
-            player.target = cursor_position;
+        if player.pause == 0.0 {
+            let mut handle_input = |cursor_position: Vec2, player: &mut Player| {
+                player.target = cursor_position;
 
-            let input = PlayerInput::new(player.target, player.id, client_tick.tick);
+                let input = PlayerInput::new(player.target, player.id, client_tick.tick);
 
-            player.pending_inputs.push(input.clone());
+                player.pending_inputs.push(input.clone());
 
-            info!(
-                "Sending input: {:?}, player pos: {:?}",
-                input, t.translation.x
-            );
+                // info!(
+                //     "Sending input: {:?}, player pos: {:?}",
+                //     input, t.translation.x
+                // );
 
-            match outgoing.write.as_mut().unwrap().try_send(input) {
-                Ok(()) => {}
-                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                match outgoing.write.as_mut().unwrap().try_send(input) {
+                    Ok(()) => {}
+                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                };
             };
-        };
 
-        if mouse.pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
-            if let Some(window) = windows.iter().next() {
-                if let Some(cursor) = window.cursor_position() {
-                    let position = get_position(cursor, window, false);
-                    handle_input(position, &mut player);
+            if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
+                if let Some(window) = windows.iter().next() {
+                    if let Some(cursor) = window.cursor_position() {
+                        let position = get_position(cursor, window, false);
+                        handle_input(position, &mut player);
+                    }
                 }
             }
-        }
 
-        for touch in touches.iter() {
-            if let Some(window) = windows.iter().next() {
-                let position = get_position(touch.position(), window, true);
-                handle_input(position, &mut player);
+            for touch in touches.iter_just_pressed() {
+                if let Some(window) = windows.iter().next() {
+                    let position = get_position(touch.position(), window, true);
+                    handle_input(position, &mut player);
+                }
             }
         }
     }

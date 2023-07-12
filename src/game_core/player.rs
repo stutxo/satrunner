@@ -12,13 +12,13 @@ pub struct Player {
     pub score: usize,
     pub pending_inputs: Vec<PlayerInput>,
     pub server_tick: u64,
+    pub pause: f64,
+    pub catchup: bool,
+    pub adjust_iter: u64,
 }
 
 impl Player {
     pub fn server_reconciliation(&mut self, t: &mut Transform, recon_to_tick: u64, pos: f32) {
-        if self.server_tick > recon_to_tick {
-            info!("we are behind server!!! aaaa");
-        }
         self.pending_inputs
             .retain(|input| input.tick >= self.server_tick);
 
@@ -31,7 +31,7 @@ impl Player {
             {
                 self.target = tick_input.target;
             }
-            info!("sim tick: {}, recon tick {}", sim_tick, recon_to_tick);
+            //info!("sim tick: {}, recon tick {}", sim_tick, recon_to_tick);
             self.apply_input(t);
         }
     }
@@ -41,6 +41,7 @@ impl Player {
 
         if (t.translation.x + movement.x).abs() <= WORLD_BOUNDS
             && (t.translation.y + movement.y).abs() <= WORLD_BOUNDS
+            && self.pause == 0.
         {
             t.translation += Vec3::new(movement.x, 0.0, 0.0);
             //  info!("recon side pos: {:?}", t.translation.x);
