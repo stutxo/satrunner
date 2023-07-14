@@ -24,13 +24,9 @@ fn main() {
             }),
             ..default()
         }))
-        .add_startup_systems((websocket, pool_dots))
-        .add_systems((
-            handle_server,
-            input,
-            game_loop.in_schedule(CoreSchedule::FixedUpdate),
-            handle_dots.in_schedule(CoreSchedule::FixedUpdate),
-        ))
+        .add_systems(Startup, (websocket, pool_dots))
+        .add_systems(Update, (handle_server, input))
+        .add_systems(FixedUpdate, (game_loop, handle_dots))
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Dots::new())

@@ -1,4 +1,5 @@
 use bevy::{prelude::*, utils::HashSet};
+use speedy::Readable;
 use uuid::Uuid;
 
 use crate::{
@@ -18,7 +19,8 @@ pub fn handle_server(
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
-            match serde_json::from_str::<NetworkMessage>(&message) {
+            info!("Got message, {:?}", message);
+            match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
                     let mut existing_players: HashSet<Uuid> = HashSet::new();
 
@@ -54,7 +56,8 @@ pub fn handle_server(
                 Ok(NetworkMessage::NewInput(new_input)) => {
                     for (_, mut player, _) in query.iter_mut() {
                         if new_input.id == player.id {
-                            player.target = new_input.target;
+                            player.target.x = new_input.target[0];
+                            player.target.y = new_input.target[1];
                             player.pending_inputs.push(PlayerInput::new(
                                 new_input.target,
                                 new_input.id,

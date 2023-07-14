@@ -5,6 +5,7 @@ use gloo_net::websocket::{futures::WebSocket, Message};
 
 use gloo_timers::future::TimeoutFuture;
 
+use speedy::{Readable, Writable};
 use wasm_bindgen_futures::spawn_local;
 
 use crate::game_util::resources::NetworkStuff;
@@ -18,29 +19,30 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
     let (mut write, mut read) = ws.split();
 
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<PlayerInput>(1000);
-    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<String>(20000);
+    let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<Vec<u8>>(20000);
 
     server.write = Some(send_tx);
     server.read = Some(read_rx);
 
     spawn_local(async move {
         while let Some(message) = send_rx.next().await {
-            match serde_json::to_string::<PlayerInput>(&message) {
-                Ok(new_input) => {
-                    //////
-                    /// //
-                    /// //
-                    /// //
-                    /// /
-                    /// //
-                    //TimeoutFuture::new(DELAY).await;
-                    // info!("sending message");
-                    write.send(Message::Text(new_input)).await.unwrap();
-                }
-                Err(e) => {
-                    info!("Failed to parse message as Vec2: {:?}", e);
-                }
-            }
+            let message = message.write_to_vec().unwrap();
+            // match PlayerInput::read_from_buffer(&message) {
+            //     Ok(new_input) => {
+            //////
+            /// //
+            /// //
+            /// //
+            /// /
+            /// //
+            //TimeoutFuture::new(DELAY).await;
+            info!("sending message, {:?}", message);
+            write.send(Message::Bytes(message)).await.unwrap();
+            // }
+            // Err(e) => {
+            //     info!("Failed to parse message as Vec2: {:?}", e);
+            // }
+            // }
         }
     });
 
@@ -55,12 +57,12 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
             //TimeoutFuture::new(DELAY).await;
             //info!("Got message {:?}", result);
             match result {
-                Ok(Message::Text(msg)) => match read_tx.try_send(msg) {
+                Ok(Message::Bytes(msg)) => match read_tx.try_send(msg) {
                     Ok(()) => {}
                     Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                 },
 
-                Ok(Message::Bytes(_)) => {}
+                Ok(Message::Text(_)) => {}
 
                 Err(e) => match e {
                     WebSocketError::ConnectionError => {}

@@ -7,7 +7,7 @@ use crate::{
         components::{LocalPlayer, Particle},
         resources::ParticlePool,
     },
-    network::messages::{NewGame, PlayerInfo, PlayerInput},
+    network::messages::{NewGame, PlayerInput},
 };
 
 use super::player::Player;
@@ -34,16 +34,7 @@ pub fn spawn_players(commands: &mut Commands, server_tick: u64, player_id: &Uuid
 
             pause: 0.,
             score: 0,
-            pending_inputs: vec![
-                (PlayerInput::new(
-                    Vec2 {
-                        x: player_pos,
-                        y: -50.,
-                    },
-                    *player_id,
-                    server_tick,
-                )),
-            ],
+            pending_inputs: vec![(PlayerInput::new([player_pos, -50.], *player_id, server_tick))],
         });
 }
 

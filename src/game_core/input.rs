@@ -17,7 +17,7 @@ pub fn input(
     windows: Query<&Window>,
     touches: Res<Touches>,
     mut outgoing: ResMut<NetworkStuff>,
-    mut client_tick: Res<ClientTick>,
+    client_tick: Res<ClientTick>,
 ) {
     for (mut player, mut t, _local) in query.iter_mut() {
         //always set local player above other players
@@ -48,7 +48,11 @@ pub fn input(
             let mut handle_input = |cursor_position: Vec2, player: &mut Player| {
                 player.target = cursor_position;
 
-                let input = PlayerInput::new(player.target, player.id, client_tick.tick);
+                let input = PlayerInput::new(
+                    [player.target.x, player.target.y],
+                    player.id,
+                    client_tick.tick,
+                );
 
                 player.pending_inputs.push(input.clone());
 

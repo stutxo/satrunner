@@ -43,7 +43,7 @@ impl PlayerInit {
 #[derive(Resource)]
 pub struct NetworkStuff {
     pub write: Option<Sender<PlayerInput>>,
-    pub read: Option<Receiver<String>>,
+    pub read: Option<Receiver<Vec<u8>>>,
 }
 
 impl NetworkStuff {

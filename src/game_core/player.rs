@@ -29,7 +29,8 @@ impl Player {
                 .iter()
                 .find(|input| input.tick == sim_tick)
             {
-                self.target = tick_input.target;
+                self.target.x = tick_input.target[0];
+                self.target.y = tick_input.target[1];
             }
             //info!("sim tick: {}, recon tick {}", sim_tick, recon_to_tick);
             self.apply_input(t);
@@ -50,12 +51,11 @@ impl Player {
 
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
-        let distance_to_target = direction.length();
 
-        if distance_to_target <= PLAYER_SPEED {
-            direction
-        } else {
+        if direction.length() != 0.0 {
             direction.normalize() * PLAYER_SPEED
+        } else {
+            Vec2::ZERO
         }
     }
 }
