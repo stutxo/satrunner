@@ -25,16 +25,13 @@ pub fn input(
 
         let (camera, camera_transform) = camera_query.single();
 
-        let get_position = |cursor_position: Vec2, window: &Window, is_touch: bool| {
+        let get_position = |cursor_position: Vec2, window: &Window| {
             let screen_size = Vec2::new(window.width(), window.height());
-            let screen_position = if is_touch {
-                Vec2::new(
-                    cursor_position.x / screen_size.x,
-                    1.0 - (cursor_position.y / screen_size.y),
-                )
-            } else {
-                cursor_position / screen_size
-            };
+            let screen_position = Vec2::new(
+                cursor_position.x / screen_size.x,
+                1.0 - (cursor_position.y / screen_size.y),
+            );
+
             let clip_position = (screen_position - Vec2::new(0.5, 0.5)) * 2.0;
             let mut position = camera
                 .projection_matrix()
@@ -70,7 +67,7 @@ pub fn input(
             if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
                 if let Some(window) = windows.iter().next() {
                     if let Some(cursor) = window.cursor_position() {
-                        let position = get_position(cursor, window, false);
+                        let position = get_position(cursor, window);
                         handle_input(position, &mut player);
                     }
                 }
@@ -78,7 +75,7 @@ pub fn input(
 
             for touch in touches.iter_just_pressed() {
                 if let Some(window) = windows.iter().next() {
-                    let position = get_position(touch.position(), window, true);
+                    let position = get_position(touch.position(), window);
                     handle_input(position, &mut player);
                 }
             }

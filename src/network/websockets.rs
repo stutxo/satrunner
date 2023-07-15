@@ -5,7 +5,7 @@ use gloo_net::websocket::{futures::WebSocket, Message};
 
 use gloo_timers::future::TimeoutFuture;
 
-use speedy::{Readable, Writable};
+use speedy::Writable;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::game_util::resources::NetworkStuff;
@@ -27,8 +27,7 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
     spawn_local(async move {
         while let Some(message) = send_rx.next().await {
             let message = message.write_to_vec().unwrap();
-            // match PlayerInput::read_from_buffer(&message) {
-            //     Ok(new_input) => {
+
             //////
             /// //
             /// //
@@ -36,13 +35,8 @@ pub fn websocket(mut server: ResMut<NetworkStuff>) {
             /// /
             /// //
             //TimeoutFuture::new(DELAY).await;
-            info!("sending message, {:?}", message);
+            //info!("sending message, {:?}", message);
             write.send(Message::Bytes(message)).await.unwrap();
-            // }
-            // Err(e) => {
-            //     info!("Failed to parse message as Vec2: {:?}", e);
-            // }
-            // }
         }
     });
 

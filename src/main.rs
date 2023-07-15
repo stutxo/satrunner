@@ -3,7 +3,7 @@ use game_core::{
     dots::handle_dots, game_loop::game_loop, handle::handle_server, input::input,
     sprites::pool_dots,
 };
-use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool, PlayerInit};
+use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -32,7 +32,6 @@ fn main() {
         .insert_resource(Dots::new())
         .insert_resource(ParticlePool(VecDeque::new()))
         .insert_resource(NetworkStuff::new())
-        .insert_resource(PlayerInit::new())
         .insert_resource(ClientTick::new())
         .run();
 }

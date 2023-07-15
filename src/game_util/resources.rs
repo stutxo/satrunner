@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
-use uuid::Uuid;
+//use uuid::Uuid;
 
 use crate::network::messages::PlayerInput;
 
@@ -11,7 +11,6 @@ use crate::network::messages::PlayerInput;
 pub struct Dots {
     pub pos: Vec<Vec3>,
     pub rng_seed: Option<u64>,
-    // pub server_tick: u64,
 }
 
 impl Dots {
@@ -19,25 +18,12 @@ impl Dots {
         Self {
             pos: Vec::new(),
             rng_seed: None,
-            // server_tick: 0,
         }
     }
 }
 
 #[derive(Resource)]
 pub struct ParticlePool(pub VecDeque<Entity>);
-
-//player
-#[derive(Resource)]
-pub struct PlayerInit {
-    pub id: Option<Uuid>,
-}
-
-impl PlayerInit {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-}
 
 //server
 #[derive(Resource)]

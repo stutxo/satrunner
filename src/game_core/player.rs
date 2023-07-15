@@ -11,19 +11,23 @@ pub struct Player {
     pub id: Uuid,
     pub score: usize,
     pub pending_inputs: Vec<PlayerInput>,
-    pub server_tick: u64,
     pub pause: f64,
-
     pub adjust_iter: u64,
 }
 
 impl Player {
-    pub fn server_reconciliation(&mut self, t: &mut Transform, recon_to_tick: u64, pos: f32) {
+    pub fn server_reconciliation(
+        &mut self,
+        t: &mut Transform,
+        recon_to_tick: u64,
+        pos: f32,
+        server_tick: u64,
+    ) {
         self.pending_inputs
-            .retain(|input| input.tick >= self.server_tick);
+            .retain(|input| input.tick >= server_tick);
 
         t.translation.x = pos;
-        for sim_tick in self.server_tick..=recon_to_tick {
+        for sim_tick in server_tick..=recon_to_tick {
             if let Some(tick_input) = self
                 .pending_inputs
                 .iter()
@@ -45,14 +49,15 @@ impl Player {
             && self.pause == 0.
         {
             t.translation += Vec3::new(movement.x, 0.0, 0.0);
-            //  info!("recon side pos: {:?}", t.translation.x);
         }
     }
 
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        if direction.length() != 0.0 {
+        let tolerance = 0.5;
+
+        if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED
         } else {
             Vec2::ZERO

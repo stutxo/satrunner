@@ -5,7 +5,6 @@ use uuid::Uuid;
 #[derive(Readable, Writable, Debug, Clone)]
 pub enum NetworkMessage {
     GameUpdate(NewPos),
-    NewInput(PlayerInput),
     NewGame(NewGame),
 }
 
