@@ -65,3 +65,35 @@ impl Player {
         }
     }
 }
+
+#[derive(Component)]
+pub struct Enemy {
+    pub target: Vec2,
+    pub id: Uuid,
+    pub score: usize,
+}
+
+impl Enemy {
+    pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
+        let movement = self.calculate_movement(t);
+
+        if (t.translation.x + movement.x).abs() <= WORLD_BOUNDS
+            && (t.translation.y + movement.y).abs() <= WORLD_BOUNDS
+            && client_tick.pause == 0
+        {
+            t.translation += Vec3::new(movement.x, 0.0, 0.0);
+        }
+    }
+
+    pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
+        let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
+
+        let tolerance = 0.5;
+
+        if direction.length() > tolerance {
+            direction.normalize() * PLAYER_SPEED
+        } else {
+            Vec2::ZERO
+        }
+    }
+}

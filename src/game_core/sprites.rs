@@ -4,16 +4,13 @@ use uuid::Uuid;
 // use uuid::Uuid;
 
 use crate::{
-    game_util::{
-        components::{LocalPlayer, Particle},
-        resources::ParticlePool,
-    },
-    network::messages::{NewGame, PlayerInput},
+    game_util::{components::Particle, resources::ParticlePool},
+    network::messages::NewGame,
 };
 
-use super::player::Player;
+use super::player::{Enemy, Player};
 
-pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
+pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
@@ -31,7 +28,6 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
             pending_inputs: Vec::new(),
             adjust_iter: 0,
         })
-        .insert(LocalPlayer)
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
@@ -66,7 +62,15 @@ pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>
     }
 }
 
-pub fn spawn_players(commands: &mut Commands, player_id: &Uuid, player_pos: f32, target: [f32; 2]) {
+pub fn spawn_enemies(
+    commands: &mut Commands,
+    player_id: &Uuid,
+    player_pos: Option<f32>,
+    target: Option<[f32; 2]>,
+) {
+    let target = target.unwrap_or([0.0, 0.0]);
+    let player_pos = player_pos.unwrap_or(0.0);
+
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
@@ -77,14 +81,12 @@ pub fn spawn_players(commands: &mut Commands, player_id: &Uuid, player_pos: f32,
             transform: Transform::from_translation(Vec3::new(player_pos, -50., 0.0)),
             ..Default::default()
         })
-        .insert(Player {
+        .insert(Enemy {
             id: *player_id,
             target: Vec2 {
                 x: target[0],
                 y: target[1],
             },
-            adjust_iter: 0,
             score: 0,
-            pending_inputs: Vec::new(),
         });
 }

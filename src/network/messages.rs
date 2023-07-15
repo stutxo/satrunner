@@ -1,4 +1,5 @@
 use speedy::{Readable, Writable};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 // Network messages
@@ -7,6 +8,8 @@ pub enum NetworkMessage {
     GameUpdate(NewPos),
     NewGame(NewGame),
     ScoreUpdate(Score),
+    PlayerConnected(Uuid),
+    PlayerDisconnected(Uuid),
 }
 
 #[derive(Readable, Writable, Debug, Clone, Default)]
@@ -37,6 +40,19 @@ pub struct NewGame {
     pub id: Uuid,
     pub server_tick: u64,
     pub rng_seed: u64,
+    pub player_positions: HashMap<Uuid, PlayerPos>,
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct PlayerPos {
+    pub pos: f32,
+    pub target: [f32; 2],
+}
+
+impl PlayerPos {
+    pub fn new(pos: f32, target: [f32; 2]) -> Self {
+        Self { pos, target }
+    }
 }
 
 #[derive(Readable, Writable, Debug, Clone)]

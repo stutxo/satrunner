@@ -1,17 +1,14 @@
 use bevy::prelude::*;
 
 use crate::{
-    game_util::{
-        components::LocalPlayer,
-        resources::{ClientTick, NetworkStuff},
-    },
+    game_util::resources::{ClientTick, NetworkStuff},
     network::messages::PlayerInput,
 };
 
 use super::player::Player;
 
 pub fn input(
-    mut query: Query<(&mut Player, &mut Transform, With<LocalPlayer>)>,
+    mut query: Query<(&mut Player, &mut Transform)>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
@@ -19,7 +16,7 @@ pub fn input(
     mut outgoing: ResMut<NetworkStuff>,
     client_tick: Res<ClientTick>,
 ) {
-    for (mut player, mut t, _local) in query.iter_mut() {
+    for (mut player, mut t) in query.iter_mut() {
         //always set local player above other players
         t.translation.z = 0.1;
 
