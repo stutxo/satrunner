@@ -45,6 +45,7 @@ impl NetworkStuff {
 pub struct ClientTick {
     pub tick: u64,
     pub time: Instant,
+    pub pause: i64,
 }
 
 impl ClientTick {
@@ -52,6 +53,7 @@ impl ClientTick {
         Self {
             tick: 0,
             time: Instant::now(),
+            pause: 0,
         }
     }
 }

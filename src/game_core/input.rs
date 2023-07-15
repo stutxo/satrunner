@@ -41,7 +41,7 @@ pub fn input(
             position.truncate()
         };
 
-        if player.pause == 0.0 {
+        if client_tick.pause == 0 {
             let mut handle_input = |cursor_position: Vec2, player: &mut Player| {
                 player.target = cursor_position;
 

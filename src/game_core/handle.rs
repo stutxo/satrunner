@@ -30,21 +30,22 @@ pub fn handle_server(
                     let mut existing_players: HashSet<Uuid> = HashSet::new();
 
                     for (_entity, mut player, mut t) in query_local.iter_mut() {
+                        existing_players.insert(player.id);
                         if game_update.id == player.id {
                             //if we are ahead of the server, then pause the game for how many ticks we are ahead.
-                            if game_update.tick_adjustment > 0.0 {
-                                player.pause = game_update.tick_adjustment - 4.0;
+                            if game_update.tick_adjustment > 0 {
+                                client_tick.pause = game_update.tick_adjustment - 4;
                                 player.adjust_iter = game_update.adjustment_iteration;
                             // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
-                            } else if game_update.tick_adjustment < -0.0
+                            } else if game_update.tick_adjustment < 0
                                 && player.adjust_iter < game_update.adjustment_iteration
                             {
-                                let mut ticks_behind = game_update.tick_adjustment - 4.0;
+                                let mut ticks_behind = game_update.tick_adjustment - 4;
                                 player.adjust_iter = game_update.adjustment_iteration;
 
-                                while ticks_behind < -0.0 {
-                                    player.apply_input(&mut t);
-                                    ticks_behind += 1.0;
+                                while ticks_behind < 0 {
+                                    player.apply_input(&mut t, &client_tick);
+                                    ticks_behind += 1;
                                     info!(
                                         "adjusting: {}, player iter {:?}",
                                         ticks_behind, player.adjust_iter
@@ -54,7 +55,7 @@ pub fn handle_server(
                             } else {
                                 player.server_reconciliation(
                                     &mut t,
-                                    client_tick.tick,
+                                    &client_tick,
                                     game_update.pos,
                                     game_update.tick,
                                 );
@@ -62,18 +63,38 @@ pub fn handle_server(
                         }
                     }
                     for (_entity, mut player, mut t) in query_others.iter_mut() {
-                        existing_players.insert(player.id);
-
-                        player.apply_input(&mut t);
+                        if game_update.id == player.id {
+                            existing_players.insert(player.id);
+                            player.target.x = game_update.input[0];
+                            player.target.y = game_update.input[1];
+                            t.translation.x = game_update.pos;
+                        }
                     }
 
                     if !existing_players.contains(&game_update.id) {
-                        spawn_players(&mut commands, &game_update.id, game_update.pos);
+                        spawn_players(
+                            &mut commands,
+                            &game_update.id,
+                            game_update.pos,
+                            game_update.input,
+                        );
+                    }
+                }
+                Ok(NetworkMessage::ScoreUpdate(score)) => {
+                    for (_entity, mut player, _t) in query_local.iter_mut() {
+                        if score.id == player.id {
+                            player.score = score.score;
+                        }
+                    }
+                    for (_entity, mut player, _t) in query_others.iter_mut() {
+                        if score.id == player.id {
+                            player.score = score.score;
+                        }
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     spawn_local(&mut commands, &new_game);
-                    client_tick.tick = new_game.server_tick + 50;
+                    client_tick.tick = new_game.server_tick + 30;
                     dots.rng_seed = Some(new_game.rng_seed);
                 }
                 Err(_) => {}

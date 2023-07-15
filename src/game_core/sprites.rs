@@ -21,7 +21,7 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
                 color: Color::LIME_GREEN,
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0., -50., 0.0)),
+            transform: Transform::from_translation(Vec3::new(0., -50., 0.1)),
             ..Default::default()
         })
         .insert(Player {
@@ -29,8 +29,6 @@ pub fn spawn_local(commands: &mut Commands, new_game: &NewGame) {
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
-            pause: 0.,
-
             adjust_iter: 0,
         })
         .insert(LocalPlayer)
@@ -68,7 +66,7 @@ pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>
     }
 }
 
-pub fn spawn_players(commands: &mut Commands, player_id: &Uuid, player_pos: f32) {
+pub fn spawn_players(commands: &mut Commands, player_id: &Uuid, player_pos: f32, target: [f32; 2]) {
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
@@ -82,11 +80,10 @@ pub fn spawn_players(commands: &mut Commands, player_id: &Uuid, player_pos: f32)
         .insert(Player {
             id: *player_id,
             target: Vec2 {
-                x: player_pos,
-                y: -50.,
+                x: target[0],
+                y: target[1],
             },
             adjust_iter: 0,
-            pause: 0.,
             score: 0,
             pending_inputs: Vec::new(),
         });

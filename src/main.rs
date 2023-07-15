@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 use game_core::{
-    dots::handle_dots, game_loop::game_loop, handle::handle_server, input::input,
+    dots::handle_dots,
+    game_loop::{game_loop, tick},
+    handle::handle_server,
+    input::input,
     sprites::pool_dots,
 };
 use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool};
@@ -26,7 +29,7 @@ fn main() {
         }))
         .add_systems(Startup, (websocket, pool_dots))
         .add_systems(Update, (handle_server, input))
-        .add_systems(FixedUpdate, (game_loop, handle_dots))
+        .add_systems(FixedUpdate, (tick, game_loop, handle_dots))
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Dots::new())
