@@ -25,6 +25,7 @@ pub fn handle_server(
         while let Ok(Some(message)) = receive_rx.try_next() {
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
+                    info!("got game update: {:?}", game_update);
                     for (mut player, mut t) in query_player.iter_mut() {
                         if game_update.id == player.id {
                             //if we are ahead of the server, then pause the game for how many ticks we are ahead.
@@ -41,10 +42,10 @@ pub fn handle_server(
                                 while ticks_behind < 0 {
                                     player.apply_input(&mut t, &client_tick);
                                     ticks_behind += 1;
-                                    info!(
-                                        "adjusting: {}, player iter {:?}",
-                                        ticks_behind, player.adjust_iter
-                                    );
+                                    // info!(
+                                    //     "adjusting: {}, player iter {:?}",
+                                    //     ticks_behind, player.adjust_iter
+                                    // );
                                     client_tick.tick += 1;
                                 }
                             } else {
@@ -93,14 +94,14 @@ pub fn handle_server(
                         }
                     }
 
-                    info!("players: {:?}", new_game.player_positions);
+                    // info!("players: {:?}", new_game.player_positions);
                 }
                 Ok(NetworkMessage::PlayerConnected(player_id)) => {
-                    info!("player connected: {:?}", player_id);
+                    //info!("player connected: {:?}", player_id);
                     spawn_enemies(&mut commands, &player_id, None, None);
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
-                    info!("player disconnected: {:?}", player_id);
+                    //info!("player disconnected: {:?}", player_id);
                     for (entity, enemy, _t) in query_enemy.iter_mut() {
                         if player_id == enemy.id {
                             commands.entity(entity).despawn();

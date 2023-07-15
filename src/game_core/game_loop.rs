@@ -16,10 +16,10 @@ pub fn game_loop(
             let dot = &dots.pos[i];
             if (dot.x - t.translation.x).abs() < 1.0 && (dot.y - t.translation.y).abs() < 1.0 {
                 dots.pos.remove(i);
-                info!(
-                    "PLAYER {:?} HIT A DOT!!!: {}, SCORE {:?}",
-                    player.id, t.translation.x, player.score
-                );
+                // info!(
+                //     "PLAYER {:?} HIT A DOT!!!: {}, SCORE {:?}",
+                //     player.id, t.translation.x, player.score
+                // );
             }
         }
     }
@@ -31,10 +31,10 @@ pub fn game_loop(
             let dot = &dots.pos[i];
             if (dot.x - t.translation.x).abs() < 1.0 && (dot.y - t.translation.y).abs() < 1.0 {
                 dots.pos.remove(i);
-                info!(
-                    "enemy {:?} HIT A DOT!!!: {}, SCORE {:?}",
-                    enemy.id, t.translation.x, enemy.score
-                );
+                // info!(
+                //     "enemy {:?} HIT A DOT!!!: {}, SCORE {:?}",
+                //     enemy.id, t.translation.x, enemy.score
+                // );
             }
         }
     }
