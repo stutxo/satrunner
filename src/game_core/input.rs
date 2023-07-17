@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     game_util::resources::{ClientTick, NetworkStuff},
-    network::messages::PlayerInput,
+    network::messages::{ClientMessage, PlayerInput},
 };
 
 use super::player::Player;
@@ -17,9 +17,6 @@ pub fn input(
     client_tick: Res<ClientTick>,
 ) {
     for (mut player, mut t) in query.iter_mut() {
-        //always set local player above other players
-        t.translation.z = 0.1;
-
         let (camera, camera_transform) = camera_query.single();
 
         let get_position = |cursor_position: Vec2, window: &Window| {
@@ -55,7 +52,12 @@ pub fn input(
                 //     input, t.translation.x
                 // );
 
-                match outgoing.write.as_mut().unwrap().try_send(input) {
+                match outgoing
+                    .write
+                    .as_mut()
+                    .unwrap()
+                    .try_send(ClientMessage::PlayerInput(input))
+                {
                     Ok(()) => {}
                     Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                 };

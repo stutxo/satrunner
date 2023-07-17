@@ -8,8 +8,14 @@ pub enum NetworkMessage {
     GameUpdate(NewPos),
     NewGame(NewGame),
     ScoreUpdate(Score),
-    PlayerConnected(Uuid),
+    PlayerConnected(PlayerConnected),
     PlayerDisconnected(Uuid),
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub enum ClientMessage {
+    PlayerInput(PlayerInput),
+    PlayerName(String),
 }
 
 #[derive(Readable, Writable, Debug, Clone, Default)]
@@ -45,19 +51,20 @@ pub struct NewGame {
 
 #[derive(Readable, Writable, Debug, Clone)]
 pub struct PlayerPos {
-    pub pos: f32,
+    pub pos: Option<f32>,
     pub target: [f32; 2],
     pub score: usize,
-}
-
-impl PlayerPos {
-    pub fn new(pos: f32, target: [f32; 2], score: usize) -> Self {
-        Self { pos, target, score }
-    }
+    pub name: String,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
 pub struct Score {
     pub id: Uuid,
     pub score: usize,
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct PlayerConnected {
+    pub id: Uuid,
+    pub name: String,
 }

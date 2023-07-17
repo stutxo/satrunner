@@ -4,7 +4,7 @@ use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
 //use uuid::Uuid;
 
-use crate::network::messages::PlayerInput;
+use crate::network::messages::ClientMessage;
 
 //dots
 #[derive(Resource)]
@@ -28,7 +28,7 @@ pub struct ParticlePool(pub VecDeque<Entity>);
 //server
 #[derive(Resource)]
 pub struct NetworkStuff {
-    pub write: Option<Sender<PlayerInput>>,
+    pub write: Option<Sender<ClientMessage>>,
     pub read: Option<Receiver<Vec<u8>>>,
 }
 
@@ -54,6 +54,21 @@ impl ClientTick {
             tick: 0,
             time: Instant::now(),
             pause: 0,
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct PlayerName {
+    pub name: String,
+    pub submitted: bool,
+}
+
+impl PlayerName {
+    pub fn new() -> Self {
+        Self {
+            name: "".to_string(),
+            submitted: false,
         }
     }
 }

@@ -28,6 +28,7 @@ pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
             pending_inputs: Vec::new(),
             adjust_iter: 0,
         })
+        .insert(Visibility::Hidden)
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
@@ -68,26 +69,29 @@ pub fn spawn_enemies(
     player_pos: Option<f32>,
     target: Option<[f32; 2]>,
     score: usize,
+    enemy_name: String,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
-    let player_pos = player_pos.unwrap_or(0.0);
 
-    commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.5, 1.0)),
-                color: Color::RED,
+    if let Some(player_pos) = player_pos {
+        commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(0.5, 1.0)),
+                    color: Color::RED,
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(Vec3::new(player_pos, -50., 0.0)),
                 ..Default::default()
-            },
-            transform: Transform::from_translation(Vec3::new(player_pos, -50., 0.0)),
-            ..Default::default()
-        })
-        .insert(Enemy {
-            id: *player_id,
-            target: Vec2 {
-                x: target[0],
-                y: target[1],
-            },
-            score,
-        });
+            })
+            .insert(Enemy {
+                id: *player_id,
+                target: Vec2 {
+                    x: target[0],
+                    y: target[1],
+                },
+                score,
+                name: enemy_name,
+            });
+    }
 }

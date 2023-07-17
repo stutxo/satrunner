@@ -71,6 +71,7 @@ pub struct Enemy {
     pub target: Vec2,
     pub id: Uuid,
     pub score: usize,
+    pub name: String,
 }
 
 impl Enemy {

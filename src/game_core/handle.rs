@@ -87,18 +87,19 @@ pub fn handle_server(
                             spawn_enemies(
                                 &mut commands,
                                 id,
-                                Some(player_pos.pos),
+                                player_pos.pos,
                                 Some(player_pos.target),
                                 player_pos.score,
+                                player_pos.name.clone(),
                             );
                         }
                     }
 
                     // info!("players: {:?}", new_game.player_positions);
                 }
-                Ok(NetworkMessage::PlayerConnected(player_id)) => {
+                Ok(NetworkMessage::PlayerConnected(player)) => {
                     //info!("player connected: {:?}", player_id);
-                    spawn_enemies(&mut commands, &player_id, None, None, 0);
+                    spawn_enemies(&mut commands, &player.id, Some(0.0), None, 0, player.name);
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     //info!("player disconnected: {:?}", player_id);
