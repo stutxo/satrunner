@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use bevy_egui::EguiPlugin;
 use game_core::{
     dots::handle_dots,
     game_loop::{game_loop, tick},
+    gui::score_board,
     handle::handle_server,
     input::input,
     sprites::pool_dots,
@@ -18,17 +20,20 @@ pub const TICK_RATE: f32 = 1. / 30.;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Sat Runner".to_string(),
-                fit_canvas_to_parent: true,
-                prevent_default_event_handling: false,
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Sat Runner".to_string(),
+                    fit_canvas_to_parent: true,
+                    prevent_default_event_handling: false,
+                    ..default()
+                }),
                 ..default()
             }),
-            ..default()
-        }))
+            EguiPlugin,
+        ))
         .add_systems(Startup, (websocket, pool_dots))
-        .add_systems(Update, (handle_server, input))
+        .add_systems(Update, (handle_server, input, score_board))
         .add_systems(FixedUpdate, (tick, game_loop, handle_dots))
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
         .insert_resource(ClearColor(Color::BLACK))
@@ -37,4 +42,11 @@ fn main() {
         .insert_resource(NetworkStuff::new())
         .insert_resource(ClientTick::new())
         .run();
+}
+
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
+enum GameState {
+    #[default]
+    Menu,
+    InGame,
 }

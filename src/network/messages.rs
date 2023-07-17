@@ -47,11 +47,12 @@ pub struct NewGame {
 pub struct PlayerPos {
     pub pos: f32,
     pub target: [f32; 2],
+    pub score: usize,
 }
 
 impl PlayerPos {
-    pub fn new(pos: f32, target: [f32; 2]) -> Self {
-        Self { pos, target }
+    pub fn new(pos: f32, target: [f32; 2], score: usize) -> Self {
+        Self { pos, target, score }
     }
 }
 

@@ -67,6 +67,7 @@ pub fn spawn_enemies(
     player_id: &Uuid,
     player_pos: Option<f32>,
     target: Option<[f32; 2]>,
+    score: usize,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or(0.0);
@@ -87,6 +88,6 @@ pub fn spawn_enemies(
                 x: target[0],
                 y: target[1],
             },
-            score: 0,
+            score,
         });
 }

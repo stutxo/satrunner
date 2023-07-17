@@ -17,6 +17,7 @@ rand_chacha = "0.3.1"
 gloo-timers = { version = "0.2.6", features = ["futures"] }
 speedy = {version = "0.8.6", features = ["uuid"]}
 uuid = {version = "1.4", default-features = false }
+bevy_egui = "0.21.0"
 
 
 

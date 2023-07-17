@@ -1,6 +1,5 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::prelude::*;
 use speedy::Readable;
-use uuid::Uuid;
 
 use crate::{
     game_core::sprites::spawn_enemies,
@@ -90,6 +89,7 @@ pub fn handle_server(
                                 id,
                                 Some(player_pos.pos),
                                 Some(player_pos.target),
+                                player_pos.score,
                             );
                         }
                     }
@@ -98,7 +98,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::PlayerConnected(player_id)) => {
                     //info!("player connected: {:?}", player_id);
-                    spawn_enemies(&mut commands, &player_id, None, None);
+                    spawn_enemies(&mut commands, &player_id, None, None, 0);
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     //info!("player disconnected: {:?}", player_id);
