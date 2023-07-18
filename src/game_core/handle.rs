@@ -24,7 +24,7 @@ pub fn handle_server(
         while let Ok(Some(message)) = receive_rx.try_next() {
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
-                    info!("got game update: {:?}", game_update);
+                    //info!("got game update: {:?}", game_update);
                     for (mut player, mut t) in query_player.iter_mut() {
                         if game_update.id == player.id {
                             //if we are ahead of the server, then pause the game for how many ticks we are ahead.
