@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 
 use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
-//use uuid::Uuid;
 
 use crate::network::messages::ClientMessage;
 

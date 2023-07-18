@@ -6,12 +6,12 @@ use bevy_egui::{
 };
 
 use crate::{
-    game_util::resources::{NetworkStuff, PlayerName},
-    network::messages::ClientMessage,
+    game_util::resources::{ClientTick, NetworkStuff, PlayerName},
+    network::messages::{ClientMessage, PlayerInput},
     GameStage,
 };
 
-use super::player::{self, Enemy, Player};
+use super::player::{Enemy, Player};
 
 pub fn score_board(
     mut contexts: EguiContexts,
@@ -44,7 +44,7 @@ pub fn score_board(
             score_list.push((
                 enemy.name.to_string(),
                 enemy.score.try_into().unwrap(),
-                egui::Color32::RED,
+                egui::Color32::WHITE,
             ));
         }
     }
@@ -66,6 +66,8 @@ pub fn setup_menu(
     mut next_state: ResMut<NextState<GameStage>>,
     mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
+    query_player: Query<&Player>,
+    client_tick: Res<ClientTick>,
 ) {
     let ctx = contexts.ctx_mut();
 
@@ -88,6 +90,22 @@ pub fn setup_menu(
                         Ok(()) => {}
                         Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                     };
+
+                    //send fake input to sync client and server before game starts
+                    for player in query_player.iter() {
+                        let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
+
+                        match network_stuff
+                            .write
+                            .as_mut()
+                            .unwrap()
+                            .try_send(ClientMessage::PlayerInput(input))
+                        {
+                            Ok(()) => {}
+                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                        };
+                    }
+
                     next_state.set(GameStage::InGame);
                 }
             });

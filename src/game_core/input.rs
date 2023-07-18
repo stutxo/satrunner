@@ -8,7 +8,7 @@ use crate::{
 use super::player::Player;
 
 pub fn input(
-    mut query: Query<(&mut Player, &mut Transform)>,
+    mut query: Query<&mut Player>,
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
@@ -16,7 +16,7 @@ pub fn input(
     mut outgoing: ResMut<NetworkStuff>,
     client_tick: Res<ClientTick>,
 ) {
-    for (mut player, mut t) in query.iter_mut() {
+    for mut player in query.iter_mut() {
         let (camera, camera_transform) = camera_query.single();
 
         let get_position = |cursor_position: Vec2, window: &Window| {

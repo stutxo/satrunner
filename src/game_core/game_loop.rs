@@ -9,7 +9,9 @@ pub fn player_loop(
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut player, mut visibility) in query_player.iter_mut() {
-        *visibility = Visibility::Visible;
+        if *visibility == Visibility::Hidden {
+            *visibility = Visibility::Visible;
+        }
 
         //always set local player above other players
         t.translation.z = 0.1;

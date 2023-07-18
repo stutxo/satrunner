@@ -3,8 +3,6 @@ use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 
-use gloo_timers::future::TimeoutFuture;
-
 use speedy::Writable;
 use wasm_bindgen_futures::spawn_local;
 
@@ -13,7 +11,8 @@ use crate::GameStage;
 
 use super::messages::ClientMessage;
 
-pub const DELAY: u32 = 200;
+//pub const DELAY: u32 = 200;
+//use gloo_timers::future::TimeoutFuture;
 
 pub fn websocket(
     mut network_stuff: ResMut<NetworkStuff>,
@@ -63,9 +62,15 @@ pub fn websocket(
                 Ok(Message::Text(_)) => {}
 
                 Err(e) => match e {
-                    WebSocketError::ConnectionError => {}
-                    WebSocketError::ConnectionClose(_) => {}
-                    WebSocketError::MessageSendError(_) => {}
+                    WebSocketError::ConnectionError => {
+                        error!("connection error: {:?}", e);
+                    }
+                    WebSocketError::ConnectionClose(_) => {
+                        error!("connection closed error: {:?}", e);
+                    }
+                    WebSocketError::MessageSendError(_) => {
+                        error!("msg send error: {:?}", e);
+                    }
                     _ => {}
                 },
             }

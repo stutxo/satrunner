@@ -3133,8 +3133,6 @@ dependencies = [
  "gloo-timers",
  "rand",
  "rand_chacha",
- "serde",
- "serde_json",
  "speedy",
  "uuid",
  "wasm-bindgen-futures",
