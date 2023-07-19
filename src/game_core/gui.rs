@@ -55,7 +55,11 @@ pub fn score_board(
         .fixed_pos(egui::pos2(10.0, 10.0))
         .show(ctx, |ui| {
             for (id, score, color) in score_list {
-                ui.label(RichText::new(format!(" {}: {}", id, score)).color(color));
+                ui.label(
+                    RichText::new(format!(" {}: {}", id, score))
+                        .color(color)
+                        .size(20.),
+                );
                 ui.add_space(5.0);
             }
         });
@@ -77,9 +81,16 @@ pub fn setup_menu(
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Enter Name: ");
-                ui.add(TextEdit::singleline(&mut player_name.name).char_limit(12));
-                if ui.small_button("Play").clicked() && !player_name.name.is_empty() {
+                ui.label("Name:");
+                ui.add(
+                    TextEdit::singleline(&mut player_name.name)
+                        .char_limit(25)
+                        .desired_width(100.0),
+                );
+            });
+            ui.horizontal(|ui| {
+                ui.add_space(112.0);
+                if ui.button("Play").clicked() && !player_name.name.is_empty() {
                     player_name.submitted = true;
                     match network_stuff
                         .write
