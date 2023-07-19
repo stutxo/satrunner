@@ -53,7 +53,7 @@ pub fn enemy_loop(
 }
 
 pub fn tick(mut client_tick: ResMut<ClientTick>) {
-    info!("TICK: {:?}", client_tick.tick);
+    //info!("TICK: {:?}", client_tick.tick);
     if client_tick.pause > 0 {
         client_tick.pause -= 1;
     } else {
