@@ -18,7 +18,8 @@ pub fn websocket(
     mut network_stuff: ResMut<NetworkStuff>,
     mut next_state: ResMut<NextState<GameStage>>,
 ) {
-    let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
+    //let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
+    let ws = WebSocket::open("ws://0.0.0.0/run").unwrap();
     let (mut write, mut read) = ws.split();
 
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
