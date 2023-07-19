@@ -58,7 +58,7 @@ pub fn score_board(
                 ui.label(
                     RichText::new(format!(" {}: {}", id, score))
                         .color(color)
-                        .size(20.),
+                        .size(15.),
                 );
                 ui.add_space(5.0);
             }
