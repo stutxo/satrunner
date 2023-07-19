@@ -14,7 +14,7 @@ wasm-bindgen-futures = "0.4.37"
 rand_chacha = "0.3.1"
 speedy = {version = "0.8.6", features = ["uuid"]}
 uuid = {version = "1.4", default-features = false }
-bevy_egui = { git = 'https://github.com/mvlabat/bevy_egui', branch = 'main'}
+bevy_egui = "0.21.0"
 
 
 [dev-dependencies]

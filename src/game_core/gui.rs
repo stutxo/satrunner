@@ -4,6 +4,7 @@ use bevy_egui::{
     egui::{self, RichText, TextEdit},
     EguiContexts,
 };
+use rand::Rng;
 
 use crate::{
     game_util::resources::{ClientTick, NetworkStuff, PlayerName},
@@ -87,10 +88,19 @@ pub fn setup_menu(
                         .char_limit(25)
                         .desired_width(100.0),
                 );
-            });
-            ui.horizontal(|ui| {
-                ui.add_space(112.0);
-                if ui.button("Play").clicked() && !player_name.name.is_empty() {
+
+                let mut rng = rand::thread_rng();
+                let id: u32 = rng.gen_range(1..9999);
+
+                let button_text = if player_name.name.is_empty() {
+                    "play as anon"
+                } else {
+                    "play"
+                };
+                if ui.button(button_text).clicked() {
+                    if player_name.name.is_empty() {
+                        player_name.name = format!("anon {}", id);
+                    }
                     player_name.submitted = true;
                     match network_stuff
                         .write
