@@ -78,7 +78,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = new_game.server_tick + 30;
+                    client_tick.tick = new_game.server_tick + 3;
                     dots.rng_seed = Some(new_game.rng_seed);
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {
