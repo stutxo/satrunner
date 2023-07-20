@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use futures::channel::oneshot;
-use futures::{pin_mut, FutureExt, SinkExt, StreamExt};
+use futures::{FutureExt, SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 
@@ -37,12 +37,6 @@ pub fn websocket(
         while let Some(message) = send_rx.next().await {
             let message = message.write_to_vec().unwrap();
 
-            //////
-            /// //
-            /// //
-            /// //
-            /// /
-            /// //
             //TimeoutFuture::new(DELAY).await;
             //info!("sending message, {:?}", message);
             if let Err(disconnected) = write.send(Message::Bytes(message)).await {
@@ -53,12 +47,6 @@ pub fn websocket(
 
     spawn_local(async move {
         while let Some(result) = read.next().await {
-            ////
-            /// /
-            /// /
-            /// /
-            ///
-            ///
             //TimeoutFuture::new(DELAY).await;
             //info!("Got message {:?}", result);
             match result {

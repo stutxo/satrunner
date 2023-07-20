@@ -5,7 +5,6 @@ use bevy_egui::{
     EguiContexts,
 };
 use futures::task::Poll;
-use futures::{pin_mut, Future};
 use futures_lite::future::FutureExt;
 use rand::Rng;
 
@@ -92,16 +91,43 @@ pub fn setup_menu(
                         .desired_width(100.0)
                         .hint_text("enter name"),
                 );
-            });
-            let mut rng = rand::thread_rng();
-            let id: u32 = rng.gen_range(1..9999);
-            ui.horizontal(|ui| {
-                if ui.button("play").clicked() && !player_name.name.is_empty()
-                    || ui.button("play as guest").clicked() && player_name.name.is_empty()
-                {
-                    if player_name.name.is_empty() {
-                        player_name.name = format!("guest {}", id);
+                if ui.button("play").clicked() && !player_name.name.is_empty() {
+                    player_name.submitted = true;
+                    match network_stuff
+                        .write
+                        .as_mut()
+                        .unwrap()
+                        .try_send(ClientMessage::PlayerName(player_name.name.clone()))
+                    {
+                        Ok(()) => {}
+                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                    };
+
+                    //send fake input to sync client and server before game starts
+                    for player in query_player.iter() {
+                        let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
+
+                        match network_stuff
+                            .write
+                            .as_mut()
+                            .unwrap()
+                            .try_send(ClientMessage::PlayerInput(input))
+                        {
+                            Ok(()) => {}
+                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                        };
                     }
+
+                    next_state.set(GameStage::InGame);
+                }
+            });
+
+            ui.horizontal(|ui| {
+                let mut rng = rand::thread_rng();
+                let id: u32 = rng.gen_range(1..9999);
+
+                if ui.button("play as guest").clicked() && player_name.name.is_empty() {
+                    player_name.name = format!("guest {}", id);
                     player_name.submitted = true;
                     match network_stuff
                         .write
