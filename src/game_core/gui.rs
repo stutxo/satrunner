@@ -4,6 +4,9 @@ use bevy_egui::{
     egui::{self, RichText, TextEdit},
     EguiContexts,
 };
+use futures::task::Poll;
+use futures::{pin_mut, Future};
+use futures_lite::future::FutureExt;
 use rand::Rng;
 
 use crate::{
@@ -86,20 +89,18 @@ pub fn setup_menu(
                 ui.add(
                     TextEdit::singleline(&mut player_name.name)
                         .char_limit(25)
-                        .desired_width(100.0),
+                        .desired_width(100.0)
+                        .hint_text("enter name"),
                 );
-
-                let mut rng = rand::thread_rng();
-                let id: u32 = rng.gen_range(1..9999);
-
-                let button_text = if player_name.name.is_empty() {
-                    "play as anon"
-                } else {
-                    "play"
-                };
-                if ui.button(button_text).clicked() {
+            });
+            let mut rng = rand::thread_rng();
+            let id: u32 = rng.gen_range(1..9999);
+            ui.horizontal(|ui| {
+                if ui.button("play").clicked() && !player_name.name.is_empty()
+                    || ui.button("play as guest").clicked() && player_name.name.is_empty()
+                {
                     if player_name.name.is_empty() {
-                        player_name.name = format!("anon {}", id);
+                        player_name.name = format!("guest {}", id);
                     }
                     player_name.submitted = true;
                     match network_stuff
@@ -131,4 +132,34 @@ pub fn setup_menu(
                 }
             });
         });
+}
+
+pub fn disconnected(mut contexts: EguiContexts) {
+    let ctx = contexts.ctx_mut();
+
+    egui::Window::new("satrunner")
+        .resizable(false)
+        .collapsible(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .show(ctx, |ui| {
+            ui.label("disconnected from server, refresh to reconnect");
+        });
+}
+
+pub fn check_disconnected(
+    mut network_stuff: ResMut<NetworkStuff>,
+    mut next_state: ResMut<NextState<GameStage>>,
+) {
+    if let Some(ref mut disconnected) = network_stuff.disconnected {
+        let waker = futures::task::noop_waker();
+        let cx = &mut futures::task::Context::from_waker(&waker);
+
+        match futures::future::poll_fn(|cx| disconnected.poll(cx)).poll(cx) {
+            Poll::Ready(_) => {
+                next_state.set(GameStage::Disconnected);
+            }
+
+            Poll::Pending => {}
+        }
+    }
 }

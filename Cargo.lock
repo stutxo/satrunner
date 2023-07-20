@@ -3129,6 +3129,7 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "futures",
+ "futures-lite",
  "gloo-net",
  "gloo-timers",
  "rand",
