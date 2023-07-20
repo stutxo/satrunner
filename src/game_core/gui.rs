@@ -84,12 +84,11 @@ pub fn setup_menu(
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Name:");
                 ui.add(
                     TextEdit::singleline(&mut player_name.name)
                         .char_limit(25)
                         .desired_width(100.0)
-                        .hint_text("enter name"),
+                        .hint_text("Enter Name"),
                 );
                 if ui.button("play").clicked() && !player_name.name.is_empty() {
                     player_name.submitted = true;
@@ -105,17 +104,19 @@ pub fn setup_menu(
 
                     //send fake input to sync client and server before game starts
                     for player in query_player.iter() {
-                        let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
+                        for _i in 0..2 {
+                            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
 
-                        match network_stuff
-                            .write
-                            .as_mut()
-                            .unwrap()
-                            .try_send(ClientMessage::PlayerInput(input))
-                        {
-                            Ok(()) => {}
-                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                        };
+                            match network_stuff
+                                .write
+                                .as_mut()
+                                .unwrap()
+                                .try_send(ClientMessage::PlayerInput(input))
+                            {
+                                Ok(()) => {}
+                                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                            };
+                        }
                     }
 
                     next_state.set(GameStage::InGame);
@@ -168,7 +169,7 @@ pub fn disconnected(mut contexts: EguiContexts) {
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.label("disconnected from server, refresh to reconnect");
+            ui.label("disconnected from server");
         });
 }
 
