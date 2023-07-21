@@ -21,7 +21,7 @@ pub fn handle_dots(
 ) {
     if client_tick.pause == 0 {
         if let Some(rng_seed) = dots.rng_seed {
-            let seed = rng_seed ^ client_tick.tick;
+            let seed = rng_seed ^ client_tick.tick.unwrap();
             let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
             for _ in 1..2 {

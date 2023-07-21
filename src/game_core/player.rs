@@ -28,7 +28,7 @@ impl Player {
             .retain(|input| input.tick >= server_tick);
 
         t.translation.x = pos;
-        for sim_tick in server_tick..=client_tick.tick {
+        for sim_tick in server_tick..=client_tick.tick.unwrap() {
             if let Some(tick_input) = self
                 .pending_inputs
                 .iter()

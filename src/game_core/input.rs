@@ -42,7 +42,7 @@ pub fn input(
                 let input = PlayerInput::new(
                     [player.target.x, player.target.y],
                     player.id,
-                    client_tick.tick,
+                    client_tick.tick.unwrap(),
                 );
 
                 player.pending_inputs.push(input.clone());

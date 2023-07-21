@@ -58,11 +58,7 @@ pub fn score_board(
         .fixed_pos(egui::pos2(10.0, 10.0))
         .show(ctx, |ui| {
             for (id, score, color) in score_list {
-                ui.label(
-                    RichText::new(format!(" {}: {}", id, score))
-                        .color(color)
-                        .size(15.),
-                );
+                ui.label(RichText::new(format!(" {}: {}", id, score)).color(color));
                 ui.add_space(5.0);
             }
         });
@@ -104,19 +100,18 @@ pub fn setup_menu(
 
                     //send fake input to sync client and server before game starts
                     for player in query_player.iter() {
-                        for _i in 0..2 {
-                            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
+                        let input =
+                            PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
-                            match network_stuff
-                                .write
-                                .as_mut()
-                                .unwrap()
-                                .try_send(ClientMessage::PlayerInput(input))
-                            {
-                                Ok(()) => {}
-                                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                            };
-                        }
+                        match network_stuff
+                            .write
+                            .as_mut()
+                            .unwrap()
+                            .try_send(ClientMessage::PlayerInput(input))
+                        {
+                            Ok(()) => {}
+                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                        };
                     }
 
                     next_state.set(GameStage::InGame);
@@ -142,7 +137,8 @@ pub fn setup_menu(
 
                     //send fake input to sync client and server before game starts
                     for player in query_player.iter() {
-                        let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick);
+                        let input =
+                            PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
                         match network_stuff
                             .write

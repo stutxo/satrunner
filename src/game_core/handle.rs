@@ -45,7 +45,9 @@ pub fn handle_server(
                                     //     "adjusting: {}, player iter {:?}",
                                     //     ticks_behind, player.adjust_iter
                                     // );
-                                    client_tick.tick += 1;
+                                    if let Some(tick) = &mut client_tick.tick {
+                                        *tick += 1;
+                                    }
                                 }
                             } else {
                                 player.server_reconciliation(
@@ -78,7 +80,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = new_game.server_tick + 8;
+                    client_tick.tick = Some(new_game.server_tick + 8);
                     dots.rng_seed = Some(new_game.rng_seed);
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {

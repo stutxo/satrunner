@@ -47,7 +47,7 @@ impl NetworkStuff {
 
 #[derive(Resource)]
 pub struct ClientTick {
-    pub tick: u64,
+    pub tick: Option<u64>,
     pub time: Instant,
     pub pause: i64,
 }
@@ -55,7 +55,7 @@ pub struct ClientTick {
 impl ClientTick {
     pub fn new() -> Self {
         Self {
-            tick: 0,
+            tick: None,
             time: Instant::now(),
             pause: 0,
         }
