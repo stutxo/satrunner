@@ -7,7 +7,7 @@ use bevy_egui::{
 use rand::Rng;
 
 use crate::{
-    game_util::resources::{ClientTick, NetworkStuff, PlayerName},
+    game_util::resources::{ClientTick, NetworkStuff, PingTimer, PlayerName},
     network::messages::{ClientMessage, PlayerInput},
     GameStage,
 };
@@ -120,7 +120,7 @@ pub fn setup_menu(
                 let mut rng = rand::thread_rng();
                 let id: u32 = rng.gen_range(1..9999);
 
-                if ui.button("play as guest").clicked() && player_name.name.is_empty() {
+                if ui.button("play as guest").clicked() {
                     player_name.name = format!("guest {}", id);
                     player_name.submitted = true;
                     match network_stuff
@@ -163,15 +163,15 @@ pub fn disconnected(mut contexts: EguiContexts) {
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.label("disconnected from server");
+            ui.label("disconnected");
         });
 }
 
 pub fn check_disconnected(
-    mut network_stuff: ResMut<NetworkStuff>,
+    mut ping: ResMut<PingTimer>,
     mut next_state: ResMut<NextState<GameStage>>,
 ) {
-    if let Some(ref mut disconnected) = network_stuff.disconnected {
+    if let Some(ref mut disconnected) = ping.disconnected_rx {
         while let Ok(Some(_)) = disconnected.try_next() {
             next_state.set(GameStage::Disconnected);
         }

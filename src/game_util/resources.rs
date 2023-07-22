@@ -29,7 +29,6 @@ pub struct ParticlePool(pub VecDeque<Entity>);
 pub struct NetworkStuff {
     pub write: Option<Sender<ClientMessage>>,
     pub read: Option<Receiver<Vec<u8>>>,
-    pub disconnected: Option<Receiver<()>>,
 }
 
 impl NetworkStuff {
@@ -37,7 +36,6 @@ impl NetworkStuff {
         Self {
             write: None,
             read: None,
-            disconnected: None,
         }
     }
 }
@@ -45,7 +43,6 @@ impl NetworkStuff {
 #[derive(Resource)]
 pub struct ClientTick {
     pub tick: Option<u64>,
-    pub time: Instant,
     pub pause: i64,
 }
 
@@ -53,8 +50,24 @@ impl ClientTick {
     pub fn new() -> Self {
         Self {
             tick: None,
-            time: Instant::now(),
             pause: 0,
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct PingTimer {
+    pub ping_timer: Instant,
+    pub disconnected_rx: Option<Receiver<()>>,
+    pub disconnected_tx: Option<Sender<()>>,
+}
+
+impl PingTimer {
+    pub fn new() -> Self {
+        Self {
+            ping_timer: Instant::now(),
+            disconnected_rx: None,
+            disconnected_tx: None,
         }
     }
 }

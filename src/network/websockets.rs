@@ -6,7 +6,7 @@ use gloo_net::websocket::{futures::WebSocket, Message};
 use speedy::Writable;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::game_util::resources::NetworkStuff;
+use crate::game_util::resources::{NetworkStuff, PingTimer};
 use crate::GameStage;
 
 use super::messages::ClientMessage;
@@ -17,6 +17,7 @@ use super::messages::ClientMessage;
 pub fn websocket(
     mut network_stuff: ResMut<NetworkStuff>,
     mut next_state: ResMut<NextState<GameStage>>,
+    mut ping: ResMut<PingTimer>,
 ) {
     //let ws = WebSocket::open("ws://0.0.0.0:3030/run").unwrap();
     let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
@@ -25,12 +26,13 @@ pub fn websocket(
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
     let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<Vec<u8>>(20000);
 
-    let (mut cancel_tx, cancel_rx) = futures::channel::mpsc::channel::<()>(1);
+    let (cancel_tx, cancel_rx) = futures::channel::mpsc::channel::<()>(1);
     let mut cancel_tx_clone = cancel_tx.clone();
 
     network_stuff.write = Some(send_tx);
     network_stuff.read = Some(read_rx);
-    network_stuff.disconnected = Some(cancel_rx);
+    ping.disconnected_rx = Some(cancel_rx);
+    ping.disconnected_tx = Some(cancel_tx);
 
     spawn_local(async move {
         while let Some(message) = send_rx.next().await {
@@ -38,9 +40,13 @@ pub fn websocket(
 
             //TimeoutFuture::new(DELAY).await;
             //info!("sending message, {:?}", message);
-            if let Err(disconnected) = write.send(Message::Bytes(message)).await {
-                error!("Failed to send GameUpdate: {}", disconnected);
-                cancel_tx.send(()).await.unwrap();
+            let send = write.send(Message::Bytes(message)).await;
+
+            match send {
+                Ok(_) => {}
+                Err(e) => {
+                    info!("{:?}", e)
+                }
             }
         }
     });

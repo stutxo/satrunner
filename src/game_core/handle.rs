@@ -1,9 +1,11 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, utils::Instant};
 use speedy::Readable;
 
 use crate::{
     game_core::sprites::spawn_enemies,
-    game_util::resources::{ClientTick, Dots, NetworkStuff},
+    game_util::resources::{ClientTick, Dots, NetworkStuff, PingTimer},
     network::messages::NetworkMessage,
 };
 
@@ -19,6 +21,7 @@ pub fn handle_server(
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
     mut dots: ResMut<Dots>,
+    mut ping: ResMut<PingTimer>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -111,8 +114,21 @@ pub fn handle_server(
                         }
                     }
                 }
+                Ok(NetworkMessage::Ping) => {
+                    ping.ping_timer = Instant::now();
+                }
                 Err(_) => {}
             }
+        }
+    }
+}
+
+pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
+    if ping_timer.ping_timer.elapsed() > Duration::from_secs(6) {
+        // No ping received for 8 seconds
+        if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
+            disconnected_tx.clone().try_send(()).unwrap();
+            info!("No ping received for 6 seconds, sending disconnect signal.");
         }
     }
 }

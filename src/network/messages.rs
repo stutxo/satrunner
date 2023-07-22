@@ -10,6 +10,7 @@ pub enum NetworkMessage {
     ScoreUpdate(Score),
     PlayerConnected(PlayerConnected),
     PlayerDisconnected(Uuid),
+    Ping,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
