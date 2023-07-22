@@ -1,10 +1,7 @@
 use std::collections::VecDeque;
 
 use bevy::{prelude::*, utils::Instant};
-use futures::{
-    channel::mpsc::{Receiver, Sender},
-    future::Fuse,
-};
+use futures::channel::mpsc::{Receiver, Sender};
 
 use crate::network::messages::ClientMessage;
 
@@ -32,7 +29,7 @@ pub struct ParticlePool(pub VecDeque<Entity>);
 pub struct NetworkStuff {
     pub write: Option<Sender<ClientMessage>>,
     pub read: Option<Receiver<Vec<u8>>>,
-    pub disconnected: Option<Fuse<futures::channel::oneshot::Receiver<()>>>,
+    pub disconnected: Option<Receiver<()>>,
 }
 
 impl NetworkStuff {

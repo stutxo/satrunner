@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use futures::channel::oneshot;
-use futures::{FutureExt, SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::WebSocketError;
 use gloo_net::websocket::{futures::WebSocket, Message};
 
@@ -26,8 +25,8 @@ pub fn websocket(
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
     let (mut read_tx, read_rx) = futures::channel::mpsc::channel::<Vec<u8>>(20000);
 
-    let (cancel_tx, cancel_rx) = oneshot::channel();
-    let cancel_rx = cancel_rx.fuse();
+    let (mut cancel_tx, cancel_rx) = futures::channel::mpsc::channel::<()>(1);
+    let mut cancel_tx_clone = cancel_tx.clone();
 
     network_stuff.write = Some(send_tx);
     network_stuff.read = Some(read_rx);
@@ -41,6 +40,7 @@ pub fn websocket(
             //info!("sending message, {:?}", message);
             if let Err(disconnected) = write.send(Message::Bytes(message)).await {
                 error!("Failed to send GameUpdate: {}", disconnected);
+                cancel_tx.send(()).await.unwrap();
             }
         }
     });
@@ -60,12 +60,12 @@ pub fn websocket(
                 Err(e) => match e {
                     WebSocketError::ConnectionError => {
                         error!("connection error: {:?}", e);
-                        cancel_tx.send(()).unwrap();
+                        cancel_tx_clone.send(()).await.unwrap();
                         break;
                     }
                     WebSocketError::ConnectionClose(_) => {
                         error!("connection closed error: {:?}", e);
-                        cancel_tx.send(()).unwrap();
+                        cancel_tx_clone.send(()).await.unwrap();
                         break;
                     }
                     WebSocketError::MessageSendError(_) => {

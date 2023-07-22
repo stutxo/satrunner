@@ -4,8 +4,6 @@ use bevy_egui::{
     egui::{self, RichText, TextEdit},
     EguiContexts,
 };
-use futures::task::Poll;
-use futures_lite::future::FutureExt;
 use rand::Rng;
 
 use crate::{
@@ -174,15 +172,8 @@ pub fn check_disconnected(
     mut next_state: ResMut<NextState<GameStage>>,
 ) {
     if let Some(ref mut disconnected) = network_stuff.disconnected {
-        let waker = futures::task::noop_waker();
-        let cx = &mut futures::task::Context::from_waker(&waker);
-
-        match futures::future::poll_fn(|cx| disconnected.poll(cx)).poll(cx) {
-            Poll::Ready(_) => {
-                next_state.set(GameStage::Disconnected);
-            }
-
-            Poll::Pending => {}
+        while let Ok(Some(_)) = disconnected.try_next() {
+            next_state.set(GameStage::Disconnected);
         }
     }
 }
