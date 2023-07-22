@@ -25,6 +25,7 @@ pub fn handle_server(
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
+            ping.ping_timer = Instant::now();
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
                     //info!("got game update: {:?}", game_update);
@@ -103,10 +104,12 @@ pub fn handle_server(
                     // info!("players: {:?}", new_game.player_positions);
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
+                    ping.ping_timer = Instant::now();
                     //info!("player connected: {:?}", player_id);
                     spawn_enemies(&mut commands, &player.id, Some(0.0), None, 0, player.name);
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
+                    ping.ping_timer = Instant::now();
                     //info!("player disconnected: {:?}", player_id);
                     for (entity, enemy, _t) in query_enemy.iter_mut() {
                         if player_id == enemy.id {
@@ -114,9 +117,7 @@ pub fn handle_server(
                         }
                     }
                 }
-                Ok(NetworkMessage::Ping) => {
-                    ping.ping_timer = Instant::now();
-                }
+                Ok(NetworkMessage::Ping) => {}
                 Err(_) => {}
             }
         }
