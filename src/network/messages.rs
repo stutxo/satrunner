@@ -55,7 +55,7 @@ pub struct PlayerPos {
     pub pos: Option<f32>,
     pub target: [f32; 2],
     pub score: usize,
-    pub name: String,
+    pub name: Option<String>,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]

@@ -7,7 +7,7 @@ use crate::{
     network::messages::NewGame,
 };
 
-use super::player::{Enemy, Player};
+use super::player::{self, Enemy, Player};
 
 pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
     commands
@@ -68,11 +68,12 @@ pub fn spawn_enemies(
     player_pos: Option<f32>,
     target: Option<[f32; 2]>,
     score: usize,
-    enemy_name: String,
+    enemy_name: Option<String>,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
+    let player_pos = player_pos.unwrap_or(0.0);
 
-    if let Some(player_pos) = player_pos {
+    if let Some(enemy_name) = enemy_name {
         commands
             .spawn(SpriteBundle {
                 sprite: Sprite {

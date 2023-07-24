@@ -84,9 +84,9 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    info!("new game: {:?}", new_game);
                     client_tick.tick = Some(new_game.server_tick + 8);
                     dots.rng_seed = Some(new_game.rng_seed);
+                    info!("new game: {:?}", new_game);
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {
                             spawn_player(&mut commands, &new_game);
@@ -107,7 +107,7 @@ pub fn handle_server(
                 Ok(NetworkMessage::PlayerConnected(player)) => {
                     ping.ping_timer = Instant::now();
                     //info!("player connected: {:?}", player_id);
-                    spawn_enemies(&mut commands, &player.id, Some(0.0), None, 0, player.name);
+                    spawn_enemies(&mut commands, &player.id, None, None, 0, Some(player.name));
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     ping.ping_timer = Instant::now();
@@ -129,7 +129,7 @@ pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
     if ping_timer.ping_timer.elapsed() > Duration::from_secs(10) {
         if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
             disconnected_tx.clone().try_send(()).unwrap();
-            info!("No ping received for 6 seconds, sending disconnect signal.");
+            info!("No ping received for 10 seconds, sending disconnect signal.");
         }
     }
 }
