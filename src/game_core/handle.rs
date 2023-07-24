@@ -125,8 +125,7 @@ pub fn handle_server(
 }
 
 pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
-    if ping_timer.ping_timer.elapsed() > Duration::from_secs(6) {
-        // No ping received for 8 seconds
+    if ping_timer.ping_timer.elapsed() > Duration::from_secs(10) {
         if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
             disconnected_tx.clone().try_send(()).unwrap();
             info!("No ping received for 6 seconds, sending disconnect signal.");
