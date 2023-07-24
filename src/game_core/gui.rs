@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
+use names::Generator;
+
 use bevy_egui::{
     egui::{self, RichText, TextEdit},
     EguiContexts,
 };
-use rand::Rng;
 
 use crate::{
     game_util::resources::{ClientTick, NetworkStuff, PingTimer, PlayerName},
@@ -117,11 +118,9 @@ pub fn setup_menu(
             });
 
             ui.horizontal(|ui| {
-                let mut rng = rand::thread_rng();
-                let id: u32 = rng.gen_range(1..9999);
-
+                let mut rand_name = Generator::default();
                 if ui.button("play as guest").clicked() {
-                    player_name.name = format!("guest {}", id);
+                    player_name.name = rand_name.next().unwrap();
                     player_name.submitted = true;
                     match network_stuff
                         .write
