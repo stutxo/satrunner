@@ -33,7 +33,7 @@ pub fn handle_server(
                         if game_update.id == player.id {
                             //if we are ahead of the server, then pause the game for how many ticks we are ahead.
                             if game_update.tick_adjustment > 0 {
-                                client_tick.pause = game_update.tick_adjustment - 8;
+                                client_tick.pause = game_update.tick_adjustment - 6;
                                 player.adjust_iter = game_update.adjustment_iteration;
                             // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
                             } else if game_update.tick_adjustment < 0
@@ -84,7 +84,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = Some(new_game.server_tick + 8);
+                    client_tick.tick = Some(new_game.server_tick + 6);
                     dots.rng_seed = Some(new_game.rng_seed);
                     //info!("new game: {:?}", new_game);
                     for (id, player_pos) in &new_game.player_positions {

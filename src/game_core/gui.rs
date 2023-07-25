@@ -180,28 +180,38 @@ pub fn check_disconnected(
 pub fn add_nameplates(
     mut contexts: EguiContexts,
     camera_query: Query<(&Camera, &GlobalTransform)>,
-    query_player: Query<(&Player, &Transform)>,
+    query_player: Query<&Player, Without<Enemy>>,
+    query_enemy: Query<(&Transform, &Enemy), Without<Player>>,
     player_name: Res<PlayerName>,
 ) {
     let ctx = contexts.ctx_mut();
 
-    for (player, player_transform) in query_player.iter() {
-        let text_pos = get_sceen_transform_and_visibility(&camera_query, player_transform);
+    for player in query_player.iter() {
         let text = RichText::new(format!("{}: {}", player_name.name, player.score));
-        let name_len = player_name.name.len();
-        // Estimate the width of the area for the text, may need adjusting.
-
-        egui::Area::new(format!("nameplate_{}", player.id))
-            .current_pos(pos2(
-                text_pos.translation.x / 10.0 / name_len as f32,
-                text_pos.translation.y - 20.,
-            ))
+        egui::Area::new("satrunner")
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 155.))
             .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    ui.label(text);
-                });
+                ui.label(text);
             });
     }
+    // for (enemy_transform, enemy) in query_enemy.iter() {
+    //     let text_pos = get_sceen_transform_and_visibility(&camera_query, enemy_transform);
+    //     let text = RichText::new(format!("{}: {}", enemy.name, enemy.score));
+    //     let name_len = enemy.name.len();
+
+    //     // Apply the same transformation as for the player
+    //     info!("enemy {:?}", text_pos);
+    //     egui::Area::new(format!("nameplate_{}", enemy.id))
+    //         .current_pos(pos2(
+    //             text_pos.translation.x / 10.0 / name_len as f32,
+    //             text_pos.translation.y - 20.,
+    //         ))
+    //         .show(ctx, |ui| {
+    //             ui.vertical_centered(|ui| {
+    //                 ui.label(text);
+    //             });
+    //         });
+    // }
 }
 
 fn get_sceen_transform_and_visibility(
@@ -209,11 +219,12 @@ fn get_sceen_transform_and_visibility(
     transform: &Transform,
 ) -> Transform {
     let (camera, cam_gt) = camera_q.single();
+
     let pos = camera.world_to_viewport(cam_gt, transform.translation);
 
     if let Some(pos) = pos {
         Transform::from_xyz(pos.x, pos.y, 1.)
     } else {
-        Transform::default()
+        Transform::from_xyz(0., 0., 0.)
     }
 }
