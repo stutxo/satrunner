@@ -86,7 +86,7 @@ pub fn handle_server(
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     client_tick.tick = Some(new_game.server_tick + 8);
                     dots.rng_seed = Some(new_game.rng_seed);
-                    info!("new game: {:?}", new_game);
+                    //info!("new game: {:?}", new_game);
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {
                             spawn_player(&mut commands, &new_game);

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use names::Generator;
 
 use bevy_egui::{
-    egui::{self, RichText, TextEdit},
+    egui::{self, pos2, RichText, TextEdit},
     EguiContexts,
 };
 
@@ -174,5 +174,46 @@ pub fn check_disconnected(
         while let Ok(Some(_)) = disconnected.try_next() {
             next_state.set(GameStage::Disconnected);
         }
+    }
+}
+
+pub fn add_nameplates(
+    mut contexts: EguiContexts,
+    camera_query: Query<(&Camera, &GlobalTransform)>,
+    query_player: Query<(&Player, &Transform)>,
+    player_name: Res<PlayerName>,
+) {
+    let ctx = contexts.ctx_mut();
+
+    for (player, player_transform) in query_player.iter() {
+        let text_pos = get_sceen_transform_and_visibility(&camera_query, player_transform);
+        let text = RichText::new(format!("{}: {}", player_name.name, player.score));
+        let name_len = player_name.name.len();
+        // Estimate the width of the area for the text, may need adjusting.
+
+        egui::Area::new(format!("nameplate_{}", player.id))
+            .current_pos(pos2(
+                text_pos.translation.x / 10.0 / name_len as f32,
+                text_pos.translation.y - 20.,
+            ))
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.label(text);
+                });
+            });
+    }
+}
+
+fn get_sceen_transform_and_visibility(
+    camera_q: &Query<(&Camera, &GlobalTransform)>,
+    transform: &Transform,
+) -> Transform {
+    let (camera, cam_gt) = camera_q.single();
+    let pos = camera.world_to_viewport(cam_gt, transform.translation);
+
+    if let Some(pos) = pos {
+        Transform::from_xyz(pos.x, pos.y, 1.)
+    } else {
+        Transform::default()
     }
 }

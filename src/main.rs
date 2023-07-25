@@ -3,7 +3,7 @@ use bevy_egui::EguiPlugin;
 use game_core::{
     dots::handle_dots,
     game_loop::{enemy_loop, player_loop, tick},
-    gui::{check_disconnected, disconnected, score_board, setup_menu},
+    gui::{add_nameplates, check_disconnected, disconnected, score_board, setup_menu},
     handle::{disconnect_check_system, handle_server},
     input::input,
     sprites::pool_dots,
@@ -45,7 +45,10 @@ fn main() {
             ),
         )
         .add_systems(FixedUpdate, (tick, handle_dots, enemy_loop))
-        .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
+        .add_systems(
+            Update,
+            (input, add_nameplates).run_if(in_state(GameStage::InGame)),
+        )
         .add_systems(
             Update,
             (disconnected).run_if(in_state(GameStage::Disconnected)),

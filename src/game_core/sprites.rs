@@ -7,7 +7,7 @@ use crate::{
     network::messages::NewGame,
 };
 
-use super::player::{self, Enemy, Player};
+use super::player::{Enemy, Player};
 
 pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
     commands
