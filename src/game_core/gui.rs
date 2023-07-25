@@ -180,38 +180,28 @@ pub fn check_disconnected(
 pub fn add_nameplates(
     mut contexts: EguiContexts,
     camera_query: Query<(&Camera, &GlobalTransform)>,
-    query_player: Query<&Player, Without<Enemy>>,
-    query_enemy: Query<(&Transform, &Enemy), Without<Player>>,
+    query_player: Query<(&Transform, &Player)>,
     player_name: Res<PlayerName>,
 ) {
     let ctx = contexts.ctx_mut();
 
-    for player in query_player.iter() {
+    for (player_transform, player) in query_player.iter() {
+        let text_pos = get_sceen_transform_and_visibility(&camera_query, player_transform);
         let text = RichText::new(format!("{}: {}", player_name.name, player.score));
-        egui::Area::new("satrunner")
-            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 155.))
+        let name_len = player_name.name.len();
+
+        // Apply the same transformation as for the player
+        egui::Area::new(format!("nameplate_{}", player.id))
+            .current_pos(pos2(
+                text_pos.translation.x / 10.0 / name_len as f32,
+                text_pos.translation.y - 20.,
+            ))
             .show(ctx, |ui| {
-                ui.label(text);
+                ui.vertical_centered(|ui| {
+                    ui.label(text);
+                });
             });
     }
-    // for (enemy_transform, enemy) in query_enemy.iter() {
-    //     let text_pos = get_sceen_transform_and_visibility(&camera_query, enemy_transform);
-    //     let text = RichText::new(format!("{}: {}", enemy.name, enemy.score));
-    //     let name_len = enemy.name.len();
-
-    //     // Apply the same transformation as for the player
-    //     info!("enemy {:?}", text_pos);
-    //     egui::Area::new(format!("nameplate_{}", enemy.id))
-    //         .current_pos(pos2(
-    //             text_pos.translation.x / 10.0 / name_len as f32,
-    //             text_pos.translation.y - 20.,
-    //         ))
-    //         .show(ctx, |ui| {
-    //             ui.vertical_centered(|ui| {
-    //                 ui.label(text);
-    //             });
-    //         });
-    // }
 }
 
 fn get_sceen_transform_and_visibility(
