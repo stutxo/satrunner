@@ -13,10 +13,7 @@ use crate::{
     GameStage,
 };
 
-use super::{
-    player::{Enemy, Player},
-    sprites::spawn_player,
-};
+use super::player::{Enemy, Player};
 
 pub fn score_board(
     mut contexts: EguiContexts,
@@ -49,7 +46,7 @@ pub fn score_board(
             score_list.push((
                 enemy.name.to_string(),
                 enemy.score.try_into().unwrap(),
-                egui::Color32::WHITE,
+                egui::Color32::GRAY,
             ));
         }
     }
