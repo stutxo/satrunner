@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use names::Generator;
 
 use bevy_egui::{
-    egui::{self, pos2, RichText, TextEdit},
+    egui::{self, RichText, TextEdit},
     EguiContexts,
 };
 

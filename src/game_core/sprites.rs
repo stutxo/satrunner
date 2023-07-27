@@ -65,6 +65,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid) {
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
                     transform: Transform::from_translation(Vec3::new(0.0, 15., 0.0)),
+
                     ..Default::default()
                 })
                 .insert(NamePlatesLocal);
