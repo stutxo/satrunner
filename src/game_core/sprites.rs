@@ -100,7 +100,6 @@ pub fn spawn_enemies(
     target: Option<[f32; 2]>,
     score: usize,
     enemy_name: Option<String>,
-    asset_server: AssetServer,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or(0.0);
@@ -111,7 +110,7 @@ pub fn spawn_enemies(
                 format!("{}:", enemy_name),
                 TextStyle {
                     font_size: FONT_SIZE,
-                    color: Color::LIME_GREEN,
+                    color: Color::GRAY,
                     ..Default::default()
                 },
             ),

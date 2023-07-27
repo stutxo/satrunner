@@ -18,7 +18,6 @@ pub fn handle_server(
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
     mut dots: ResMut<Dots>,
-    asset_server: Res<AssetServer>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -95,7 +94,6 @@ pub fn handle_server(
                                 Some(player_pos.target),
                                 player_pos.score,
                                 player_pos.name.clone(),
-                                asset_server.clone(),
                             );
                         }
                     }
@@ -104,15 +102,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
                     //info!("player connected: {:?}", player_id);
-                    spawn_enemies(
-                        &mut commands,
-                        &player.id,
-                        None,
-                        None,
-                        0,
-                        Some(player.name),
-                        asset_server.clone(),
-                    );
+                    spawn_enemies(&mut commands, &player.id, None, None, 0, Some(player.name));
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     //info!("player disconnected: {:?}", player_id);
