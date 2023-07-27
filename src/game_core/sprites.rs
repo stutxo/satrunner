@@ -21,7 +21,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServe
             TextStyle {
                 font: asset_server.load(FONT_PATH),
                 font_size: FONT_SIZE,
-                color: Color::GRAY,
+                color: Color::LIME_GREEN,
             },
         ),
         TextSection::new(
@@ -29,7 +29,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServe
             TextStyle {
                 font: asset_server.load(FONT_PATH),
                 font_size: FONT_SIZE,
-                color: Color::GRAY,
+                color: Color::LIME_GREEN,
             },
         ),
     ]);
