@@ -57,7 +57,7 @@ impl Player {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 5.0;
+        let tolerance = 6.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED
@@ -90,7 +90,7 @@ impl Enemy {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 5.0;
+        let tolerance = 6.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED
