@@ -34,7 +34,7 @@ pub fn handle_dots(
             }
 
             for dot in dots.pos.iter_mut() {
-                dot.y += FALL_SPEED * -1.0;
+                dot.y += FALL_SPEED * -0.5;
             }
 
             dots.pos.retain(|dot| {

@@ -10,26 +10,26 @@ use crate::game_util::{
 use super::player::{Enemy, Player};
 
 const FONT_SIZE: f32 = 15.0;
-const FONT_PATH: &str = "fonts/OpenSans-Bold.ttf";
-const PLAYER_SIZE: Vec2 = Vec2::new(5., 10.0);
-const DOTS_SIZE: Vec2 = Vec2::new(5., 5.);
 
-pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServer) {
+const PLAYER_SIZE: Vec2 = Vec2::new(3., 3.0);
+const DOTS_SIZE: Vec2 = Vec2::new(3., 3.);
+
+pub fn spawn_player(commands: &mut Commands, id: &Uuid) {
     let text = Text::from_sections([
         TextSection::new(
             String::new(),
             TextStyle {
-                font: asset_server.load(FONT_PATH),
                 font_size: FONT_SIZE,
                 color: Color::LIME_GREEN,
+                ..Default::default()
             },
         ),
         TextSection::new(
             "0",
             TextStyle {
-                font: asset_server.load(FONT_PATH),
                 font_size: FONT_SIZE,
                 color: Color::LIME_GREEN,
+                ..Default::default()
             },
         ),
     ]);
@@ -64,7 +64,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServe
             parent
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
-                    transform: Transform::from_translation(Vec3::new(0.0, 12., 0.0)),
+                    transform: Transform::from_translation(Vec3::new(0.0, 15., 0.0)),
                     ..Default::default()
                 })
                 .insert(NamePlatesLocal);
@@ -110,17 +110,17 @@ pub fn spawn_enemies(
             TextSection::new(
                 format!("{}:", enemy_name),
                 TextStyle {
-                    font: asset_server.load(FONT_PATH),
                     font_size: FONT_SIZE,
-                    color: Color::GRAY,
+                    color: Color::LIME_GREEN,
+                    ..Default::default()
                 },
             ),
             TextSection::new(
                 format!("{}", score),
                 TextStyle {
-                    font: asset_server.load(FONT_PATH),
                     font_size: FONT_SIZE,
-                    color: Color::GRAY,
+                    color: Color::LIME_GREEN,
+                    ..Default::default()
                 },
             ),
         ]);
@@ -148,7 +148,7 @@ pub fn spawn_enemies(
                 parent
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
-                        transform: Transform::from_translation(Vec3::new(0.0, 12., 0.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, 15., 0.0)),
                         ..Default::default()
                     })
                     .insert(NamePlates);

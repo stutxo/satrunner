@@ -33,7 +33,7 @@ pub fn player_loop(
 
         for i in (0..dots.pos.len()).rev() {
             let dot = &dots.pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+            if (dot.x - t.translation.x).abs() < 4.0 && (dot.y - t.translation.y).abs() < 4.0 {
                 dots.pos.remove(i);
             }
         }
@@ -55,7 +55,7 @@ pub fn enemy_loop(
 
         for i in (0..dots.pos.len()).rev() {
             let dot = &dots.pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+            if (dot.x - t.translation.x).abs() < 4.0 && (dot.y - t.translation.y).abs() < 4.0 {
                 dots.pos.remove(i);
                 // info!(
                 //     "enemy {:?} HIT A DOT!!!: {}, SCORE {:?}",
