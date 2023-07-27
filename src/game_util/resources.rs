@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
+use uuid::Uuid;
 
 use crate::network::messages::ClientMessage;
 
@@ -76,6 +77,7 @@ impl PingTimer {
 pub struct PlayerName {
     pub name: String,
     pub submitted: bool,
+    pub id: Option<Uuid>,
 }
 
 impl PlayerName {
@@ -83,6 +85,7 @@ impl PlayerName {
         Self {
             name: "".to_string(),
             submitted: false,
+            id: None,
         }
     }
 }

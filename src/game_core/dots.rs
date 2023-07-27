@@ -9,9 +9,9 @@ use crate::{
 
 use super::player::Player;
 
-pub const WORLD_BOUNDS: f32 = 300.0;
-
-pub const FALL_SPEED: f32 = 0.5;
+pub const X_BOUNDS: f32 = 1000.0;
+pub const Y_BOUNDS: f32 = 500.0;
+pub const FALL_SPEED: f32 = 5.0;
 
 pub fn handle_dots(
     mut dots: ResMut<Dots>,
@@ -25,9 +25,9 @@ pub fn handle_dots(
             let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
             for _ in 1..2 {
-                let x_position: f32 = rng.gen_range(-WORLD_BOUNDS..WORLD_BOUNDS);
+                let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-                let y_position: f32 = 25.;
+                let y_position: f32 = Y_BOUNDS;
 
                 let dot_start = Vec3::new(x_position, y_position, 0.0);
                 dots.pos.push(dot_start);
@@ -38,10 +38,7 @@ pub fn handle_dots(
             }
 
             dots.pos.retain(|dot| {
-                dot.y >= -WORLD_BOUNDS
-                    && dot.y <= WORLD_BOUNDS
-                    && dot.x >= -WORLD_BOUNDS
-                    && dot.x <= WORLD_BOUNDS
+                dot.y >= -Y_BOUNDS && dot.y <= Y_BOUNDS && dot.x >= -X_BOUNDS && dot.x <= X_BOUNDS
             });
 
             for dot in dots.pos.iter() {

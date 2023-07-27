@@ -13,7 +13,10 @@ use crate::{
     GameStage,
 };
 
-use super::player::{Enemy, Player};
+use super::{
+    player::{Enemy, Player},
+    sprites::spawn_player,
+};
 
 pub fn score_board(
     mut contexts: EguiContexts,
@@ -68,7 +71,7 @@ pub fn setup_menu(
     mut next_state: ResMut<NextState<GameStage>>,
     mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    query_player: Query<&Player>,
+    mut query_player: Query<&mut Player>,
     client_tick: Res<ClientTick>,
 ) {
     let ctx = contexts.ctx_mut();
@@ -98,9 +101,11 @@ pub fn setup_menu(
                     };
 
                     //send fake input to sync client and server before game starts
-                    for player in query_player.iter() {
+                    for mut player in query_player.iter_mut() {
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+
+                        player.name = player_name.name.clone();
 
                         match network_stuff
                             .write
@@ -112,6 +117,9 @@ pub fn setup_menu(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                     }
+                    // if let Some(id) = player_name.id {
+                    //     spawn_player(&mut commands, &id, player_name.name.clone());
+                    // }
 
                     next_state.set(GameStage::InGame);
                 }
@@ -133,9 +141,11 @@ pub fn setup_menu(
                     };
 
                     //send fake input to sync client and server before game starts
-                    for player in query_player.iter() {
+                    for mut player in query_player.iter_mut() {
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+
+                        player.name = player_name.name.clone();
 
                         match network_stuff
                             .write
@@ -147,7 +157,9 @@ pub fn setup_menu(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                     }
-
+                    // if let Some(id) = player_name.id {
+                    //     spawn_player(&mut commands, &id, player_name.name.clone());
+                    // }
                     next_state.set(GameStage::InGame);
                 }
             });
@@ -174,47 +186,5 @@ pub fn check_disconnected(
         while let Ok(Some(_)) = disconnected.try_next() {
             next_state.set(GameStage::Disconnected);
         }
-    }
-}
-
-pub fn add_nameplates(
-    mut contexts: EguiContexts,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-    query_player: Query<(&Transform, &Player)>,
-    player_name: Res<PlayerName>,
-) {
-    let ctx = contexts.ctx_mut();
-
-    for (player_transform, player) in query_player.iter() {
-        let text_pos = get_sceen_transform_and_visibility(&camera_query, player_transform);
-        let text = RichText::new(format!("{}: {}", player_name.name, player.score));
-        let name_len = player_name.name.len();
-
-        // Apply the same transformation as for the player
-        egui::Area::new(format!("nameplate_{}", player.id))
-            .current_pos(pos2(
-                text_pos.translation.x / 10.0 / name_len as f32,
-                text_pos.translation.y - 20.,
-            ))
-            .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    ui.label(text);
-                });
-            });
-    }
-}
-
-fn get_sceen_transform_and_visibility(
-    camera_q: &Query<(&Camera, &GlobalTransform)>,
-    transform: &Transform,
-) -> Transform {
-    let (camera, cam_gt) = camera_q.single();
-
-    let pos = camera.world_to_viewport(cam_gt, transform.translation);
-
-    if let Some(pos) = pos {
-        Transform::from_xyz(pos.x, pos.y, 1.)
-    } else {
-        Transform::from_xyz(0., 0., 0.)
     }
 }

@@ -1,19 +1,43 @@
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::prelude::*;
 use rand::Rng;
 use uuid::Uuid;
 
-use crate::{
-    game_util::{components::Particle, resources::ParticlePool},
-    network::messages::NewGame,
+use crate::game_util::{
+    components::{NamePlates, NamePlatesLocal, Particle},
+    resources::ParticlePool,
 };
 
 use super::player::{Enemy, Player};
 
-pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
+const FONT_SIZE: f32 = 15.0;
+const FONT_PATH: &str = "fonts/OpenSans-Bold.ttf";
+const PLAYER_SIZE: Vec2 = Vec2::new(5., 10.0);
+const DOTS_SIZE: Vec2 = Vec2::new(5., 5.);
+
+pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServer) {
+    let text = Text::from_sections([
+        TextSection::new(
+            String::new(),
+            TextStyle {
+                font: asset_server.load(FONT_PATH),
+                font_size: FONT_SIZE,
+                color: Color::GRAY,
+            },
+        ),
+        TextSection::new(
+            "0",
+            TextStyle {
+                font: asset_server.load(FONT_PATH),
+                font_size: FONT_SIZE,
+                color: Color::GRAY,
+            },
+        ),
+    ]);
+
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(0.5, 1.0)),
+                custom_size: Some(PLAYER_SIZE),
                 color: Color::LIME_GREEN,
                 ..default()
             },
@@ -21,22 +45,29 @@ pub fn spawn_player(commands: &mut Commands, new_game: &NewGame) {
             ..Default::default()
         })
         .insert(Player {
-            id: new_game.id,
+            id: *id,
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
             adjust_iter: 0,
+            name: String::new(),
         })
         .insert(Visibility::Hidden)
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
                 projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(100.0),
                     ..Default::default()
                 },
                 ..Default::default()
             });
+            parent
+                .spawn(Text2dBundle {
+                    text: text.with_alignment(TextAlignment::Center),
+                    transform: Transform::from_translation(Vec3::new(0.0, 12., 0.0)),
+                    ..Default::default()
+                })
+                .insert(NamePlatesLocal);
         });
 }
 
@@ -45,7 +76,7 @@ pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>
         let particle = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(0.5, 0.5)),
+                    custom_size: Some(DOTS_SIZE),
                     color: Color::rgb(
                         rand::thread_rng().gen_range(0.0..1.0),
                         rand::thread_rng().gen_range(0.0..2.0),
@@ -69,15 +100,35 @@ pub fn spawn_enemies(
     target: Option<[f32; 2]>,
     score: usize,
     enemy_name: Option<String>,
+    asset_server: AssetServer,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or(0.0);
 
     if let Some(enemy_name) = enemy_name {
+        let text = Text::from_sections([
+            TextSection::new(
+                format!("{}:", enemy_name),
+                TextStyle {
+                    font: asset_server.load(FONT_PATH),
+                    font_size: FONT_SIZE,
+                    color: Color::GRAY,
+                },
+            ),
+            TextSection::new(
+                format!("{}", score),
+                TextStyle {
+                    font: asset_server.load(FONT_PATH),
+                    font_size: FONT_SIZE,
+                    color: Color::GRAY,
+                },
+            ),
+        ]);
+
         commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(0.5, 1.0)),
+                    custom_size: Some(PLAYER_SIZE),
                     color: Color::RED,
                     ..Default::default()
                 },
@@ -92,6 +143,15 @@ pub fn spawn_enemies(
                 },
                 score,
                 name: enemy_name,
+            })
+            .with_children(|parent| {
+                parent
+                    .spawn(Text2dBundle {
+                        text: text.with_alignment(TextAlignment::Center),
+                        transform: Transform::from_translation(Vec3::new(0.0, 12., 0.0)),
+                        ..Default::default()
+                    })
+                    .insert(NamePlates);
             });
     }
 }

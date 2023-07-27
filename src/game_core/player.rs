@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use uuid::Uuid;
 
-use crate::{
-    game_core::dots::WORLD_BOUNDS, game_util::resources::ClientTick, network::messages::PlayerInput,
-};
+use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
-pub const PLAYER_SPEED: f32 = 1.0;
+use super::dots::{X_BOUNDS, Y_BOUNDS};
+
+pub const PLAYER_SPEED: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Player {
@@ -14,6 +14,7 @@ pub struct Player {
     pub score: usize,
     pub pending_inputs: Vec<PlayerInput>,
     pub adjust_iter: u64,
+    pub name: String,
 }
 
 impl Player {
@@ -45,8 +46,8 @@ impl Player {
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
 
-        if (t.translation.x + movement.x).abs() <= WORLD_BOUNDS
-            && (t.translation.y + movement.y).abs() <= WORLD_BOUNDS
+        if (t.translation.x + movement.x).abs() <= X_BOUNDS
+            && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
             t.translation += Vec3::new(movement.x, 0.0, 0.0);
@@ -56,7 +57,7 @@ impl Player {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 0.5;
+        let tolerance = 5.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED
@@ -78,8 +79,8 @@ impl Enemy {
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
 
-        if (t.translation.x + movement.x).abs() <= WORLD_BOUNDS
-            && (t.translation.y + movement.y).abs() <= WORLD_BOUNDS
+        if (t.translation.x + movement.x).abs() <= X_BOUNDS
+            && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
             t.translation += Vec3::new(movement.x, 0.0, 0.0);
@@ -89,7 +90,7 @@ impl Enemy {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 0.5;
+        let tolerance = 5.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED

@@ -4,15 +4,12 @@ use bevy::{prelude::*, utils::Instant};
 use speedy::Readable;
 
 use crate::{
-    game_core::sprites::spawn_enemies,
+    game_core::sprites::{spawn_enemies, spawn_player},
     game_util::resources::{ClientTick, Dots, NetworkStuff, PingTimer},
     network::messages::NetworkMessage,
 };
 
-use super::{
-    player::{Enemy, Player},
-    sprites::spawn_player,
-};
+use super::player::{Enemy, Player};
 
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
@@ -21,11 +18,10 @@ pub fn handle_server(
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
     mut dots: ResMut<Dots>,
-    mut ping: ResMut<PingTimer>,
+    asset_server: Res<AssetServer>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
-            ping.ping_timer = Instant::now();
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
                     //info!("got game update: {:?}", game_update);
@@ -86,10 +82,11 @@ pub fn handle_server(
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     client_tick.tick = Some(new_game.server_tick + 6);
                     dots.rng_seed = Some(new_game.rng_seed);
-                    //info!("new game: {:?}", new_game);
+                    // info!("new game: {:?}", new_game);
+
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {
-                            spawn_player(&mut commands, &new_game);
+                            spawn_player(&mut commands, &new_game.id, asset_server.clone());
                         } else {
                             spawn_enemies(
                                 &mut commands,
@@ -98,6 +95,7 @@ pub fn handle_server(
                                 Some(player_pos.target),
                                 player_pos.score,
                                 player_pos.name.clone(),
+                                asset_server.clone(),
                             );
                         }
                     }
@@ -105,16 +103,22 @@ pub fn handle_server(
                     // info!("players: {:?}", new_game.player_positions);
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
-                    ping.ping_timer = Instant::now();
                     //info!("player connected: {:?}", player_id);
-                    spawn_enemies(&mut commands, &player.id, None, None, 0, Some(player.name));
+                    spawn_enemies(
+                        &mut commands,
+                        &player.id,
+                        None,
+                        None,
+                        0,
+                        Some(player.name),
+                        asset_server.clone(),
+                    );
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
-                    ping.ping_timer = Instant::now();
                     //info!("player disconnected: {:?}", player_id);
                     for (entity, enemy, _t) in query_enemy.iter_mut() {
                         if player_id == enemy.id {
-                            commands.entity(entity).despawn();
+                            commands.entity(entity).despawn_recursive();
                         }
                     }
                 }
@@ -125,11 +129,11 @@ pub fn handle_server(
     }
 }
 
-pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
-    if ping_timer.ping_timer.elapsed() > Duration::from_secs(10) {
-        if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
-            disconnected_tx.clone().try_send(()).unwrap();
-            info!("No ping received for 10 seconds, sending disconnect signal.");
-        }
-    }
-}
+// pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
+//     if ping_timer.ping_timer.elapsed() > Duration::from_secs(10) {
+//         if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
+//             disconnected_tx.clone().try_send(()).unwrap();
+//             info!("No ping received for 10 seconds, sending disconnect signal.");
+//         }
+//     }
+// }
