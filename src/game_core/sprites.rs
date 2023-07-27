@@ -118,7 +118,7 @@ pub fn spawn_enemies(
                 format!("{}", score),
                 TextStyle {
                     font_size: FONT_SIZE,
-                    color: Color::LIME_GREEN,
+                    color: Color::GRAY,
                     ..Default::default()
                 },
             ),
