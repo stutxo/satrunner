@@ -117,9 +117,6 @@ pub fn setup_menu(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                     }
-                    // if let Some(id) = player_name.id {
-                    //     spawn_player(&mut commands, &id, player_name.name.clone());
-                    // }
 
                     next_state.set(GameStage::InGame);
                 }
@@ -157,9 +154,7 @@ pub fn setup_menu(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                     }
-                    // if let Some(id) = player_name.id {
-                    //     spawn_player(&mut commands, &id, player_name.name.clone());
-                    // }
+
                     next_state.set(GameStage::InGame);
                 }
             });
