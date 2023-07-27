@@ -41,7 +41,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServe
                 color: Color::LIME_GREEN,
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0., -250., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., -150., 0.1)),
             ..Default::default()
         })
         .insert(Player {
@@ -55,7 +55,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: AssetServe
         .insert(Visibility::Hidden)
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 250., 0.)),
+                transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
                 projection: OrthographicProjection {
                     ..Default::default()
                 },
@@ -132,7 +132,7 @@ pub fn spawn_enemies(
                     color: Color::RED,
                     ..Default::default()
                 },
-                transform: Transform::from_translation(Vec3::new(player_pos, -250., 0.0)),
+                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.0)),
                 ..Default::default()
             })
             .insert(Enemy {
