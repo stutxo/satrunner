@@ -73,7 +73,7 @@ pub fn setup_menu(
 ) {
     let ctx = contexts.ctx_mut();
 
-    egui::Window::new("satrunner")
+    egui::Window::new("rain")
         .resizable(false)
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
@@ -161,7 +161,7 @@ pub fn setup_menu(
 pub fn disconnected(mut contexts: EguiContexts) {
     let ctx = contexts.ctx_mut();
 
-    egui::Window::new("satrunner")
+    egui::Window::new("rain")
         .resizable(false)
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)

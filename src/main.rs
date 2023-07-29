@@ -8,6 +8,7 @@ use game_core::{
     input::input,
     sprites::pool_dots,
 };
+
 use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool, PingTimer, PlayerName};
 use network::websockets::websocket;
 use std::collections::VecDeque;
@@ -23,7 +24,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "satrunner".to_string(),
+                    title: "rain.gg".to_string(),
                     fit_canvas_to_parent: true,
                     prevent_default_event_handling: false,
                     ..default()

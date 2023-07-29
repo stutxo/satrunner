@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rand::Rng;
 use uuid::Uuid;
 
 use crate::game_util::{
@@ -11,10 +10,10 @@ use super::player::{Enemy, Player};
 
 const FONT_SIZE: f32 = 15.0;
 
-const PLAYER_SIZE: Vec2 = Vec2::new(3., 3.0);
-const DOTS_SIZE: Vec2 = Vec2::new(3., 3.);
+const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
+const DOTS_SIZE: Vec2 = Vec2::new(5., 5.);
 
-pub fn spawn_player(commands: &mut Commands, id: &Uuid) {
+pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<AssetServer>) {
     let text = Text::from_sections([
         TextSection::new(
             String::new(),
@@ -34,13 +33,15 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid) {
         ),
     ]);
 
+    let player_image = asset_server.load("umbrella.png");
+
     commands
         .spawn(SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(PLAYER_SIZE),
-                color: Color::LIME_GREEN,
                 ..default()
             },
+            texture: player_image,
             transform: Transform::from_translation(Vec3::new(0., -150., 0.1)),
             ..Default::default()
         })
@@ -64,27 +65,33 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid) {
             parent
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
-                    transform: Transform::from_translation(Vec3::new(0.0, 15., 0.0)),
-
+                    transform: Transform::from_translation(Vec3::new(0.0, 20., 0.0)),
                     ..Default::default()
                 })
                 .insert(NamePlatesLocal);
         });
 }
 
-pub fn pool_dots(mut commands: Commands, mut particle_pool: ResMut<ParticlePool>) {
+pub fn pool_dots(
+    mut commands: Commands,
+    mut particle_pool: ResMut<ParticlePool>,
+    asset_server: Res<AssetServer>,
+) {
+    let rain_image = asset_server.load("droplet.png");
+
     for _ in 0..1000 {
         let particle = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(DOTS_SIZE),
-                    color: Color::rgb(
-                        rand::thread_rng().gen_range(0.0..1.0),
-                        rand::thread_rng().gen_range(0.0..2.0),
-                        rand::thread_rng().gen_range(0.0..3.0),
-                    ),
+                    // color: Color::rgb(
+                    //     rand::thread_rng().gen_range(0.0..1.0),
+                    //     rand::thread_rng().gen_range(0.0..2.0),
+                    //     rand::thread_rng().gen_range(0.0..3.0),
+                    // ),
                     ..Default::default()
                 },
+                texture: rain_image.clone(),
                 ..Default::default()
             })
             .insert(Particle)
@@ -101,6 +108,7 @@ pub fn spawn_enemies(
     target: Option<[f32; 2]>,
     score: usize,
     enemy_name: Option<String>,
+    asset_server: &Res<AssetServer>,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or(0.0);
@@ -125,14 +133,16 @@ pub fn spawn_enemies(
             ),
         ]);
 
+        let player_image = asset_server.load("umbrella.png");
+
         commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(PLAYER_SIZE),
-                    color: Color::RED,
-                    ..Default::default()
+                    ..default()
                 },
-                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.0)),
+                texture: player_image,
+                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.1)),
                 ..Default::default()
             })
             .insert(Enemy {
@@ -148,7 +158,7 @@ pub fn spawn_enemies(
                 parent
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
-                        transform: Transform::from_translation(Vec3::new(0.0, 15., 0.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, 20., 0.0)),
                         ..Default::default()
                     })
                     .insert(NamePlates);

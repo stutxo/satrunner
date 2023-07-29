@@ -41,18 +41,25 @@ pub fn handle_dots(
                 dot.y >= -Y_BOUNDS && dot.y <= Y_BOUNDS && dot.x >= -X_BOUNDS && dot.x <= X_BOUNDS
             });
 
+            let mut pool_iter = particle_pool.0.iter_mut();
+
             for dot in dots.pos.iter() {
-                if let Some(pool) = particle_pool.0.pop_front() {
-                    match particles.get_mut(pool) {
-                        Ok((_particle, mut visibility, mut transform)) => {
+                if let Some(pool) = pool_iter.next() {
+                    match particles.get_mut(*pool) {
+                        Ok((_particles, mut visibility, mut transform)) => {
                             transform.translation = *dot;
                             *visibility = Visibility::Visible;
                         }
                         Err(err) => {
-                            error!("Error: {:?}", err);
+                            info!("Error: {:?}", err);
                         }
                     }
-                    particle_pool.0.push_back(pool);
+                }
+            }
+
+            for pool in pool_iter {
+                if let Ok((_particle, mut visibility, _transform)) = particles.get_mut(*pool) {
+                    *visibility = Visibility::Hidden;
                 }
             }
         }
