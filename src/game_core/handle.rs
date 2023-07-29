@@ -6,7 +6,7 @@ use speedy::Readable;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
-    game_util::resources::{ClientTick, Dots, NetworkStuff, PingTimer},
+    game_util::resources::{ClientTick, NetworkStuff, Objects, PingTimer},
     network::messages::NetworkMessage,
 };
 
@@ -18,7 +18,7 @@ pub fn handle_server(
     mut query_enemy: Query<(Entity, &mut Enemy, &mut Transform), Without<Player>>,
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
-    mut dots: ResMut<Dots>,
+    mut rain_vec: ResMut<Objects>,
     asset_server: Res<AssetServer>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
@@ -82,7 +82,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     client_tick.tick = Some(new_game.server_tick + 6);
-                    dots.rng_seed = Some(new_game.rng_seed);
+                    rain_vec.rng_seed = Some(new_game.rng_seed);
                     // info!("new game: {:?}", new_game);
 
                     for (id, player_pos) in &new_game.player_positions {

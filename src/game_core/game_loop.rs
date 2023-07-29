@@ -1,6 +1,6 @@
 use crate::game_util::{
     components::{NamePlates, NamePlatesLocal},
-    resources::{ClientTick, Dots},
+    resources::{ClientTick, Objects},
 };
 use bevy::prelude::*;
 
@@ -9,12 +9,10 @@ use super::player::{Enemy, Player};
 pub fn player_loop(
     mut query_player: Query<(&mut Transform, &mut Player, &mut Visibility)>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
-    mut dots: ResMut<Dots>,
+    mut objects: ResMut<Objects>,
     client_tick: Res<ClientTick>,
 ) {
-    // Handle players
     for (mut t, mut player, mut visibility) in query_player.iter_mut() {
-        // Update text
         if *visibility == Visibility::Hidden {
             *visibility = Visibility::Visible;
         }
@@ -31,10 +29,10 @@ pub fn player_loop(
 
         player.apply_input(&mut t, &client_tick);
 
-        for i in (0..dots.pos.len()).rev() {
-            let dot = &dots.pos[i];
-            if (dot.x - t.translation.x).abs() < 4.0 && (dot.y - t.translation.y).abs() < 4.0 {
-                dots.pos.remove(i);
+        for i in (0..objects.bolt_pos.len()).rev() {
+            let dot = &objects.bolt_pos[i];
+            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+                objects.bolt_pos.remove(i);
             }
         }
     }
@@ -43,7 +41,7 @@ pub fn player_loop(
 pub fn enemy_loop(
     mut query_enemy: Query<(&mut Transform, &mut Enemy)>,
     mut query_text: Query<&mut Text, With<NamePlates>>,
-    mut dots: ResMut<Dots>,
+    mut objects: ResMut<Objects>,
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {
@@ -53,14 +51,10 @@ pub fn enemy_loop(
 
         enemy.apply_input(&mut t, &client_tick);
 
-        for i in (0..dots.pos.len()).rev() {
-            let dot = &dots.pos[i];
-            if (dot.x - t.translation.x).abs() < 4.0 && (dot.y - t.translation.y).abs() < 4.0 {
-                dots.pos.remove(i);
-                // info!(
-                //     "enemy {:?} HIT A DOT!!!: {}, SCORE {:?}",
-                //     enemy.id, t.translation.x, enemy.score
-                // );
+        for i in (0..objects.bolt_pos.len()).rev() {
+            let dot = &objects.bolt_pos[i];
+            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+                objects.bolt_pos.remove(i);
             }
         }
     }

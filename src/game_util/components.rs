@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-// dots stuff
 #[derive(Component)]
-pub struct Particle;
+pub struct Rain;
+#[derive(Component)]
+pub struct Bolt;
 
 #[derive(Component)]
 pub struct NamePlates;

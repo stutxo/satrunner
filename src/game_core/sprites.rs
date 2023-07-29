@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use uuid::Uuid;
 
 use crate::game_util::{
-    components::{NamePlates, NamePlatesLocal, Particle},
-    resources::ParticlePool,
+    components::{Bolt, NamePlates, NamePlatesLocal, Rain},
+    resources::{BoltPool, RainPool},
 };
 
 use super::player::{Enemy, Player};
@@ -11,7 +11,8 @@ use super::player::{Enemy, Player};
 const FONT_SIZE: f32 = 15.0;
 
 const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
-const DOTS_SIZE: Vec2 = Vec2::new(5., 5.);
+const DOTS_SIZE: Vec2 = Vec2::new(10., 10.);
+const LN_SIZE: Vec2 = Vec2::new(10., 10.);
 
 pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<AssetServer>) {
     let text = Text::from_sections([
@@ -70,35 +71,6 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<Asset
                 })
                 .insert(NamePlatesLocal);
         });
-}
-
-pub fn pool_dots(
-    mut commands: Commands,
-    mut particle_pool: ResMut<ParticlePool>,
-    asset_server: Res<AssetServer>,
-) {
-    let rain_image = asset_server.load("droplet.png");
-
-    for _ in 0..1000 {
-        let particle = commands
-            .spawn(SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(DOTS_SIZE),
-                    // color: Color::rgb(
-                    //     rand::thread_rng().gen_range(0.0..1.0),
-                    //     rand::thread_rng().gen_range(0.0..2.0),
-                    //     rand::thread_rng().gen_range(0.0..3.0),
-                    // ),
-                    ..Default::default()
-                },
-                texture: rain_image.clone(),
-                ..Default::default()
-            })
-            .insert(Particle)
-            .insert(Visibility::Hidden)
-            .id();
-        particle_pool.0.push_back(particle);
-    }
 }
 
 pub fn spawn_enemies(
@@ -163,5 +135,53 @@ pub fn spawn_enemies(
                     })
                     .insert(NamePlates);
             });
+    }
+}
+
+pub fn pool_rain(
+    mut commands: Commands,
+    mut rain_pool: ResMut<RainPool>,
+    asset_server: Res<AssetServer>,
+) {
+    let rain_image = asset_server.load("droplet.png");
+
+    for _ in 0..500 {
+        let rain = commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(DOTS_SIZE),
+                    ..Default::default()
+                },
+                texture: rain_image.clone(),
+                ..Default::default()
+            })
+            .insert(Rain)
+            .insert(Visibility::Hidden)
+            .id();
+        rain_pool.0.push_back(rain);
+    }
+}
+
+pub fn pool_bolt(
+    mut commands: Commands,
+    mut bolt_pool: ResMut<BoltPool>,
+    asset_server: Res<AssetServer>,
+) {
+    let bolt_image = asset_server.load("high-voltage.png");
+
+    for _ in 0..500 {
+        let ln = commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(LN_SIZE),
+                    ..Default::default()
+                },
+                texture: bolt_image.clone(),
+                ..Default::default()
+            })
+            .insert(Bolt)
+            .insert(Visibility::Hidden)
+            .id();
+        bolt_pool.0.push_back(ln);
     }
 }

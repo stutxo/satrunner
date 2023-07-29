@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
-use super::dots::{X_BOUNDS, Y_BOUNDS};
+use super::objects::{X_BOUNDS, Y_BOUNDS};
 
 pub const PLAYER_SPEED: f32 = 5.0;
 

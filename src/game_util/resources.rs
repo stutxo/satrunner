@@ -6,24 +6,28 @@ use uuid::Uuid;
 
 use crate::network::messages::ClientMessage;
 
-//dots
 #[derive(Resource)]
-pub struct Dots {
-    pub pos: Vec<Vec3>,
+pub struct Objects {
+    pub rain_pos: Vec<Vec3>,
+    pub bolt_pos: Vec<Vec3>,
     pub rng_seed: Option<u64>,
 }
 
-impl Dots {
+impl Objects {
     pub fn new() -> Self {
         Self {
-            pos: Vec::new(),
+            rain_pos: Vec::new(),
+            bolt_pos: Vec::new(),
             rng_seed: None,
         }
     }
 }
 
 #[derive(Resource)]
-pub struct ParticlePool(pub VecDeque<Entity>);
+pub struct RainPool(pub VecDeque<Entity>);
+
+#[derive(Resource)]
+pub struct BoltPool(pub VecDeque<Entity>);
 
 //server
 #[derive(Resource)]

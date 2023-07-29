@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use game_core::{
-    dots::handle_dots,
     game_loop::{enemy_loop, player_loop, tick},
     gui::{check_disconnected, disconnected, score_board, setup_menu},
     handle::handle_server,
     input::input,
-    sprites::pool_dots,
+    objects::{handle_bolt, handle_rain},
+    sprites::{pool_bolt, pool_rain},
 };
 
-use game_util::resources::{ClientTick, Dots, NetworkStuff, ParticlePool, PingTimer, PlayerName};
+use game_util::resources::{
+    BoltPool, ClientTick, NetworkStuff, Objects, PingTimer, PlayerName, RainPool,
+};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -34,10 +36,10 @@ fn main() {
             EguiPlugin,
         ))
         .add_state::<GameStage>()
-        .add_systems(Startup, (websocket, pool_dots))
+        .add_systems(Startup, (websocket, pool_rain, pool_bolt))
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
-        .add_systems(FixedUpdate, (tick, handle_dots, enemy_loop))
+        .add_systems(FixedUpdate, (tick, handle_rain, enemy_loop, handle_bolt))
         .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
         .add_systems(
             Update,
@@ -49,8 +51,9 @@ fn main() {
         )
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
         .insert_resource(ClearColor(Color::BLACK))
-        .insert_resource(Dots::new())
-        .insert_resource(ParticlePool(VecDeque::new()))
+        .insert_resource(Objects::new())
+        .insert_resource(RainPool(VecDeque::new()))
+        .insert_resource(BoltPool(VecDeque::new()))
         .insert_resource(NetworkStuff::new())
         .insert_resource(ClientTick::new())
         .insert_resource(PlayerName::new())
