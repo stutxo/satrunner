@@ -123,7 +123,7 @@ pub fn spawn_enemies(
                     ..default()
                 },
                 texture: player_image,
-                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.1)),
+                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.0)),
                 ..Default::default()
             })
             .insert(Enemy {
