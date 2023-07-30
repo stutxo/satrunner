@@ -98,7 +98,7 @@ pub fn handle_server(
                     for (id, player_pos) in &new_game.player_positions {
                         if id == &new_game.id {
                             spawn_player(&mut commands, &new_game.id, &asset_server);
-                        } else {
+                        } else if player_pos.alive {
                             spawn_enemies(
                                 &mut commands,
                                 id,
