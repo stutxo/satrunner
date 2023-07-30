@@ -25,7 +25,7 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<Asset
             },
         ),
         TextSection::new(
-            "0",
+            String::new(),
             TextStyle {
                 font_size: FONT_SIZE,
                 color: Color::LIME_GREEN,
@@ -54,7 +54,6 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<Asset
             adjust_iter: 0,
             name: String::new(),
         })
-        .insert(Visibility::Hidden)
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
                 transform: Transform::from_translation(Vec3::new(0., 150., 0.)),

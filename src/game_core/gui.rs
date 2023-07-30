@@ -189,6 +189,7 @@ pub fn game_over(
     mut next_state: ResMut<NextState<GameStage>>,
 ) {
     let ctx = contexts.ctx_mut();
+
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
@@ -196,10 +197,13 @@ pub fn game_over(
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label("game over!!");
-                if ui.button("play again").clicked() {
-                    for (mut transform, mut player) in query_player.iter_mut() {
-                        player.name = player_name.name.clone();
 
+                for (mut transform, mut player) in query_player.iter_mut() {
+                    player.target = Vec2::ZERO;
+                    player.pending_inputs.clear();
+                    transform.translation = Vec3::new(0.0, -150.0, 0.1);
+
+                    if ui.button("play again").clicked() {
                         match network_stuff
                             .write
                             .as_mut()
@@ -209,14 +213,9 @@ pub fn game_over(
                             Ok(()) => {}
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
-
                         player.score = 0;
-                        player.target = [0.0, 0.0].into();
-                        player.pending_inputs.clear();
-                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
+                        next_state.set(GameStage::InGame);
                     }
-
-                    next_state.set(GameStage::InGame);
                 }
             });
         });
