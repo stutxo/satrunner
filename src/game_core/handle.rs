@@ -8,6 +8,7 @@ use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
     game_util::resources::{ClientTick, NetworkStuff, Objects, PingTimer},
     network::messages::NetworkMessage,
+    GameStage,
 };
 
 use super::player::{Enemy, Player};
@@ -20,6 +21,7 @@ pub fn handle_server(
     mut client_tick: ResMut<ClientTick>,
     mut rain_vec: ResMut<Objects>,
     asset_server: Res<AssetServer>,
+    mut next_state: ResMut<NextState<GameStage>>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -120,6 +122,13 @@ pub fn handle_server(
                     for (entity, enemy, _t) in query_enemy.iter_mut() {
                         if player_id == enemy.id {
                             commands.entity(entity).despawn_recursive();
+                        }
+                    }
+                }
+                Ok(NetworkMessage::DamagePlayer(id)) => {
+                    for (player, _t) in query_player.iter_mut() {
+                        if id == player.id {
+                            next_state.set(GameStage::GameOver);
                         }
                     }
                 }

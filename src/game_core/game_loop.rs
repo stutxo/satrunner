@@ -35,6 +35,13 @@ pub fn player_loop(
                 objects.bolt_pos.remove(i);
             }
         }
+
+        for i in (0..objects.rain_pos.len()).rev() {
+            let dot = &objects.rain_pos[i];
+            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+                objects.rain_pos.remove(i);
+            }
+        }
     }
 }
 
@@ -55,6 +62,13 @@ pub fn enemy_loop(
             let dot = &objects.bolt_pos[i];
             if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
                 objects.bolt_pos.remove(i);
+            }
+        }
+
+        for i in (0..objects.rain_pos.len()).rev() {
+            let dot = &objects.rain_pos[i];
+            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
+                objects.rain_pos.remove(i);
             }
         }
     }

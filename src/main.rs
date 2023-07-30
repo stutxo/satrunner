@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use game_core::{
     game_loop::{enemy_loop, player_loop, tick},
-    gui::{check_disconnected, disconnected, score_board, setup_menu},
+    gui::{check_disconnected, disconnected, game_over, score_board, setup_menu},
     handle::handle_server,
     input::input,
     objects::{handle_bolt, handle_rain},
@@ -26,7 +26,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "rain.gg".to_string(),
+                    title: "rain.rain".to_string(),
                     fit_canvas_to_parent: true,
                     prevent_default_event_handling: false,
                     ..default()
@@ -45,6 +45,7 @@ fn main() {
             Update,
             (disconnected).run_if(in_state(GameStage::Disconnected)),
         )
+        .add_systems(Update, (game_over).run_if(in_state(GameStage::GameOver)))
         .add_systems(
             FixedUpdate,
             (player_loop).run_if(in_state(GameStage::InGame)),
@@ -67,4 +68,5 @@ pub enum GameStage {
     Menu,
     InGame,
     Disconnected,
+    GameOver,
 }

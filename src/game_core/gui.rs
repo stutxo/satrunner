@@ -180,3 +180,15 @@ pub fn check_disconnected(
         }
     }
 }
+
+pub fn game_over(mut contexts: EguiContexts) {
+    let ctx = contexts.ctx_mut();
+
+    egui::Window::new("☔ rain.run              ")
+        .resizable(false)
+        .collapsible(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .show(ctx, |ui| {
+            ui.label("game over!!");
+        });
+}
