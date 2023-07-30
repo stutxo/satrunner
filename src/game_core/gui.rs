@@ -8,7 +8,10 @@ use bevy_egui::{
 };
 
 use crate::{
-    game_util::resources::{ClientTick, NetworkStuff, PingTimer, PlayerName},
+    game_util::{
+        components::NamePlatesLocal,
+        resources::{ClientTick, NetworkStuff, PingTimer, PlayerName},
+    },
     network::messages::{ClientMessage, PlayerInput},
     GameStage,
 };
@@ -68,11 +71,14 @@ pub fn setup_menu(
     mut next_state: ResMut<NextState<GameStage>>,
     mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    mut query_player: Query<&mut Player>,
+    mut query_player: Query<(&mut Player, &mut Sprite)>,
     client_tick: Res<ClientTick>,
 ) {
     let ctx = contexts.ctx_mut();
 
+    for (_, mut sprite) in query_player.iter_mut() {
+        sprite.color = Color::GRAY;
+    }
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
@@ -98,7 +104,7 @@ pub fn setup_menu(
                     };
 
                     //send fake input to sync client and server before game starts
-                    for mut player in query_player.iter_mut() {
+                    for (mut player, _) in query_player.iter_mut() {
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
@@ -135,7 +141,7 @@ pub fn setup_menu(
                     };
 
                     //send fake input to sync client and server before game starts
-                    for mut player in query_player.iter_mut() {
+                    for (mut player, _) in query_player.iter_mut() {
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
@@ -185,8 +191,9 @@ pub fn game_over(
     mut contexts: EguiContexts,
     player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    mut query_player: Query<(&mut Transform, &mut Player)>,
+    mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,
+    mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
 ) {
     let ctx = contexts.ctx_mut();
 
@@ -198,10 +205,16 @@ pub fn game_over(
             ui.horizontal(|ui| {
                 ui.label("game over!!");
 
-                for (mut transform, mut player) in query_player.iter_mut() {
+                for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
+                    sprite.color = Color::GRAY;
                     player.target = Vec2::ZERO;
                     player.pending_inputs.clear();
                     transform.translation = Vec3::new(0.0, -150.0, 0.1);
+
+                    for mut text in query_text.iter_mut() {
+                        text.sections[0].value = String::new();
+                        text.sections[1].value = String::new();
+                    }
 
                     if ui.button("play again").clicked() {
                         match network_stuff

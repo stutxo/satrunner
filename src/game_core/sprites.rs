@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 use uuid::Uuid;
 
-use crate::game_util::{
-    components::{Bolt, NamePlates, NamePlatesLocal, Rain},
-    resources::{BoltPool, RainPool},
+use crate::{
+    game_util::{
+        components::{Bolt, NamePlates, NamePlatesLocal, Rain},
+        resources::{BoltPool, RainPool},
+    },
+    GameStage,
 };
 
 use super::player::{Enemy, Player};
@@ -14,7 +17,12 @@ const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
 const DOTS_SIZE: Vec2 = Vec2::new(10., 10.);
 const LN_SIZE: Vec2 = Vec2::new(10., 10.);
 
-pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<AssetServer>) {
+pub fn spawn_player(
+    commands: &mut Commands,
+    id: &Uuid,
+    asset_server: &Res<AssetServer>,
+    next_state: &mut ResMut<NextState<GameStage>>,
+) {
     let text = Text::from_sections([
         TextSection::new(
             String::new(),
@@ -70,6 +78,8 @@ pub fn spawn_player(commands: &mut Commands, id: &Uuid, asset_server: &Res<Asset
                 })
                 .insert(NamePlatesLocal);
         });
+
+    next_state.set(GameStage::Menu);
 }
 
 pub fn spawn_enemies(

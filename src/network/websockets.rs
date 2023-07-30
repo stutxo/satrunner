@@ -7,18 +7,13 @@ use speedy::Writable;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::game_util::resources::{NetworkStuff, PingTimer};
-use crate::GameStage;
 
 use super::messages::ClientMessage;
 
 //pub const DELAY: u32 = 200;
 //use gloo_timers::future::TimeoutFuture;
 
-pub fn websocket(
-    mut network_stuff: ResMut<NetworkStuff>,
-    mut next_state: ResMut<NextState<GameStage>>,
-    mut ping: ResMut<PingTimer>,
-) {
+pub fn websocket(mut network_stuff: ResMut<NetworkStuff>, mut ping: ResMut<PingTimer>) {
     //let ws = WebSocket::open("ws://0.0.0.0:3030/run").unwrap();
     let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
     let (mut write, mut read) = ws.split();
@@ -82,6 +77,4 @@ pub fn websocket(
             }
         }
     });
-
-    next_state.set(GameStage::Menu);
 }

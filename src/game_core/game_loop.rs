@@ -7,15 +7,12 @@ use bevy::prelude::*;
 use super::player::{Enemy, Player};
 
 pub fn player_loop(
-    mut query_player: Query<(&mut Transform, &mut Player, &mut Visibility)>,
+    mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
-
     client_tick: Res<ClientTick>,
 ) {
-    for (mut t, mut player, mut visibility) in query_player.iter_mut() {
-        if *visibility == Visibility::Hidden {
-            *visibility = Visibility::Visible;
-        }
+    for (mut t, mut player, mut sprite) in query_player.iter_mut() {
+        sprite.color = default();
 
         for mut text in query_text.iter_mut() {
             if text.sections[0].value.is_empty() {
