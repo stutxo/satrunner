@@ -181,14 +181,43 @@ pub fn check_disconnected(
     }
 }
 
-pub fn game_over(mut contexts: EguiContexts) {
+pub fn game_over(
+    mut contexts: EguiContexts,
+    player_name: ResMut<PlayerName>,
+    mut network_stuff: ResMut<NetworkStuff>,
+    mut query_player: Query<(&mut Transform, &mut Player)>,
+    mut next_state: ResMut<NextState<GameStage>>,
+) {
     let ctx = contexts.ctx_mut();
-
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.label("game over!!");
+            ui.horizontal(|ui| {
+                ui.label("game over!!");
+                if ui.button("play again").clicked() {
+                    for (mut transform, mut player) in query_player.iter_mut() {
+                        player.name = player_name.name.clone();
+
+                        match network_stuff
+                            .write
+                            .as_mut()
+                            .unwrap()
+                            .try_send(ClientMessage::PlayerName(player_name.name.clone()))
+                        {
+                            Ok(()) => {}
+                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                        };
+
+                        player.score = 0;
+                        player.target = [0.0, 0.0].into();
+                        player.pending_inputs.clear();
+                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
+                    }
+
+                    next_state.set(GameStage::InGame);
+                }
+            });
         });
 }
