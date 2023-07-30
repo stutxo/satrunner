@@ -143,7 +143,7 @@ pub fn handle_server(
                     }
                     for (player, _t) in query_player.iter_mut() {
                         if damage.id == player.id {
-                            //next_state.set(GameStage::GameOver);
+                            next_state.set(GameStage::GameOver);
                         }
                     }
                 }
