@@ -13,6 +13,12 @@ pub const X_BOUNDS: f32 = 1000.0;
 pub const Y_BOUNDS: f32 = 500.0;
 pub const FALL_SPEED: f32 = 5.0;
 
+#[derive(Debug)]
+pub struct ObjectPos {
+    pub tick: u64,
+    pub pos: Vec3,
+}
+
 pub fn handle_rain(
     mut objects: ResMut<Objects>,
     mut rain_pool: ResMut<RainPool>,
@@ -30,24 +36,31 @@ pub fn handle_rain(
 
             if client_tick.tick.unwrap_or(0) % 10 != 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
-                objects.rain_pos.push(pos_start);
+                let new_pos = ObjectPos {
+                    tick: client_tick.tick.unwrap(),
+                    pos: pos_start,
+                };
+                objects.rain_pos.push(new_pos);
             }
 
-            for rain in objects.rain_pos.iter_mut() {
-                rain.y += FALL_SPEED * -0.5;
+            for object in objects.rain_pos.iter_mut() {
+                object.pos.y += FALL_SPEED * -0.5;
             }
 
-            objects.rain_pos.retain(|dot| {
-                dot.y >= -Y_BOUNDS && dot.y <= Y_BOUNDS && dot.x >= -X_BOUNDS && dot.x <= X_BOUNDS
+            objects.rain_pos.retain(|object| {
+                object.pos.y >= -Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.x >= -X_BOUNDS
+                    && object.pos.x <= X_BOUNDS
             });
 
             let mut pool_iter = rain_pool.0.iter_mut();
 
-            for pos in objects.rain_pos.iter() {
+            for object in objects.rain_pos.iter() {
                 if let Some(pool) = pool_iter.next() {
                     match rain.get_mut(*pool) {
                         Ok((_particles, mut visibility, mut transform)) => {
-                            transform.translation = *pos;
+                            transform.translation = object.pos;
                             *visibility = Visibility::Visible;
                         }
                         Err(err) => {
@@ -82,24 +95,31 @@ pub fn handle_bolt(
             let y_position: f32 = Y_BOUNDS;
             if client_tick.tick.unwrap_or(0) % 10 == 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
-                objects.bolt_pos.push(pos_start);
+                let new_pos = ObjectPos {
+                    tick: client_tick.tick.unwrap(),
+                    pos: pos_start,
+                };
+                objects.bolt_pos.push(new_pos);
             }
 
-            for bolt in objects.bolt_pos.iter_mut() {
-                bolt.y += FALL_SPEED * -0.5;
+            for object in objects.bolt_pos.iter_mut() {
+                object.pos.y += FALL_SPEED * -0.5;
             }
 
-            objects.bolt_pos.retain(|dot| {
-                dot.y >= -Y_BOUNDS && dot.y <= Y_BOUNDS && dot.x >= -X_BOUNDS && dot.x <= X_BOUNDS
+            objects.bolt_pos.retain(|object| {
+                object.pos.y >= -Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.x >= -X_BOUNDS
+                    && object.pos.x <= X_BOUNDS
             });
 
             let mut pool_iter = bolt_pool.0.iter_mut();
 
-            for pos in objects.bolt_pos.iter() {
+            for object in objects.bolt_pos.iter() {
                 if let Some(pool) = pool_iter.next() {
                     match bolt.get_mut(*pool) {
                         Ok((_particles, mut visibility, mut transform)) => {
-                            transform.translation = *pos;
+                            transform.translation = object.pos;
                             *visibility = Visibility::Visible;
                         }
                         Err(err) => {

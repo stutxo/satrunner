@@ -4,12 +4,12 @@ use bevy::{prelude::*, utils::Instant};
 use futures::channel::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 
-use crate::network::messages::ClientMessage;
+use crate::{game_core::objects::ObjectPos, network::messages::ClientMessage};
 
 #[derive(Resource)]
 pub struct Objects {
-    pub rain_pos: Vec<Vec3>,
-    pub bolt_pos: Vec<Vec3>,
+    pub rain_pos: Vec<ObjectPos>,
+    pub bolt_pos: Vec<ObjectPos>,
     pub rng_seed: Option<u64>,
 }
 

@@ -19,7 +19,7 @@ pub fn handle_server(
     mut query_enemy: Query<(Entity, &mut Enemy, &mut Transform), Without<Player>>,
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
-    mut rain_vec: ResMut<Objects>,
+    mut objects: ResMut<Objects>,
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<GameStage>>,
 ) {
@@ -71,6 +71,14 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::ScoreUpdate(score)) => {
+                    if let Some(index) = objects
+                        .bolt_pos
+                        .iter()
+                        .position(|object| object.tick == score.tick)
+                    {
+                        objects.bolt_pos.remove(index);
+                    }
+
                     for (mut player, _t) in query_player.iter_mut() {
                         if score.id == player.id {
                             player.score = score.score;
@@ -84,7 +92,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     client_tick.tick = Some(new_game.server_tick + 6);
-                    rain_vec.rng_seed = Some(new_game.rng_seed);
+                    objects.rng_seed = Some(new_game.rng_seed);
                     // info!("new game: {:?}", new_game);
 
                     for (id, player_pos) in &new_game.player_positions {
@@ -125,10 +133,17 @@ pub fn handle_server(
                         }
                     }
                 }
-                Ok(NetworkMessage::DamagePlayer(id)) => {
+                Ok(NetworkMessage::DamagePlayer(damage)) => {
+                    if let Some(index) = objects
+                        .rain_pos
+                        .iter()
+                        .position(|object| object.tick == damage.tick)
+                    {
+                        objects.rain_pos.remove(index);
+                    }
                     for (player, _t) in query_player.iter_mut() {
-                        if id == player.id {
-                            next_state.set(GameStage::GameOver);
+                        if damage.id == player.id {
+                            //next_state.set(GameStage::GameOver);
                         }
                     }
                 }

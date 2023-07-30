@@ -1,6 +1,6 @@
 use crate::game_util::{
     components::{NamePlates, NamePlatesLocal},
-    resources::{ClientTick, Objects},
+    resources::ClientTick,
 };
 use bevy::prelude::*;
 
@@ -9,7 +9,7 @@ use super::player::{Enemy, Player};
 pub fn player_loop(
     mut query_player: Query<(&mut Transform, &mut Player, &mut Visibility)>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
-    mut objects: ResMut<Objects>,
+
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut player, mut visibility) in query_player.iter_mut() {
@@ -28,27 +28,13 @@ pub fn player_loop(
         t.translation.z = 0.1;
 
         player.apply_input(&mut t, &client_tick);
-
-        for i in (0..objects.bolt_pos.len()).rev() {
-            let dot = &objects.bolt_pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
-                objects.bolt_pos.remove(i);
-            }
-        }
-
-        for i in (0..objects.rain_pos.len()).rev() {
-            let dot = &objects.rain_pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
-                objects.rain_pos.remove(i);
-            }
-        }
     }
 }
 
 pub fn enemy_loop(
     mut query_enemy: Query<(&mut Transform, &mut Enemy)>,
     mut query_text: Query<&mut Text, With<NamePlates>>,
-    mut objects: ResMut<Objects>,
+
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {
@@ -57,20 +43,6 @@ pub fn enemy_loop(
         }
 
         enemy.apply_input(&mut t, &client_tick);
-
-        for i in (0..objects.bolt_pos.len()).rev() {
-            let dot = &objects.bolt_pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
-                objects.bolt_pos.remove(i);
-            }
-        }
-
-        for i in (0..objects.rain_pos.len()).rev() {
-            let dot = &objects.rain_pos[i];
-            if (dot.x - t.translation.x).abs() < 10.0 && (dot.y - t.translation.y).abs() < 10.0 {
-                objects.rain_pos.remove(i);
-            }
-        }
     }
 }
 
