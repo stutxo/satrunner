@@ -169,7 +169,7 @@ pub fn pool_bolt(
 ) {
     let bolt_image = asset_server.load("high-voltage.png");
 
-    for _ in 0..500 {
+    for _ in 0..100 {
         let ln = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
