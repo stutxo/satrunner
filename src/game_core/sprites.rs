@@ -51,7 +51,7 @@ pub fn spawn_player(
             pending_inputs: Vec::new(),
             adjust_iter: 0,
             name: String::new(),
-            spawn_time: Instant::now(),
+            spawn_time: None,
             death_time: None,
         })
         .with_children(|parent| {

@@ -14,7 +14,7 @@ pub fn player_loop(
     for (mut t, mut player, mut sprite) in query_player.iter_mut() {
         sprite.color = default();
 
-        let duration = Instant::now() - player.spawn_time;
+        let duration = Instant::now() - player.spawn_time.unwrap();
         let seconds = duration.as_secs();
         let minutes = seconds / 60;
 

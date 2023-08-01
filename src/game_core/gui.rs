@@ -34,12 +34,12 @@ pub fn score_board(
 
     let mut score_list: Vec<(String, i32, egui::Color32, u64, u64)> = Vec::new();
 
-    for player in query_player.iter() {
-        let duration = Instant::now() - player.spawn_time;
-        let seconds = duration.as_secs();
-        let minutes = seconds / 60;
+    if player_name.submitted {
+        for player in query_player.iter() {
+            let duration = Instant::now() - player.spawn_time.unwrap();
+            let seconds = duration.as_secs();
+            let minutes = seconds / 60;
 
-        if player_name.submitted {
             score_list.push((
                 player_name.name.clone(),
                 player.score.try_into().unwrap(),
@@ -129,6 +129,7 @@ pub fn setup_menu(
 
                     //send fake input to sync client and server before game starts
                     for (mut player, _) in query_player.iter_mut() {
+                        player.spawn_time = Some(Instant::now());
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
@@ -154,6 +155,7 @@ pub fn setup_menu(
                 if ui.button("play as guest").clicked() {
                     player_name.name = rand_name.next().unwrap();
                     player_name.submitted = true;
+
                     match network_stuff
                         .write
                         .as_mut()
@@ -166,6 +168,7 @@ pub fn setup_menu(
 
                     //send fake input to sync client and server before game starts
                     for (mut player, _) in query_player.iter_mut() {
+                        player.spawn_time = Some(Instant::now());
                         let input =
                             PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
@@ -238,9 +241,9 @@ pub fn game_over(
                     ui.label(format!(
                         "{}: {:02}/21⚡ ({:02}:{:02})",
                         player.name,
+                        player.score,
                         minutes % 60,
                         seconds % 60,
-                        player.score,
                     ));
                     player_name.submitted = false;
                     sprite.color = Color::GRAY;
@@ -264,7 +267,7 @@ pub fn game_over(
                         };
                         player.score = 0;
                         player_name.submitted = true;
-                        player.spawn_time = Instant::now();
+                        player.spawn_time = Some(Instant::now());
                         next_state.set(GameStage::InGame);
                     }
                 });
