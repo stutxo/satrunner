@@ -20,7 +20,7 @@ pub fn player_loop(
 
         for mut text in query_text.iter_mut() {
             text.sections[0].value = format!(
-                "{:02}/21\n[{:02}:{:02}]\n{}",
+                "{:02}/21\n({:02}:{:02})\n{}",
                 player.score,
                 minutes % 60,
                 seconds % 60,
@@ -48,7 +48,7 @@ pub fn enemy_loop(
 
         for mut text in query_text.iter_mut() {
             text.sections[0].value = format!(
-                "{:02}/21\n[{:02}:{:02}]\n{}",
+                "{:02}/21\n({:02}:{:02})\n{}",
                 enemy.score,
                 minutes % 60,
                 seconds % 60,

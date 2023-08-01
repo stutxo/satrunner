@@ -73,11 +73,11 @@ pub fn score_board(
             for (id, score, color, secs, mins) in score_list {
                 ui.label(
                     RichText::new(format!(
-                        "[{:02}:{:02}] {}: {:02}/21⚡",
-                        mins % 60,
-                        secs % 60,
+                        "{}: {:02}/21⚡ ({:02}:{:02})",
                         id,
                         score,
+                        mins % 60,
+                        secs % 60,
                     ))
                     .color(color),
                 );
