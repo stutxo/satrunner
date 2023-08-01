@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 
 use names::Generator;
 
@@ -32,24 +32,35 @@ pub fn score_board(
 
     ctx.set_style(style);
 
-    let mut score_list: Vec<(String, i32, egui::Color32)> = Vec::new();
+    let mut score_list: Vec<(String, i32, egui::Color32, u64, u64)> = Vec::new();
 
     for player in query_player.iter() {
+        let duration = Instant::now() - player.spawn_time;
+        let seconds = duration.as_secs();
+        let minutes = seconds / 60;
+
         if player_name.submitted {
             score_list.push((
                 player_name.name.clone(),
                 player.score.try_into().unwrap(),
                 egui::Color32::GREEN,
+                seconds,
+                minutes,
             ));
         }
     }
 
     for enemy in query_enemy.iter() {
         if !enemy.name.is_empty() {
+            let duration = Instant::now() - enemy.spawn_time;
+            let seconds = duration.as_secs();
+            let minutes = seconds / 60;
             score_list.push((
                 enemy.name.to_string(),
                 enemy.score.try_into().unwrap(),
                 egui::Color32::GRAY,
+                seconds,
+                minutes,
             ));
         }
     }
@@ -59,8 +70,17 @@ pub fn score_board(
     egui::Area::new("score_board")
         .fixed_pos(egui::pos2(10.0, 10.0))
         .show(ctx, |ui| {
-            for (id, score, color) in score_list {
-                ui.label(RichText::new(format!(" {}: {}", id, score)).color(color));
+            for (id, score, color, secs, mins) in score_list {
+                ui.label(
+                    RichText::new(format!(
+                        "[{:02}:{:02}] {}: {:02}/21⚡",
+                        mins % 60,
+                        secs % 60,
+                        id,
+                        score,
+                    ))
+                    .color(color),
+                );
                 ui.add_space(5.0);
             }
         });
@@ -79,11 +99,15 @@ pub fn setup_menu(
     for (_, mut sprite) in query_player.iter_mut() {
         sprite.color = Color::GRAY;
     }
+
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
+            ui.label("Weekly Challenge 🏆:");
+            ui.label("Collect 21 bolts as fast as you can!");
+            ui.label("May the gods be in your favor...");
             ui.horizontal(|ui| {
                 ui.add(
                     TextEdit::singleline(&mut player_name.name)
@@ -189,7 +213,7 @@ pub fn check_disconnected(
 
 pub fn game_over(
     mut contexts: EguiContexts,
-    player_name: ResMut<PlayerName>,
+    mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
     mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,
@@ -202,10 +226,23 @@ pub fn game_over(
         .collapsible(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label("game over!!");
-
-                for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
+            for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
+                let seconds = player.death_time.unwrap();
+                let minutes = seconds / 60;
+                if player.score == 21 {
+                    ui.label("Challenge Complete! 🏆");
+                } else {
+                    ui.label("Challenge Failed! 🇱");
+                }
+                ui.horizontal(|ui| {
+                    ui.label(format!(
+                        "{}: {:02}/21⚡ ({:02}:{:02})",
+                        player.name,
+                        minutes % 60,
+                        seconds % 60,
+                        player.score,
+                    ));
+                    player_name.submitted = false;
                     sprite.color = Color::GRAY;
                     player.target = Vec2::ZERO;
                     player.pending_inputs.clear();
@@ -213,7 +250,6 @@ pub fn game_over(
 
                     for mut text in query_text.iter_mut() {
                         text.sections[0].value = String::new();
-                        text.sections[1].value = String::new();
                     }
 
                     if ui.button("play again").clicked() {
@@ -227,9 +263,11 @@ pub fn game_over(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                         player.score = 0;
+                        player_name.submitted = true;
+                        player.spawn_time = Instant::now();
                         next_state.set(GameStage::InGame);
                     }
-                }
-            });
+                });
+            }
         });
 }

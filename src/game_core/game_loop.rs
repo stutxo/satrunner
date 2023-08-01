@@ -2,7 +2,7 @@ use crate::game_util::{
     components::{NamePlates, NamePlatesLocal},
     resources::ClientTick,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 
 use super::player::{Enemy, Player};
 
@@ -14,11 +14,18 @@ pub fn player_loop(
     for (mut t, mut player, mut sprite) in query_player.iter_mut() {
         sprite.color = default();
 
+        let duration = Instant::now() - player.spawn_time;
+        let seconds = duration.as_secs();
+        let minutes = seconds / 60;
+
         for mut text in query_text.iter_mut() {
-            if text.sections[0].value.is_empty() {
-                text.sections[0].value = format!("{}:", player.name.clone());
-            }
-            text.sections[1].value = player.score.to_string();
+            text.sections[0].value = format!(
+                "{:02}/21\n[{:02}:{:02}]\n{}",
+                player.score,
+                minutes % 60,
+                seconds % 60,
+                player.name
+            );
         }
 
         //always set local player above other players
@@ -35,8 +42,18 @@ pub fn enemy_loop(
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {
+        let duration = Instant::now() - enemy.spawn_time;
+        let seconds = duration.as_secs();
+        let minutes = seconds / 60;
+
         for mut text in query_text.iter_mut() {
-            text.sections[1].value = enemy.score.to_string();
+            text.sections[0].value = format!(
+                "{:02}/21\n[{:02}:{:02}]\n{}",
+                enemy.score,
+                minutes % 60,
+                seconds % 60,
+                enemy.name
+            );
         }
 
         enemy.apply_input(&mut t, &client_tick);

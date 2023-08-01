@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 use uuid::Uuid;
 
 use crate::{
@@ -23,24 +23,14 @@ pub fn spawn_player(
     asset_server: &Res<AssetServer>,
     next_state: &mut ResMut<NextState<GameStage>>,
 ) {
-    let text = Text::from_sections([
-        TextSection::new(
-            String::new(),
-            TextStyle {
-                font_size: FONT_SIZE,
-                color: Color::LIME_GREEN,
-                ..Default::default()
-            },
-        ),
-        TextSection::new(
-            String::new(),
-            TextStyle {
-                font_size: FONT_SIZE,
-                color: Color::LIME_GREEN,
-                ..Default::default()
-            },
-        ),
-    ]);
+    let text = Text::from_sections([TextSection::new(
+        String::new(),
+        TextStyle {
+            font_size: FONT_SIZE,
+            color: Color::LIME_GREEN,
+            ..Default::default()
+        },
+    )]);
 
     let player_image = asset_server.load("umbrella.png");
 
@@ -61,6 +51,8 @@ pub fn spawn_player(
             pending_inputs: Vec::new(),
             adjust_iter: 0,
             name: String::new(),
+            spawn_time: Instant::now(),
+            death_time: None,
         })
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
@@ -73,7 +65,7 @@ pub fn spawn_player(
             parent
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
-                    transform: Transform::from_translation(Vec3::new(0.0, 20., 0.0)),
+                    transform: Transform::from_translation(Vec3::new(0.0, -32., 0.0)),
                     ..Default::default()
                 })
                 .insert(NamePlatesLocal);
@@ -95,24 +87,14 @@ pub fn spawn_enemies(
     let player_pos = player_pos.unwrap_or(0.0);
 
     if let Some(enemy_name) = enemy_name {
-        let text = Text::from_sections([
-            TextSection::new(
-                format!("{}:", enemy_name),
-                TextStyle {
-                    font_size: FONT_SIZE,
-                    color: Color::GRAY,
-                    ..Default::default()
-                },
-            ),
-            TextSection::new(
-                format!("{}", score),
-                TextStyle {
-                    font_size: FONT_SIZE,
-                    color: Color::GRAY,
-                    ..Default::default()
-                },
-            ),
-        ]);
+        let text = Text::from_sections([TextSection::new(
+            format!("{}:", enemy_name),
+            TextStyle {
+                font_size: FONT_SIZE,
+                color: Color::GRAY,
+                ..Default::default()
+            },
+        )]);
 
         let player_image = asset_server.load("umbrella.png");
 
@@ -134,12 +116,13 @@ pub fn spawn_enemies(
                 },
                 score,
                 name: enemy_name,
+                spawn_time: Instant::now(),
             })
             .with_children(|parent| {
                 parent
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
-                        transform: Transform::from_translation(Vec3::new(0.0, 20., 0.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, -32., 0.0)),
                         ..Default::default()
                     })
                     .insert(NamePlates);

@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 use uuid::Uuid;
 
 use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
@@ -15,6 +15,8 @@ pub struct Player {
     pub pending_inputs: Vec<PlayerInput>,
     pub adjust_iter: u64,
     pub name: String,
+    pub spawn_time: Instant,
+    pub death_time: Option<u64>,
 }
 
 impl Player {
@@ -73,6 +75,7 @@ pub struct Enemy {
     pub id: Uuid,
     pub score: usize,
     pub name: String,
+    pub spawn_time: Instant,
 }
 
 impl Enemy {

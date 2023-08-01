@@ -139,15 +139,18 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::DamagePlayer(damage)) => {
-                    if let Some(index) = objects
-                        .rain_pos
-                        .iter()
-                        .position(|object| object.tick == damage.tick)
-                    {
-                        objects.rain_pos.remove(index);
+                    if !damage.win {
+                        if let Some(index) = objects
+                            .rain_pos
+                            .iter()
+                            .position(|object| object.tick == damage.tick.unwrap())
+                        {
+                            objects.rain_pos.remove(index);
+                        }
                     }
-                    for (player, _t) in query_player.iter_mut() {
+                    for (mut player, _t) in query_player.iter_mut() {
                         if damage.id == player.id {
+                            player.death_time = Some(damage.secs_alive);
                             next_state.set(GameStage::GameOver);
                         }
                     }
