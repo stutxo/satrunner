@@ -11,6 +11,7 @@ pub struct Objects {
     pub rain_pos: Vec<ObjectPos>,
     pub bolt_pos: Vec<ObjectPos>,
     pub rng_seed: Option<u64>,
+    pub high_scores: Vec<(String, u64)>,
 }
 
 impl Objects {
@@ -19,6 +20,7 @@ impl Objects {
             rain_pos: Vec::new(),
             bolt_pos: Vec::new(),
             rng_seed: None,
+            high_scores: Vec::new(),
         }
     }
 }

@@ -49,6 +49,7 @@ pub struct NewGame {
     pub server_tick: u64,
     pub rng_seed: u64,
     pub player_positions: HashMap<Uuid, PlayerPos>,
+    pub high_scores: Vec<(String, u64)>,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -79,4 +80,5 @@ pub struct Damage {
     pub tick: Option<u64>,
     pub secs_alive: u64,
     pub win: bool,
+    pub high_scores: Option<Vec<(String, u64)>>,
 }

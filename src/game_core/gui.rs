@@ -10,7 +10,7 @@ use bevy_egui::{
 use crate::{
     game_util::{
         components::NamePlatesLocal,
-        resources::{ClientTick, NetworkStuff, PingTimer, PlayerName},
+        resources::{ClientTick, NetworkStuff, Objects, PingTimer, PlayerName},
     },
     network::messages::{ClientMessage, PlayerInput},
     GameStage,
@@ -93,6 +93,7 @@ pub fn setup_menu(
     mut network_stuff: ResMut<NetworkStuff>,
     mut query_player: Query<(&mut Player, &mut Sprite)>,
     client_tick: Res<ClientTick>,
+    objects: Res<Objects>,
 ) {
     let ctx = contexts.ctx_mut();
 
@@ -103,11 +104,9 @@ pub fn setup_menu(
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
-        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .anchor(egui::Align2::CENTER_BOTTOM, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.label("Weekly Challenge 🏆:");
-            ui.label("Collect 21 bolts as fast as you can!");
-            ui.label("May the gods be in your favor...");
+            ui.label("Weekly Challenge 🏆: Collect 21 bolts as fast as you can!");
             ui.horizontal(|ui| {
                 ui.add(
                     TextEdit::singleline(&mut player_name.name)
@@ -148,9 +147,7 @@ pub fn setup_menu(
 
                     next_state.set(GameStage::InGame);
                 }
-            });
 
-            ui.horizontal(|ui| {
                 let mut rand_name = Generator::default();
                 if ui.button("play as guest").clicked() {
                     player_name.name = rand_name.next().unwrap();
@@ -184,10 +181,64 @@ pub fn setup_menu(
                             Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                         };
                     }
-
                     next_state.set(GameStage::InGame);
                 }
             });
+            ui.separator();
+            ui.label("High Scores");
+            ui.label(format!(
+                "{}\n{}\n{}\n{}\n{}",
+                objects
+                    .high_scores
+                    .get(0)
+                    .map(|(name, score)| format!(
+                        "1: {} ({:02}:{:02})",
+                        name,
+                        score / 60 % 60,
+                        score % 60
+                    ))
+                    .unwrap_or_else(|| "".to_string()),
+                objects
+                    .high_scores
+                    .get(1)
+                    .map(|(name, score)| format!(
+                        "2: {} ({:02}:{:02})",
+                        name,
+                        score / 60 % 60,
+                        score % 60
+                    ))
+                    .unwrap_or_else(|| "".to_string()),
+                objects
+                    .high_scores
+                    .get(2)
+                    .map(|(name, score)| format!(
+                        "3: {} ({:02}:{:02})",
+                        name,
+                        score / 60 % 60,
+                        score % 60
+                    ))
+                    .unwrap_or_else(|| "".to_string()),
+                objects
+                    .high_scores
+                    .get(3)
+                    .map(|(name, score)| format!(
+                        "4: {} ({:02}:{:02})",
+                        name,
+                        score / 60 % 60,
+                        score % 60
+                    ))
+                    .unwrap_or_else(|| "".to_string()),
+                objects
+                    .high_scores
+                    .get(4)
+                    .map(|(name, score)| format!(
+                        "5: {} ({:02}:{:02})",
+                        name,
+                        score / 60 % 60,
+                        score % 60
+                    ))
+                    .unwrap_or_else(|| "".to_string()),
+            ));
         });
 }
 
@@ -221,13 +272,14 @@ pub fn game_over(
     mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
+    objects: Res<Objects>,
 ) {
     let ctx = contexts.ctx_mut();
 
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
-        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .anchor(egui::Align2::CENTER_BOTTOM, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
                 let seconds = player.death_time.unwrap();
@@ -271,6 +323,61 @@ pub fn game_over(
                         next_state.set(GameStage::InGame);
                     }
                 });
+                ui.separator();
+                ui.label("High Scores");
+                ui.label(format!(
+                    "{}\n{}\n{}\n{}\n{}",
+                    objects
+                        .high_scores
+                        .get(0)
+                        .map(|(name, score)| format!(
+                            "1: {} ({:02}:{:02})",
+                            name,
+                            score / 60 % 60,
+                            score % 60
+                        ))
+                        .unwrap_or_else(|| "".to_string()),
+                    objects
+                        .high_scores
+                        .get(1)
+                        .map(|(name, score)| format!(
+                            "2: {} ({:02}:{:02})",
+                            name,
+                            score / 60 % 60,
+                            score % 60
+                        ))
+                        .unwrap_or_else(|| "".to_string()),
+                    objects
+                        .high_scores
+                        .get(2)
+                        .map(|(name, score)| format!(
+                            "3: {} ({:02}:{:02})",
+                            name,
+                            score / 60 % 60,
+                            score % 60
+                        ))
+                        .unwrap_or_else(|| "".to_string()),
+                    objects
+                        .high_scores
+                        .get(3)
+                        .map(|(name, score)| format!(
+                            "4: {} ({:02}:{:02})",
+                            name,
+                            score / 60 % 60,
+                            score % 60
+                        ))
+                        .unwrap_or_else(|| "".to_string()),
+                    objects
+                        .high_scores
+                        .get(4)
+                        .map(|(name, score)| format!(
+                            "5: {} ({:02}:{:02})",
+                            name,
+                            score / 60 % 60,
+                            score % 60
+                        ))
+                        .unwrap_or_else(|| "".to_string()),
+                ));
             }
         });
 }

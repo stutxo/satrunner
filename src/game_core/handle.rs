@@ -93,6 +93,7 @@ pub fn handle_server(
                 Ok(NetworkMessage::NewGame(new_game)) => {
                     client_tick.tick = Some(new_game.server_tick + 6);
                     objects.rng_seed = Some(new_game.rng_seed);
+                    objects.high_scores = new_game.high_scores;
                     // info!("new game: {:?}", new_game);
 
                     for (id, player_pos) in &new_game.player_positions {
@@ -147,6 +148,8 @@ pub fn handle_server(
                         {
                             objects.rain_pos.remove(index);
                         }
+                    } else {
+                        objects.high_scores = damage.high_scores.unwrap();
                     }
                     for (mut player, _t) in query_player.iter_mut() {
                         if damage.id == player.id {
