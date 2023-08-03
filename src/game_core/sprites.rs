@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::Instant};
+use bevy::{prelude::*, render::camera::ScalingMode, utils::Instant};
 use uuid::Uuid;
 
 use crate::{
@@ -13,9 +13,9 @@ use super::player::{Enemy, Player};
 
 const FONT_SIZE: f32 = 15.0;
 
-const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
-const DOTS_SIZE: Vec2 = Vec2::new(10., 10.);
-const LN_SIZE: Vec2 = Vec2::new(10., 10.);
+const PLAYER_SIZE: Vec2 = Vec2::new(2.0, 2.0);
+const DOTS_SIZE: Vec2 = Vec2::new(1., 1.);
+const LN_SIZE: Vec2 = Vec2::new(1., 1.);
 
 pub fn spawn_player(
     commands: &mut Commands,
@@ -41,7 +41,7 @@ pub fn spawn_player(
                 ..default()
             },
             texture: player_image,
-            transform: Transform::from_translation(Vec3::new(0., -150., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., -25., 0.1)),
             ..Default::default()
         })
         .insert(Player {
@@ -56,8 +56,9 @@ pub fn spawn_player(
         })
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
+                transform: Transform::from_translation(Vec3::new(0., 25., 0.)),
                 projection: OrthographicProjection {
+                    scaling_mode: ScalingMode::FixedVertical(100.0),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -65,7 +66,11 @@ pub fn spawn_player(
             parent
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
-                    transform: Transform::from_translation(Vec3::new(0.0, -32., 0.0)),
+                    transform: Transform {
+                        translation: Vec3::new(0.0, -3., 0.0),
+                        scale: Vec2::new(0.1, 0.1).extend(1.),
+                        ..default()
+                    },
                     ..Default::default()
                 })
                 .insert(NamePlatesLocal);
@@ -105,7 +110,7 @@ pub fn spawn_enemies(
                     ..default()
                 },
                 texture: player_image,
-                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.0)),
+                transform: Transform::from_translation(Vec3::new(player_pos, -25., 0.0)),
                 ..Default::default()
             })
             .insert(Enemy {
@@ -122,7 +127,7 @@ pub fn spawn_enemies(
                 parent
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
-                        transform: Transform::from_translation(Vec3::new(0.0, -32., 0.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, -3., 0.0)),
                         ..Default::default()
                     })
                     .insert(NamePlates);

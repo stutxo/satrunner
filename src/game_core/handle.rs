@@ -1,12 +1,10 @@
-use std::time::Duration;
-
-use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
+use bevy::prelude::*;
 
 use speedy::Readable;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
-    game_util::resources::{ClientTick, NetworkStuff, Objects, PingTimer},
+    game_util::resources::{ClientTick, NetworkStuff, Objects},
     network::messages::NetworkMessage,
     GameStage,
 };

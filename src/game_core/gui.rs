@@ -303,7 +303,7 @@ pub fn game_over(
                         sprite.color = Color::GRAY;
                         player.target = Vec2::ZERO;
                         player.pending_inputs.clear();
-                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
+                        transform.translation = Vec3::new(0.0, -25.0, 0.1);
                     });
                 ui.label("High Scores");
                 ui.label(format!(
