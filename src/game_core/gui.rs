@@ -274,7 +274,7 @@ pub fn game_over(
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
                 egui::Area::new("area")
-                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 0.0))
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 120.0))
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
                             if player.score == 21 {
@@ -303,7 +303,7 @@ pub fn game_over(
                         sprite.color = Color::GRAY;
                         player.target = Vec2::ZERO;
                         player.pending_inputs.clear();
-                        transform.translation = Vec3::new(0.0, -25.0, 0.1);
+                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
                     });
                 ui.label("High Scores");
                 ui.label(format!(

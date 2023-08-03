@@ -5,7 +5,7 @@ use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
-pub const PLAYER_SPEED: f32 = 0.25;
+pub const PLAYER_SPEED: f32 = 2.5;
 
 #[derive(Component)]
 pub struct Player {
@@ -59,7 +59,7 @@ impl Player {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 0.6;
+        let tolerance = 6.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED
@@ -93,7 +93,7 @@ impl Enemy {
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
-        let tolerance = 0.6;
+        let tolerance = 6.0;
 
         if direction.length() > tolerance {
             direction.normalize() * PLAYER_SPEED

@@ -9,9 +9,9 @@ use crate::game_util::{
 
 use super::player::Player;
 
-pub const X_BOUNDS: f32 = 100.0;
-pub const Y_BOUNDS: f32 = 50.0;
-pub const FALL_SPEED: f32 = 0.5;
+pub const X_BOUNDS: f32 = 1000.0;
+pub const Y_BOUNDS: f32 = 500.0;
+pub const FALL_SPEED: f32 = 4.0;
 
 #[derive(Debug)]
 pub struct ObjectPos {
