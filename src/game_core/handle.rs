@@ -27,12 +27,12 @@ pub fn handle_server(
         while let Ok(Some(message)) = receive_rx.try_next() {
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
-                    //info!("got game update: {:?}", game_update);
+                    info!("got game update: {:?}", game_update);
                     for (mut player, mut t) in query_player.iter_mut() {
                         if game_update.id == player.id {
                             //if we are ahead of the server, then pause the game for how many ticks we are ahead.
                             if game_update.tick_adjustment > 0 {
-                                client_tick.pause = game_update.tick_adjustment - 6;
+                                client_tick.pause = game_update.tick_adjustment - 4;
                                 player.adjust_iter = game_update.adjustment_iteration;
                             // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
                             } else if game_update.tick_adjustment < 0
@@ -91,7 +91,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = Some(new_game.server_tick + 6);
+                    client_tick.tick = Some(new_game.server_tick + 4);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
                     // info!("new game: {:?}", new_game);

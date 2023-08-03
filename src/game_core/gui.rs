@@ -95,6 +95,24 @@ pub fn setup_menu(
     client_tick: Res<ClientTick>,
     objects: Res<Objects>,
 ) {
+    if client_tick.tick.unwrap_or(0) % 30 == 0 {
+        for (mut player, _) in query_player.iter_mut() {
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+
+            player.name = player_name.name.clone();
+
+            match network_stuff
+                .write
+                .as_mut()
+                .unwrap()
+                .try_send(ClientMessage::PlayerInput(input))
+            {
+                Ok(()) => {}
+                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+            };
+        }
+    }
+
     let ctx = contexts.ctx_mut();
 
     for (_, mut sprite) in query_player.iter_mut() {
@@ -104,7 +122,7 @@ pub fn setup_menu(
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
-        .anchor(egui::Align2::CENTER_BOTTOM, egui::Vec2::ZERO)
+        .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             ui.label("Weekly Challenge 🏆: Collect 21 bolts as fast as you can!");
             ui.horizontal(|ui| {
@@ -129,20 +147,6 @@ pub fn setup_menu(
                     //send fake input to sync client and server before game starts
                     for (mut player, _) in query_player.iter_mut() {
                         player.spawn_time = Some(Instant::now());
-                        let input =
-                            PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
-
-                        player.name = player_name.name.clone();
-
-                        match network_stuff
-                            .write
-                            .as_mut()
-                            .unwrap()
-                            .try_send(ClientMessage::PlayerInput(input))
-                        {
-                            Ok(()) => {}
-                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                        };
                     }
 
                     next_state.set(GameStage::InGame);
@@ -166,20 +170,6 @@ pub fn setup_menu(
                     //send fake input to sync client and server before game starts
                     for (mut player, _) in query_player.iter_mut() {
                         player.spawn_time = Some(Instant::now());
-                        let input =
-                            PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
-
-                        player.name = player_name.name.clone();
-
-                        match network_stuff
-                            .write
-                            .as_mut()
-                            .unwrap()
-                            .try_send(ClientMessage::PlayerInput(input))
-                        {
-                            Ok(()) => {}
-                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                        };
                     }
                     next_state.set(GameStage::InGame);
                 }
@@ -273,13 +263,32 @@ pub fn game_over(
     mut next_state: ResMut<NextState<GameStage>>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
     objects: Res<Objects>,
+    client_tick: Res<ClientTick>,
 ) {
+    if client_tick.tick.unwrap_or(0) % 100 == 0 {
+        for (_, mut player, _) in query_player.iter_mut() {
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+
+            player.name = player_name.name.clone();
+
+            match network_stuff
+                .write
+                .as_mut()
+                .unwrap()
+                .try_send(ClientMessage::PlayerInput(input))
+            {
+                Ok(()) => {}
+                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+            };
+        }
+    }
+
     let ctx = contexts.ctx_mut();
 
     egui::Window::new("☔ rain.run              ")
         .resizable(false)
         .collapsible(false)
-        .anchor(egui::Align2::CENTER_BOTTOM, egui::Vec2::ZERO)
+        .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
                 let seconds = player.death_time.unwrap();

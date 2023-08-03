@@ -10,8 +10,8 @@ use crate::game_util::resources::{NetworkStuff, PingTimer};
 
 use super::messages::ClientMessage;
 
-//pub const DELAY: u32 = 200;
-//use gloo_timers::future::TimeoutFuture;
+// pub const DELAY: u32 = 0;
+// use gloo_timers::future::TimeoutFuture;
 
 pub fn websocket(mut network_stuff: ResMut<NetworkStuff>, mut ping: ResMut<PingTimer>) {
     //let ws = WebSocket::open("ws://0.0.0.0:3030/run").unwrap();
