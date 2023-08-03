@@ -274,7 +274,7 @@ pub fn game_over(
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
                 egui::Area::new("area")
-                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 220.0))
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 0.0))
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
                             if player.score == 21 {

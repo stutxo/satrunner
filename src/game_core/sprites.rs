@@ -127,7 +127,11 @@ pub fn spawn_enemies(
                 parent
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
-                        transform: Transform::from_translation(Vec3::new(0.0, -3., 0.0)),
+                        transform: Transform {
+                            translation: Vec3::new(0.0, -3., 0.0),
+                            scale: Vec2::new(0.1, 0.1).extend(1.),
+                            ..default()
+                        },
                         ..Default::default()
                     })
                     .insert(NamePlates);
