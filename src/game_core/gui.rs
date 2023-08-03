@@ -124,57 +124,6 @@ pub fn setup_menu(
         .collapsible(false)
         .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            ui.label("Weekly Challenge 🏆: Collect 21 bolts as fast as you can!");
-            ui.horizontal(|ui| {
-                ui.add(
-                    TextEdit::singleline(&mut player_name.name)
-                        .char_limit(25)
-                        .desired_width(100.0)
-                        .hint_text("Enter Name"),
-                );
-                if ui.button("play").clicked() && !player_name.name.is_empty() {
-                    player_name.submitted = true;
-                    match network_stuff
-                        .write
-                        .as_mut()
-                        .unwrap()
-                        .try_send(ClientMessage::PlayerName(player_name.name.clone()))
-                    {
-                        Ok(()) => {}
-                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                    };
-
-                    //send fake input to sync client and server before game starts
-                    for (mut player, _) in query_player.iter_mut() {
-                        player.spawn_time = Some(Instant::now());
-                    }
-
-                    next_state.set(GameStage::InGame);
-                }
-
-                let mut rand_name = Generator::default();
-                if ui.button("play as guest").clicked() {
-                    player_name.name = rand_name.next().unwrap();
-                    player_name.submitted = true;
-
-                    match network_stuff
-                        .write
-                        .as_mut()
-                        .unwrap()
-                        .try_send(ClientMessage::PlayerName(player_name.name.clone()))
-                    {
-                        Ok(()) => {}
-                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                    };
-
-                    //send fake input to sync client and server before game starts
-                    for (mut player, _) in query_player.iter_mut() {
-                        player.spawn_time = Some(Instant::now());
-                    }
-                    next_state.set(GameStage::InGame);
-                }
-            });
-            ui.separator();
             ui.label("High Scores");
             ui.label(format!(
                 "{}\n{}\n{}\n{}\n{}",
@@ -229,6 +178,39 @@ pub fn setup_menu(
                     ))
                     .unwrap_or_else(|| "".to_string()),
             ));
+
+            ui.label("Weekly Challenge 🏆");
+            ui.label("Collect 21 bolts as fast as you can!");
+            ui.add(
+                TextEdit::singleline(&mut player_name.name)
+                    .char_limit(25)
+                    .desired_width(125.0)
+                    .hint_text("Enter Name/LN Addr"),
+            );
+            ui.horizontal(|ui| {
+                let mut rand_name = Generator::default();
+                if ui.button("Random Name").clicked() {
+                    player_name.name = rand_name.next().unwrap();
+                }
+                if ui.button("Play").clicked() && !player_name.name.is_empty() {
+                    player_name.submitted = true;
+                    match network_stuff
+                        .write
+                        .as_mut()
+                        .unwrap()
+                        .try_send(ClientMessage::PlayerName(player_name.name.clone()))
+                    {
+                        Ok(()) => {}
+                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                    };
+
+                    for (mut player, _) in query_player.iter_mut() {
+                        player.spawn_time = Some(Instant::now());
+                    }
+
+                    next_state.set(GameStage::InGame);
+                }
+            });
         });
 }
 
@@ -291,48 +273,38 @@ pub fn game_over(
         .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
-                let seconds = player.death_time.unwrap();
-                let minutes = seconds / 60;
-                if player.score == 21 {
-                    ui.label("Challenge Complete! 🏆");
-                } else {
-                    ui.label("Challenge Failed! 🇱");
-                }
-                ui.horizontal(|ui| {
-                    ui.label(format!(
-                        "{}: {:02}/21⚡ ({:02}:{:02})",
-                        player.name,
-                        player.score,
-                        minutes % 60,
-                        seconds % 60,
-                    ));
-                    player_name.submitted = false;
-                    sprite.color = Color::GRAY;
-                    player.target = Vec2::ZERO;
-                    player.pending_inputs.clear();
-                    transform.translation = Vec3::new(0.0, -150.0, 0.1);
+                egui::Area::new("area")
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 220.0))
+                    .show(ctx, |ui| {
+                        ui.horizontal(|ui| {
+                            if player.score == 21 {
+                                ui.label("Challenge Complete! 🏆");
+                            }
+                            if ui.button("Play Again").clicked() {
+                                match network_stuff
+                                    .write
+                                    .as_mut()
+                                    .unwrap()
+                                    .try_send(ClientMessage::PlayerName(player_name.name.clone()))
+                                {
+                                    Ok(()) => {}
+                                    Err(e) => {
+                                        error!("Error sending message: {} CHANNEL FULL???", e)
+                                    }
+                                };
+                                player.score = 0;
+                                player_name.submitted = true;
+                                player.spawn_time = Some(Instant::now());
+                                next_state.set(GameStage::InGame);
+                            }
+                        });
 
-                    for mut text in query_text.iter_mut() {
-                        text.sections[0].value = String::new();
-                    }
-
-                    if ui.button("play again").clicked() {
-                        match network_stuff
-                            .write
-                            .as_mut()
-                            .unwrap()
-                            .try_send(ClientMessage::PlayerName(player_name.name.clone()))
-                        {
-                            Ok(()) => {}
-                            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                        };
-                        player.score = 0;
-                        player_name.submitted = true;
-                        player.spawn_time = Some(Instant::now());
-                        next_state.set(GameStage::InGame);
-                    }
-                });
-                ui.separator();
+                        player_name.submitted = false;
+                        sprite.color = Color::GRAY;
+                        player.target = Vec2::ZERO;
+                        player.pending_inputs.clear();
+                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
+                    });
                 ui.label("High Scores");
                 ui.label(format!(
                     "{}\n{}\n{}\n{}\n{}",
