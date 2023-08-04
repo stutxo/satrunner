@@ -53,14 +53,6 @@ pub fn handle_server(
                                 player.adjust_iter = game_update.adjustment_iteration;
 
                                 while ticks_behind < 0 {
-                                    ticks_behind += 1;
-
-                                    //we need to run handle dots/bolts here
-
-                                    // info!(
-                                    //     "adjusting: {}, player iter {:?}",
-                                    //     ticks_behind, player.adjust_iter
-                                    // );
                                     handle_rain_behind(
                                         &mut objects,
                                         &mut rain_pool,
@@ -74,6 +66,15 @@ pub fn handle_server(
                                         &client_tick,
                                     );
                                     player.apply_input(&mut t, &client_tick);
+                                    ticks_behind += 1;
+
+                                    //we need to run handle dots/bolts here
+
+                                    // info!(
+                                    //     "adjusting: {}, player iter {:?}",
+                                    //     ticks_behind, player.adjust_iter
+                                    // );
+
                                     if let Some(tick) = &mut client_tick.tick {
                                         *tick += 1;
                                     }
