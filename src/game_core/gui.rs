@@ -280,6 +280,18 @@ pub fn game_over(
                             if player.score == 21 {
                                 ui.label("Challenge Complete! 🏆");
                             }
+                            let seconds = player.death_time.unwrap();
+                            let minutes = seconds / 60;
+
+                            for mut text in query_text.iter_mut() {
+                                text.sections[0].value = format!(
+                                    "{:02}/21\n({:02}:{:02})\n{}",
+                                    player.score,
+                                    minutes % 60,
+                                    seconds % 60,
+                                    player.name
+                                );
+                            }
                             if ui.button("Play Again").clicked() {
                                 match network_stuff
                                     .write
