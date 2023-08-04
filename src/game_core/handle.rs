@@ -4,12 +4,18 @@ use speedy::Readable;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
-    game_util::resources::{ClientTick, NetworkStuff, Objects},
+    game_util::{
+        components::{Bolt, Rain},
+        resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
+    },
     network::messages::NetworkMessage,
     GameStage,
 };
 
-use super::player::{Enemy, Player};
+use super::{
+    objects::{handle_bolt_behind, handle_rain_behind},
+    player::{Enemy, Player},
+};
 
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
@@ -20,6 +26,13 @@ pub fn handle_server(
     mut objects: ResMut<Objects>,
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<GameStage>>,
+    mut rain_pool: ResMut<RainPool>,
+    mut rain: Query<(&Rain, &mut Visibility, &mut Transform), (Without<Player>, Without<Enemy>)>,
+    mut bolt_pool: ResMut<BoltPool>,
+    mut bolt: Query<
+        (&Bolt, &mut Visibility, &mut Transform),
+        (Without<Player>, Without<Enemy>, Without<Rain>),
+    >,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -40,12 +53,27 @@ pub fn handle_server(
                                 player.adjust_iter = game_update.adjustment_iteration;
 
                                 while ticks_behind < 0 {
-                                    player.apply_input(&mut t, &client_tick);
                                     ticks_behind += 1;
+
+                                    //we need to run handle dots/bolts here
+
                                     // info!(
                                     //     "adjusting: {}, player iter {:?}",
                                     //     ticks_behind, player.adjust_iter
                                     // );
+                                    handle_rain_behind(
+                                        &mut objects,
+                                        &mut rain_pool,
+                                        &mut rain,
+                                        &client_tick,
+                                    );
+                                    handle_bolt_behind(
+                                        &mut objects,
+                                        &mut bolt_pool,
+                                        &mut bolt,
+                                        &client_tick,
+                                    );
+                                    player.apply_input(&mut t, &client_tick);
                                     if let Some(tick) = &mut client_tick.tick {
                                         *tick += 1;
                                     }
