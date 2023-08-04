@@ -53,18 +53,18 @@ pub fn handle_server(
                                 player.adjust_iter = game_update.adjustment_iteration;
 
                                 while ticks_behind < 0 {
-                                    handle_rain_behind(
-                                        &mut objects,
-                                        &mut rain_pool,
-                                        &mut rain,
-                                        &client_tick,
-                                    );
-                                    handle_bolt_behind(
-                                        &mut objects,
-                                        &mut bolt_pool,
-                                        &mut bolt,
-                                        &client_tick,
-                                    );
+                                    // handle_rain_behind(
+                                    //     &mut objects,
+                                    //     &mut rain_pool,
+                                    //     &mut rain,
+                                    //     &client_tick,
+                                    // );
+                                    // handle_bolt_behind(
+                                    //     &mut objects,
+                                    //     &mut bolt_pool,
+                                    //     &mut bolt,
+                                    //     &client_tick,
+                                    // );
                                     player.apply_input(&mut t, &client_tick);
                                     ticks_behind += 1;
 
