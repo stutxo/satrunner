@@ -143,7 +143,7 @@ pub fn pool_rain(
 ) {
     let rain_image = asset_server.load("droplet.png");
 
-    for _ in 0..500 {
+    for _ in 0..1000 {
         let rain = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
@@ -167,7 +167,7 @@ pub fn pool_bolt(
 ) {
     let bolt_image = asset_server.load("high-voltage.png");
 
-    for _ in 0..100 {
+    for _ in 0..200 {
         let ln = commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
