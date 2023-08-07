@@ -20,7 +20,7 @@ use super::{
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
     mut query_player: Query<(&mut Player, &mut Transform)>,
-    mut query_enemy: Query<(Entity, &mut Enemy, &mut Transform), Without<Player>>,
+    mut query_enemy: Query<(Entity, &mut Enemy, &mut Transform, &mut Visibility), Without<Player>>,
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
     mut objects: ResMut<Objects>,
@@ -89,7 +89,7 @@ pub fn handle_server(
                             }
                         }
                     }
-                    for (_entity, mut enemy, mut t) in query_enemy.iter_mut() {
+                    for (_entity, mut enemy, mut t, _) in query_enemy.iter_mut() {
                         if game_update.id == enemy.id {
                             enemy.target.x = game_update.input[0];
                             enemy.target.y = game_update.input[1];
@@ -111,7 +111,7 @@ pub fn handle_server(
                             player.score = score.score;
                         }
                     }
-                    for (_entity, mut enemy, _t) in query_enemy.iter_mut() {
+                    for (_entity, mut enemy, _t, _) in query_enemy.iter_mut() {
                         if score.id == enemy.id {
                             enemy.score = score.score;
                         }
@@ -148,6 +148,11 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
                     //info!("player connected: {:?}", player_id);
+                    for (_entity, enemy, _t, mut visibility) in query_enemy.iter_mut() {
+                        if player.id == enemy.id {
+                            *visibility = Visibility::Visible;
+                        }
+                    }
                     spawn_enemies(
                         &mut commands,
                         &player.id,
@@ -160,7 +165,7 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     //info!("player disconnected: {:?}", player_id);
-                    for (entity, enemy, _t) in query_enemy.iter_mut() {
+                    for (entity, enemy, _t, _) in query_enemy.iter_mut() {
                         if player_id == enemy.id {
                             commands.entity(entity).despawn_recursive();
                         }
@@ -182,6 +187,11 @@ pub fn handle_server(
                         if damage.id == player.id {
                             player.death_time = Some(damage.secs_alive);
                             next_state.set(GameStage::GameOver);
+                        }
+                    }
+                    for (_entity, enemy, _t, mut visibility) in query_enemy.iter_mut() {
+                        if damage.id == enemy.id {
+                            *visibility = Visibility::Hidden;
                         }
                     }
                 }
