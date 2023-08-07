@@ -241,15 +241,21 @@ pub fn game_over(
     mut contexts: EguiContexts,
     mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
+    mut query_player: Query<(&Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
     objects: Res<Objects>,
     client_tick: Res<ClientTick>,
 ) {
     if client_tick.tick.unwrap_or(0) % 100 == 0 {
-        for (_, mut player, _) in query_player.iter_mut() {
-            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+        for (transform, mut player, _) in query_player.iter_mut() {
+            let input = PlayerInput::new(
+                transform.translation.truncate().into(),
+                player.id,
+                client_tick.tick.unwrap(),
+            );
+
+            info!("Sending input: {:?}", input);
 
             player.name = player_name.name.clone();
 
@@ -272,7 +278,7 @@ pub fn game_over(
         .collapsible(false)
         .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
+            for (transform, mut player, mut sprite) in query_player.iter_mut() {
                 egui::Area::new("area")
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, 120.0))
                     .show(ctx, |ui| {
@@ -310,12 +316,9 @@ pub fn game_over(
                                 next_state.set(GameStage::InGame);
                             }
                         });
-
+                        player.target = transform.translation.truncate();
                         player_name.submitted = false;
                         sprite.color = Color::GRAY;
-                        player.target = Vec2::ZERO;
-                        player.pending_inputs.clear();
-                        transform.translation = Vec3::new(0.0, -150.0, 0.1);
                     });
                 ui.label("High Scores");
                 ui.label(format!(
