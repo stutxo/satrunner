@@ -148,20 +148,24 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
                     //info!("player connected: {:?}", player_id);
+                    let mut enemy_spawned = Vec::new();
                     for (_entity, enemy, _t, mut visibility) in query_enemy.iter_mut() {
                         if player.id == enemy.id {
                             *visibility = Visibility::Visible;
+                            enemy_spawned.push(enemy.id);
                         }
                     }
-                    spawn_enemies(
-                        &mut commands,
-                        &player.id,
-                        None,
-                        None,
-                        0,
-                        Some(player.name),
-                        &asset_server,
-                    );
+                    if !enemy_spawned.contains(&player.id) {
+                        spawn_enemies(
+                            &mut commands,
+                            &player.id,
+                            None,
+                            None,
+                            0,
+                            Some(player.name),
+                            &asset_server,
+                        );
+                    }
                 }
                 Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
                     //info!("player disconnected: {:?}", player_id);
