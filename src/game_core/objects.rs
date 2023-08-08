@@ -11,7 +11,7 @@ use super::player::{Enemy, Player};
 
 pub const X_BOUNDS: f32 = 1000.0;
 pub const Y_BOUNDS: f32 = 500.0;
-pub const FALL_SPEED: f32 = 4.0;
+pub const FALL_SPEED: f32 = 1.0;
 
 #[derive(Debug)]
 pub struct ObjectPos {
@@ -44,7 +44,7 @@ pub fn handle_rain(
             }
 
             for object in objects.rain_pos.iter_mut() {
-                object.pos.y += FALL_SPEED * -0.5;
+                object.pos.y += FALL_SPEED * -1.;
             }
 
             objects.rain_pos.retain(|object| {
@@ -103,7 +103,7 @@ pub fn handle_bolt(
             }
 
             for object in objects.bolt_pos.iter_mut() {
-                object.pos.y += FALL_SPEED * -0.5;
+                object.pos.y += FALL_SPEED * -1.;
             }
 
             objects.bolt_pos.retain(|object| {
@@ -139,12 +139,9 @@ pub fn handle_bolt(
 }
 
 pub fn handle_rain_behind(
-    mut objects: &mut ResMut<Objects>,
-    mut rain_pool: &mut ResMut<RainPool>,
-    mut rain: &mut Query<
-        (&Rain, &mut Visibility, &mut Transform),
-        (Without<Player>, Without<Enemy>),
-    >,
+    objects: &mut ResMut<Objects>,
+    rain_pool: &mut ResMut<RainPool>,
+    rain: &mut Query<(&Rain, &mut Visibility, &mut Transform), (Without<Player>, Without<Enemy>)>,
     client_tick: &ResMut<ClientTick>,
 ) {
     if client_tick.pause == 0 {
@@ -202,9 +199,9 @@ pub fn handle_rain_behind(
 }
 
 pub fn handle_bolt_behind(
-    mut objects: &mut ResMut<Objects>,
-    mut bolt_pool: &mut ResMut<BoltPool>,
-    mut bolt: &mut Query<
+    objects: &mut ResMut<Objects>,
+    bolt_pool: &mut ResMut<BoltPool>,
+    bolt: &mut Query<
         (&Bolt, &mut Visibility, &mut Transform),
         (Without<Player>, Without<Enemy>, Without<Rain>),
     >,

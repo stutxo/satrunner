@@ -41,7 +41,7 @@ pub fn spawn_player(
                 ..default()
             },
             texture: player_image,
-            transform: Transform::from_translation(Vec3::new(0., -150., 0.1)),
+            transform: Transform::from_translation(Vec3::new(0., 0., 0.1)),
             ..Default::default()
         })
         .insert(Player {
@@ -56,7 +56,7 @@ pub fn spawn_player(
         })
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
+                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
                 projection: OrthographicProjection {
                     ..Default::default()
                 },
@@ -80,14 +80,14 @@ pub fn spawn_player(
 pub fn spawn_enemies(
     commands: &mut Commands,
     player_id: &Uuid,
-    player_pos: Option<f32>,
+    player_pos: Option<[f32; 2]>,
     target: Option<[f32; 2]>,
     score: usize,
     enemy_name: Option<String>,
     asset_server: &Res<AssetServer>,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
-    let player_pos = player_pos.unwrap_or(0.0);
+    let player_pos = player_pos.unwrap_or([0.0, 0.0]);
 
     if let Some(enemy_name) = enemy_name {
         let text = Text::from_sections([TextSection::new(
@@ -108,7 +108,11 @@ pub fn spawn_enemies(
                     ..default()
                 },
                 texture: player_image,
-                transform: Transform::from_translation(Vec3::new(player_pos, -150., 0.0)),
+                transform: Transform::from_translation(Vec3::new(
+                    player_pos[0],
+                    player_pos[1],
+                    0.0,
+                )),
                 ..Default::default()
             })
             .insert(Enemy {

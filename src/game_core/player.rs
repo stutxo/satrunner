@@ -5,7 +5,7 @@ use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
-pub const PLAYER_SPEED: f32 = 2.5;
+pub const PLAYER_SPEED: f32 = 2.0;
 
 #[derive(Component)]
 pub struct Player {
@@ -24,13 +24,14 @@ impl Player {
         &mut self,
         t: &mut Transform,
         client_tick: &ClientTick,
-        pos: f32,
+        pos: [f32; 2],
         server_tick: u64,
     ) {
         self.pending_inputs
             .retain(|input| input.tick >= server_tick);
 
-        t.translation.x = pos;
+        t.translation.x = pos[0];
+        t.translation.y = pos[1];
         for sim_tick in server_tick..=client_tick.tick.unwrap() {
             if let Some(tick_input) = self
                 .pending_inputs
@@ -52,7 +53,7 @@ impl Player {
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
-            t.translation += Vec3::new(movement.x, 0.0, 0.0);
+            t.translation += Vec3::new(movement.x, movement.y, 0.0);
         }
     }
 
@@ -86,7 +87,7 @@ impl Enemy {
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
-            t.translation += Vec3::new(movement.x, 0.0, 0.0);
+            t.translation += Vec3::new(movement.x, movement.y, 0.0);
         }
     }
 

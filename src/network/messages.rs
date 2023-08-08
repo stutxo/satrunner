@@ -25,7 +25,7 @@ pub struct NewPos {
     pub input: [f32; 2],
     pub tick: u64,
     pub id: Uuid,
-    pub pos: f32,
+    pub pos: [f32; 2],
     pub tick_adjustment: i64,
     pub adjustment_iteration: u64,
 }
@@ -54,7 +54,7 @@ pub struct NewGame {
 
 #[derive(Readable, Writable, Debug, Clone)]
 pub struct PlayerPos {
-    pub pos: Option<f32>,
+    pub pos: Option<[f32; 2]>,
     pub target: [f32; 2],
     pub score: usize,
     pub name: Option<String>,

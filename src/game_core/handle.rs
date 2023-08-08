@@ -93,7 +93,8 @@ pub fn handle_server(
                         if game_update.id == enemy.id {
                             enemy.target.x = game_update.input[0];
                             enemy.target.y = game_update.input[1];
-                            t.translation.x = game_update.pos;
+                            t.translation.x = game_update.pos[0];
+                            t.translation.y = game_update.pos[1];
                         }
                     }
                 }
