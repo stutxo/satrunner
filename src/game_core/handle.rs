@@ -45,7 +45,7 @@ pub fn handle_server(
                             if game_update.tick_adjustment > 0 {
                                 client_tick.pause = game_update.tick_adjustment - 4;
                                 player.adjust_iter = game_update.adjustment_iteration;
-                            // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
+                                // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
                             } else if game_update.tick_adjustment < 0
                                 && player.adjust_iter < game_update.adjustment_iteration
                             {

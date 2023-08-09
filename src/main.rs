@@ -21,7 +21,7 @@ mod game_core;
 mod game_util;
 mod network;
 
-pub const TICK_RATE: f32 = 1. / 30.;
+pub const TICK_RATE: f32 = 1. / 10.;
 
 fn main() {
     App::new()
