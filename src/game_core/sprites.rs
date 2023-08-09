@@ -1,4 +1,6 @@
 use bevy::{prelude::*, utils::Instant};
+
+use bevy_ecs_ldtk::LdtkWorldBundle;
 use uuid::Uuid;
 
 use crate::{
@@ -56,7 +58,7 @@ pub fn spawn_player(
         })
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
-                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+                transform: Transform::from_translation(Vec3::new(0., 0., 1.0)),
                 projection: OrthographicProjection {
                     ..Default::default()
                 },
@@ -66,7 +68,7 @@ pub fn spawn_player(
                 .spawn(Text2dBundle {
                     text: text.with_alignment(TextAlignment::Center),
                     transform: Transform {
-                        translation: Vec3::new(0.0, -30., 0.0),
+                        translation: Vec3::new(0.0, -30., 1.0),
                         ..default()
                     },
                     ..Default::default()
@@ -130,7 +132,7 @@ pub fn spawn_enemies(
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
                         transform: Transform {
-                            translation: Vec3::new(0.0, -30., 0.0),
+                            translation: Vec3::new(0.0, -30., 1.0),
                             ..default()
                         },
                         ..Default::default()
@@ -186,4 +188,12 @@ pub fn pool_bolt(
             .id();
         bolt_pool.0.push_back(ln);
     }
+}
+
+pub fn spawn_ldtk(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("test.ldtk"),
+        transform: Transform::from_translation(Vec3::new(0., 0., -1.)),
+        ..Default::default()
+    });
 }

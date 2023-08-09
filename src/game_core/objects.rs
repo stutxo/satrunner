@@ -94,7 +94,7 @@ pub fn handle_bolt(
 
             let y_position: f32 = Y_BOUNDS;
             if client_tick.tick.unwrap_or(0) % 10 == 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, y_position, 0.1);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -154,7 +154,7 @@ pub fn handle_rain_behind(
             let y_position: f32 = Y_BOUNDS;
 
             if client_tick.tick.unwrap_or(0) % 10 != 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, y_position, 0.1);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -216,7 +216,7 @@ pub fn handle_bolt_behind(
 
             let y_position: f32 = Y_BOUNDS;
             if client_tick.tick.unwrap_or(0) % 10 == 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, y_position, 0.1);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,

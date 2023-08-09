@@ -255,8 +255,6 @@ pub fn game_over(
                 client_tick.tick.unwrap(),
             );
 
-            info!("Sending input: {:?}", input);
-
             player.name = player_name.name.clone();
 
             match network_stuff

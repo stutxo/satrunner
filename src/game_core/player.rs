@@ -32,6 +32,7 @@ impl Player {
 
         t.translation.x = pos[0];
         t.translation.y = pos[1];
+
         for sim_tick in server_tick..=client_tick.tick.unwrap() {
             if let Some(tick_input) = self
                 .pending_inputs
@@ -48,12 +49,12 @@ impl Player {
 
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
-
+        t.translation.z = 0.2;
         if (t.translation.x + movement.x).abs() <= X_BOUNDS
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
-            t.translation += Vec3::new(movement.x, movement.y, 0.0);
+            t.translation += Vec3::new(movement.x, movement.y, 0.2);
         }
     }
 

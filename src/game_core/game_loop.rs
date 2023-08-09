@@ -12,6 +12,7 @@ pub fn player_loop(
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut player, mut sprite) in query_player.iter_mut() {
+        t.translation.z = 1.0;
         sprite.color = default();
 
         let duration = Instant::now() - player.spawn_time.unwrap();
@@ -27,9 +28,6 @@ pub fn player_loop(
                 player.name
             );
         }
-
-        //always set local player above other players
-        t.translation.z = 0.1;
 
         player.apply_input(&mut t, &client_tick);
     }
