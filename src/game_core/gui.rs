@@ -95,7 +95,7 @@ pub fn setup_menu(
     client_tick: Res<ClientTick>,
     objects: Res<Objects>,
 ) {
-    if client_tick.tick.unwrap_or(0) % 30 == 0 {
+    if client_tick.tick.unwrap_or(0) % 10 == 0 {
         for (mut player, _) in query_player.iter_mut() {
             let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
@@ -247,7 +247,7 @@ pub fn game_over(
     objects: Res<Objects>,
     client_tick: Res<ClientTick>,
 ) {
-    if client_tick.tick.unwrap_or(0) % 100 == 0 {
+    if client_tick.tick.unwrap_or(0) % 50 == 0 {
         for (transform, mut player, _) in query_player.iter_mut() {
             let input = PlayerInput::new(
                 transform.translation.truncate().into(),

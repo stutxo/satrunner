@@ -11,7 +11,7 @@ use super::player::{Enemy, Player};
 
 pub const X_BOUNDS: f32 = 1000.0;
 pub const Y_BOUNDS: f32 = 500.0;
-pub const FALL_SPEED: f32 = 5.0;
+pub const FALL_SPEED: f32 = 3.0;
 
 #[derive(Debug)]
 pub struct ObjectPos {
@@ -34,7 +34,7 @@ pub fn handle_rain(
 
             let y_position: f32 = Y_BOUNDS;
 
-            if client_tick.tick.unwrap_or(0) % 10 != 0 {
+            if client_tick.tick.unwrap_or(0) % 5 != 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
@@ -93,7 +93,7 @@ pub fn handle_bolt(
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
             let y_position: f32 = Y_BOUNDS;
-            if client_tick.tick.unwrap_or(0) % 10 == 0 {
+            if client_tick.tick.unwrap_or(0) % 5 == 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
@@ -153,7 +153,7 @@ pub fn handle_rain_behind(
 
             let y_position: f32 = Y_BOUNDS;
 
-            if client_tick.tick.unwrap_or(0) % 10 != 0 {
+            if client_tick.tick.unwrap_or(0) % 5 != 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
@@ -215,7 +215,7 @@ pub fn handle_bolt_behind(
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
             let y_position: f32 = Y_BOUNDS;
-            if client_tick.tick.unwrap_or(0) % 10 == 0 {
+            if client_tick.tick.unwrap_or(0) % 5 == 0 {
                 let pos_start = Vec3::new(x_position, y_position, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
