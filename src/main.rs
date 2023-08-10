@@ -48,7 +48,7 @@ fn main() {
             level_background: LevelBackground::Nonexistent,
             ..Default::default()
         })
-        .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
+        .register_ldtk_entity::<MyBundle>("background")
         .add_state::<GameStage>()
         .add_systems(Startup, (spawn_ldtk, websocket, pool_rain, pool_bolt))
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))

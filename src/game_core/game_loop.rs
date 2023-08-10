@@ -21,11 +21,10 @@ pub fn player_loop(
 
         for mut text in query_text.iter_mut() {
             text.sections[0].value = format!(
-                "{:02}/21\n({:02}:{:02})\n{}",
+                "{:02}/21\n({:02}:{:02})",
                 player.score,
                 minutes % 60,
                 seconds % 60,
-                player.name
             );
         }
 
