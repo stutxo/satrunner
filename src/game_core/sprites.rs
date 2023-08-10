@@ -132,7 +132,7 @@ pub fn spawn_enemies(
                     .spawn(Text2dBundle {
                         text: text.with_alignment(TextAlignment::Center),
                         transform: Transform {
-                            translation: Vec3::new(0.0, -30., 1.0),
+                            translation: Vec3::new(0.0, -30., 0.0),
                             ..default()
                         },
                         ..Default::default()

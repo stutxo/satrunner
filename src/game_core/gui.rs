@@ -63,7 +63,7 @@ pub fn score_board(
             score_list.push((
                 enemy.name.to_string(),
                 enemy.score.try_into().unwrap(),
-                egui::Color32::GRAY,
+                egui::Color32::WHITE,
                 seconds,
                 minutes,
             ));
