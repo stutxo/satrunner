@@ -37,7 +37,12 @@ pub fn score_board(
     if player_name.submitted {
         for player in query_player.iter() {
             let duration = Instant::now() - player.spawn_time.unwrap();
-            let seconds = duration.as_secs();
+
+            let seconds = if let Some(death_time) = player.death_time {
+                death_time
+            } else {
+                duration.as_secs()
+            };
             let minutes = seconds / 60;
 
             score_list.push((
@@ -307,9 +312,9 @@ pub fn game_over(
                                     }
                                 };
                                 player.score = 0;
-
                                 player.spawn_time = Some(Instant::now());
                                 next_state.set(GameStage::InGame);
+                                player.death_time = None;
                             }
                         });
                         player.target = transform.translation.truncate();

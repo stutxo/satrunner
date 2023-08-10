@@ -96,7 +96,7 @@ pub fn spawn_enemies(
             format!("{}:", enemy_name),
             TextStyle {
                 font_size: FONT_SIZE,
-                color: Color::GRAY,
+                color: Color::WHITE,
                 ..Default::default()
             },
         )]);
