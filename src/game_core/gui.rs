@@ -283,7 +283,7 @@ pub fn game_over(
                         ui.horizontal(|ui| {
                             if player.score == 21 {
                                 ui.label(
-                                    RichText::new("Challenge Complete! 🏆").color(Color32::RED),
+                                    RichText::new("Challenge Complete! 🏆").color(Color32::WHITE),
                                 );
                             }
                             let seconds = player.death_time.unwrap();
