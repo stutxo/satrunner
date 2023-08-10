@@ -247,7 +247,7 @@ pub fn game_over(
     client_tick: Res<ClientTick>,
 ) {
     if client_tick.tick.unwrap_or(0) % 50 == 0 {
-        for (transform, mut player, _) in query_player.iter_mut() {
+        for (transform, player, _) in query_player.iter_mut() {
             let input = PlayerInput::new(
                 transform.translation.truncate().into(),
                 player.id,
@@ -307,13 +307,12 @@ pub fn game_over(
                                     }
                                 };
                                 player.score = 0;
-                                player_name.submitted = true;
+
                                 player.spawn_time = Some(Instant::now());
                                 next_state.set(GameStage::InGame);
                             }
                         });
                         player.target = transform.translation.truncate();
-                        player_name.submitted = false;
                         sprite.color = Color::GRAY;
                     });
                 ui.label("High Scores");
