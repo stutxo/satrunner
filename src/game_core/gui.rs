@@ -41,7 +41,7 @@ pub fn score_board(
             let minutes = seconds / 60;
 
             score_list.push((
-                player_name.name.clone(),
+                player.name.to_string(),
                 player.score.try_into().unwrap(),
                 egui::Color32::GREEN,
                 seconds,
@@ -96,10 +96,8 @@ pub fn setup_menu(
     objects: Res<Objects>,
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
-        for (mut player, _) in query_player.iter_mut() {
+        for (player, _) in query_player.iter_mut() {
             let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
-
-            player.name = player_name.name.clone();
 
             match network_stuff
                 .write
@@ -206,6 +204,7 @@ pub fn setup_menu(
 
                     for (mut player, _) in query_player.iter_mut() {
                         player.spawn_time = Some(Instant::now());
+                        player.name = player_name.name.clone();
                     }
 
                     next_state.set(GameStage::InGame);
@@ -254,8 +253,6 @@ pub fn game_over(
                 player.id,
                 client_tick.tick.unwrap(),
             );
-
-            player.name = player_name.name.clone();
 
             match network_stuff
                 .write
