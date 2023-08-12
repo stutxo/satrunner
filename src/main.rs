@@ -51,6 +51,7 @@ fn main() {
         .register_ldtk_entity::<MyBundle>("background")
         .add_state::<GameStage>()
         .add_systems(Startup, (spawn_ldtk, websocket, pool_rain, pool_bolt))
+        // .add_systems(Startup, (websocket, pool_rain, pool_bolt))
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
         .add_systems(FixedUpdate, (tick, enemy_loop, handle_rain, handle_bolt))

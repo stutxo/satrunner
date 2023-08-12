@@ -35,7 +35,6 @@ pub fn player_loop(
 pub fn enemy_loop(
     mut query_enemy: Query<(&mut Transform, &mut Enemy)>,
     mut query_text: Query<&mut Text, With<NamePlates>>,
-
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {

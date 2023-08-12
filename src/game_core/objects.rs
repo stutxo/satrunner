@@ -12,6 +12,7 @@ use super::player::{Enemy, Player};
 pub const X_BOUNDS: f32 = 1000.0;
 pub const Y_BOUNDS: f32 = 500.0;
 pub const FALL_SPEED: f32 = 3.0;
+pub const Y_BOUNDS_DELAY: f32 = 505.0;
 
 #[derive(Debug)]
 pub struct ObjectPos {
@@ -32,10 +33,8 @@ pub fn handle_rain(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            let y_position: f32 = Y_BOUNDS;
-
             if client_tick.tick.unwrap_or(0) % 5 != 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, Y_BOUNDS_DELAY, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -49,7 +48,7 @@ pub fn handle_rain(
 
             objects.rain_pos.retain(|object| {
                 object.pos.y >= -Y_BOUNDS
-                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS_DELAY
                     && object.pos.x >= -X_BOUNDS
                     && object.pos.x <= X_BOUNDS
             });
@@ -92,9 +91,8 @@ pub fn handle_bolt(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            let y_position: f32 = Y_BOUNDS;
             if client_tick.tick.unwrap_or(0) % 5 == 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, Y_BOUNDS_DELAY, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -108,7 +106,7 @@ pub fn handle_bolt(
 
             objects.bolt_pos.retain(|object| {
                 object.pos.y >= -Y_BOUNDS
-                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS_DELAY
                     && object.pos.x >= -X_BOUNDS
                     && object.pos.x <= X_BOUNDS
             });
@@ -151,10 +149,8 @@ pub fn handle_rain_behind(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            let y_position: f32 = Y_BOUNDS;
-
             if client_tick.tick.unwrap_or(0) % 5 != 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, Y_BOUNDS_DELAY, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -163,12 +159,12 @@ pub fn handle_rain_behind(
             }
 
             for object in objects.rain_pos.iter_mut() {
-                object.pos.y += FALL_SPEED * -0.5;
+                object.pos.y += FALL_SPEED * -1.0;
             }
 
             objects.rain_pos.retain(|object| {
                 object.pos.y >= -Y_BOUNDS
-                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS_DELAY
                     && object.pos.x >= -X_BOUNDS
                     && object.pos.x <= X_BOUNDS
             });
@@ -214,9 +210,8 @@ pub fn handle_bolt_behind(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            let y_position: f32 = Y_BOUNDS;
             if client_tick.tick.unwrap_or(0) % 5 == 0 {
-                let pos_start = Vec3::new(x_position, y_position, 0.0);
+                let pos_start = Vec3::new(x_position, Y_BOUNDS_DELAY, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
                     pos: pos_start,
@@ -225,12 +220,12 @@ pub fn handle_bolt_behind(
             }
 
             for object in objects.bolt_pos.iter_mut() {
-                object.pos.y += FALL_SPEED * -0.5;
+                object.pos.y += FALL_SPEED * -1.0;
             }
 
             objects.bolt_pos.retain(|object| {
                 object.pos.y >= -Y_BOUNDS
-                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS + 1.0
                     && object.pos.x >= -X_BOUNDS
                     && object.pos.x <= X_BOUNDS
             });

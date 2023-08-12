@@ -243,7 +243,7 @@ pub fn check_disconnected(
 
 pub fn game_over(
     mut contexts: EguiContexts,
-    mut player_name: ResMut<PlayerName>,
+    player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
     mut query_player: Query<(&Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,

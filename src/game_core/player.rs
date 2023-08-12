@@ -1,7 +1,12 @@
+use std::collections::VecDeque;
+
 use bevy::{prelude::*, utils::Instant};
 use uuid::Uuid;
 
-use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
+use crate::{
+    game_util::resources::ClientTick,
+    network::messages::{NewPos, PlayerInput},
+};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
