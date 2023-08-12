@@ -225,7 +225,7 @@ pub fn handle_bolt_behind(
 
             objects.bolt_pos.retain(|object| {
                 object.pos.y >= -Y_BOUNDS
-                    && object.pos.y <= Y_BOUNDS + 1.0
+                    && object.pos.y <= Y_BOUNDS_DELAY
                     && object.pos.x >= -X_BOUNDS
                     && object.pos.x <= X_BOUNDS
             });
