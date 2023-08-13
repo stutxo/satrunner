@@ -92,7 +92,7 @@ pub fn handle_server(
 
                             // info!("input {:?}", input);
 
-                            enemy.server_reconciliation(&mut t, &client_tick, input.tick);
+                            enemy.enemy_reconciliation(&mut t, &client_tick, input.tick);
                         }
                     }
                 }
