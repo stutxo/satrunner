@@ -126,6 +126,8 @@ pub fn spawn_enemies(
                 score,
                 name: enemy_name,
                 spawn_time: Instant::now(),
+                last_processed_tick: 0,
+                has_reconciled: false,
             })
             .with_children(|parent| {
                 parent

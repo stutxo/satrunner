@@ -78,6 +78,8 @@ pub struct Enemy {
     pub score: usize,
     pub name: String,
     pub spawn_time: Instant,
+    pub last_processed_tick: u64,
+    pub has_reconciled: bool,
 }
 
 impl Enemy {
@@ -85,16 +87,32 @@ impl Enemy {
         &mut self,
         t: &mut Transform,
         client_tick: &ClientTick,
-        input_tick: u64,
+        enemy_tick: u64,
     ) {
-        for _ in input_tick..=client_tick.tick.unwrap() {
+        // If the tick of the incoming input is less than or equal to
+        // the last processed tick, then ignore this input
+        if enemy_tick <= self.last_processed_tick {
+            return;
+        }
+
+        for _ in enemy_tick..=client_tick.tick.unwrap() {
+            // info!(
+            //     "enemy tick {}, client tick: {}, t {}",
+            //     enemy_tick,
+            //     client_tick.tick.unwrap(),
+            //     t.translation,
+            // );
             self.apply_input(t, client_tick);
         }
+
+        // Update the last processed tick
+        self.last_processed_tick = client_tick.tick.unwrap();
+        self.has_reconciled = true;
     }
 
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
-
+        info!("t: {:?}", t.translation);
         if (t.translation.x + movement.x).abs() <= X_BOUNDS
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0

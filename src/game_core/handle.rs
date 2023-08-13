@@ -8,7 +8,7 @@ use crate::{
         components::{Bolt, Rain},
         resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
-    network::messages::NetworkMessage,
+    network::messages::{NetworkMessage, PlayerInput},
     GameStage,
 };
 
@@ -17,6 +17,7 @@ use super::{
     player::{Enemy, Player},
 };
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
     mut query_player: Query<(&mut Player, &mut Transform)>,
@@ -95,6 +96,9 @@ pub fn handle_server(
                         if input.id == enemy.id {
                             enemy.target.x = input.target[0];
                             enemy.target.y = input.target[1];
+
+                            info!("input {:?}", input);
+
                             enemy.server_reconciliation(&mut t, &client_tick, input.tick);
                         }
                     }

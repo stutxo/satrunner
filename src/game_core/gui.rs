@@ -241,6 +241,7 @@ pub fn check_disconnected(
     }
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn game_over(
     mut contexts: EguiContexts,
     player_name: ResMut<PlayerName>,

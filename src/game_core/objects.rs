@@ -135,6 +135,7 @@ pub fn handle_bolt(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn handle_rain_behind(
     objects: &mut ResMut<Objects>,
     rain_pool: &mut ResMut<RainPool>,
@@ -193,6 +194,7 @@ pub fn handle_rain_behind(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn handle_bolt_behind(
     objects: &mut ResMut<Objects>,
     bolt_pool: &mut ResMut<BoltPool>,
