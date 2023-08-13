@@ -85,11 +85,9 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::PlayerInput(input)) => {
-                    for (_entity, mut enemy, mut t, _) in query_enemy.iter_mut() {
+                    for (_, mut enemy, _, _) in query_enemy.iter_mut() {
                         if input.id == enemy.id {
-                            enemy.target.x = input.target[0];
-                            enemy.target.y = input.target[1];
-                            enemy.enemy_reconciliation(&mut t, &client_tick, input.tick);
+                            enemy.pending_inputs.push_back(input.clone());
                         }
                     }
                 }

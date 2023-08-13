@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::{
     prelude::*,
     utils::{HashMap, Instant},
@@ -81,6 +83,7 @@ pub struct Enemy {
     pub name: String,
     pub spawn_time: Instant,
     pub past_pos: HashMap<u64, Vec3>,
+    pub pending_inputs: VecDeque<PlayerInput>,
 }
 
 impl Enemy {

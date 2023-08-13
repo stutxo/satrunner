@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::{
     prelude::*,
     utils::{HashMap, Instant},
@@ -129,7 +131,7 @@ pub fn spawn_enemies(
                 score,
                 name: enemy_name,
                 spawn_time: Instant::now(),
-
+                pending_inputs: VecDeque::new(),
                 past_pos: HashMap::new(),
             })
             .with_children(|parent| {
