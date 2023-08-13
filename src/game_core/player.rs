@@ -90,6 +90,8 @@ impl Enemy {
         client_tick: &ClientTick,
         enemy_tick: u64,
     ) {
+        self.past_pos.retain(|&tick, _| tick >= enemy_tick);
+
         if let Some(position) = self.past_pos.get(&enemy_tick) {
             t.translation = *position;
         }
