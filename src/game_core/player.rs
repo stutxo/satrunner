@@ -80,7 +80,6 @@ pub struct Enemy {
     pub score: usize,
     pub name: String,
     pub spawn_time: Instant,
-    pub pending_inputs: Vec<PlayerInput>,
     pub past_pos: HashMap<u64, Vec3>,
 }
 
@@ -91,21 +90,11 @@ impl Enemy {
         client_tick: &ClientTick,
         enemy_tick: u64,
     ) {
-        self.pending_inputs.retain(|input| input.tick >= enemy_tick);
-
         if let Some(position) = self.past_pos.get(&enemy_tick) {
             t.translation = *position;
         }
 
         for _ in enemy_tick..=client_tick.tick.unwrap() {
-            if let Some(tick_input) = self
-                .pending_inputs
-                .iter()
-                .find(|input| input.tick == enemy_tick)
-            {
-                self.target.x = tick_input.target[0];
-                self.target.y = tick_input.target[1];
-            }
             self.catchup_input(t, client_tick);
         }
     }
@@ -136,25 +125,13 @@ impl Enemy {
     }
 
     pub fn catchup_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
-        let movement = self.catchup_calculate_movement(t);
+        let movement = self.calculate_movement(t);
 
         if (t.translation.x + movement.x).abs() <= X_BOUNDS
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
         {
             t.translation += Vec3::new(movement.x, movement.y, 0.0);
-        }
-    }
-
-    pub fn catchup_calculate_movement(&self, t: &Transform) -> Vec2 {
-        let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
-
-        let tolerance = 6.0;
-
-        if direction.length() > tolerance {
-            direction.normalize() * PLAYER_SPEED
-        } else {
-            Vec2::ZERO
         }
     }
 }

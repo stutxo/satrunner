@@ -89,9 +89,6 @@ pub fn handle_server(
                         if input.id == enemy.id {
                             enemy.target.x = input.target[0];
                             enemy.target.y = input.target[1];
-
-                            // info!("input {:?}", input);
-
                             enemy.enemy_reconciliation(&mut t, &client_tick, input.tick);
                         }
                     }
