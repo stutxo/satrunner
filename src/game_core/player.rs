@@ -1,12 +1,7 @@
-use std::collections::VecDeque;
-
 use bevy::{prelude::*, utils::Instant};
 use uuid::Uuid;
 
-use crate::{
-    game_util::resources::ClientTick,
-    network::messages::{NewPos, PlayerInput},
-};
+use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
@@ -86,6 +81,17 @@ pub struct Enemy {
 }
 
 impl Enemy {
+    pub fn server_reconciliation(
+        &mut self,
+        t: &mut Transform,
+        client_tick: &ClientTick,
+        input_tick: u64,
+    ) {
+        for _ in input_tick..=client_tick.tick.unwrap() {
+            self.apply_input(t, client_tick);
+        }
+    }
+
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
 
