@@ -8,7 +8,7 @@ use crate::{
         components::{Bolt, Rain},
         resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
-    network::messages::{NetworkMessage, PlayerInput},
+    network::messages::NetworkMessage,
     GameStage,
 };
 
@@ -69,13 +69,6 @@ pub fn handle_server(
                                     player.apply_input(&mut t, &client_tick);
                                     ticks_behind += 1;
 
-                                    //we need to run handle dots/bolts here
-
-                                    // info!(
-                                    //     "adjusting: {}, player iter {:?}",
-                                    //     ticks_behind, player.adjust_iter
-                                    // );
-
                                     if let Some(tick) = &mut client_tick.tick {
                                         *tick += 1;
                                     }
@@ -97,7 +90,7 @@ pub fn handle_server(
                             enemy.target.x = input.target[0];
                             enemy.target.y = input.target[1];
 
-                            info!("input {:?}", input);
+                            // info!("input {:?}", input);
 
                             enemy.server_reconciliation(&mut t, &client_tick, input.tick);
                         }
