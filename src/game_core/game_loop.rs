@@ -52,11 +52,7 @@ pub fn enemy_loop(
             );
         }
 
-        if !enemy.has_reconciled {
-            enemy.apply_input(&mut t, &client_tick);
-        } else {
-            enemy.has_reconciled = false;
-        }
+        enemy.apply_input(&mut t, &client_tick);
     }
 }
 

@@ -1,4 +1,7 @@
-use bevy::{prelude::*, utils::Instant};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, Instant},
+};
 
 use bevy_ecs_ldtk::LdtkWorldBundle;
 use uuid::Uuid;
@@ -126,8 +129,8 @@ pub fn spawn_enemies(
                 score,
                 name: enemy_name,
                 spawn_time: Instant::now(),
-                last_processed_tick: 0,
-                has_reconciled: false,
+                pending_inputs: Vec::new(),
+                past_pos: HashMap::new(),
             })
             .with_children(|parent| {
                 parent
