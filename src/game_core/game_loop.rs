@@ -69,10 +69,11 @@ pub fn handle_enemy_input(
     client_tick: Res<ClientTick>,
 ) {
     for (mut enemy, mut t) in query_enemy.iter_mut() {
-        while let Some(input) = enemy.pending_inputs.pop_front() {
+        if let Some(input) = enemy.pending_inputs.front().cloned() {
             enemy.target.x = input.target[0];
             enemy.target.y = input.target[1];
             enemy.enemy_reconciliation(&mut t, &client_tick, input.tick);
+            enemy.pending_inputs.pop_front();
         }
     }
 }
