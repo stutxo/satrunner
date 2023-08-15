@@ -83,6 +83,19 @@ pub fn handle_server(
                             }
                         }
                     }
+
+                    for (_, mut enemy, mut t, _) in query_enemy.iter_mut() {
+                        if game_update.id == enemy.id {
+                            enemy.target.x = game_update.input[0];
+                            enemy.target.y = game_update.input[1];
+                            enemy.enemy_reconciliation(
+                                &mut t,
+                                &client_tick,
+                                game_update.pos,
+                                game_update.tick,
+                            );
+                        }
+                    }
                 }
                 Ok(NetworkMessage::PlayerInput(input)) => {
                     for (_, mut enemy, _, _) in query_enemy.iter_mut() {
@@ -188,8 +201,11 @@ pub fn handle_server(
                             next_state.set(GameStage::GameOver);
                         }
                     }
-                    for (_entity, enemy, _t, mut visibility) in query_enemy.iter_mut() {
+                    for (_entity, mut enemy, mut t, mut visibility) in query_enemy.iter_mut() {
                         if damage.id == enemy.id {
+                            t.translation.x = damage.pos[0];
+                            t.translation.y = damage.pos[1];
+                            enemy.target = t.translation.truncate();
                             *visibility = Visibility::Hidden;
                         }
                     }

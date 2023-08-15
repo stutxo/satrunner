@@ -89,11 +89,11 @@ impl Enemy {
         &mut self,
         t: &mut Transform,
         client_tick: &ClientTick,
+        pos: [f32; 2],
         enemy_tick: u64,
     ) {
-        if let Some(position) = self.past_pos.get(&enemy_tick) {
-            t.translation = *position;
-        }
+        t.translation.x = pos[0];
+        t.translation.y = pos[1];
 
         for _ in enemy_tick..client_tick.tick.unwrap() {
             self.apply_input(t, client_tick);
