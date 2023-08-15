@@ -53,6 +53,10 @@ pub fn enemy_loop(
         }
 
         enemy.apply_input(&mut t, &client_tick);
+
+        enemy
+            .past_pos
+            .insert(client_tick.tick.unwrap(), t.translation);
     }
 }
 

@@ -37,7 +37,7 @@ impl Player {
         t.translation.x = pos[0];
         t.translation.y = pos[1];
 
-        for sim_tick in server_tick..=client_tick.tick.unwrap() {
+        for sim_tick in server_tick..client_tick.tick.unwrap() {
             if let Some(tick_input) = self
                 .pending_inputs
                 .iter()
@@ -46,14 +46,12 @@ impl Player {
                 self.target.x = tick_input.target[0];
                 self.target.y = tick_input.target[1];
             }
-            //info!("sim tick: {}, recon tick {}", sim_tick, recon_to_tick);
             self.apply_input(t, client_tick);
         }
     }
 
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
-        t.translation.z = 0.2;
         if (t.translation.x + movement.x).abs() <= X_BOUNDS
             && (t.translation.y + movement.y).abs() <= Y_BOUNDS
             && client_tick.pause == 0
@@ -97,8 +95,8 @@ impl Enemy {
             t.translation = *position;
         }
 
-        for _ in enemy_tick..=client_tick.tick.unwrap() {
-            self.catchup_input(t, client_tick, enemy_tick);
+        for _ in enemy_tick..client_tick.tick.unwrap() {
+            self.catchup_input(t, client_tick);
         }
     }
 
@@ -115,6 +113,17 @@ impl Enemy {
         }
     }
 
+    pub fn catchup_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
+        let movement = self.calculate_movement(t);
+
+        if (t.translation.x + movement.x).abs() <= X_BOUNDS
+            && (t.translation.y + movement.y).abs() <= Y_BOUNDS
+            && client_tick.pause == 0
+        {
+            t.translation += Vec3::new(movement.x, movement.y, 0.0);
+        }
+    }
+
     pub fn calculate_movement(&self, t: &Transform) -> Vec2 {
         let direction = self.target - Vec2::new(t.translation.x, t.translation.y);
 
@@ -124,18 +133,6 @@ impl Enemy {
             direction.normalize() * PLAYER_SPEED
         } else {
             Vec2::ZERO
-        }
-    }
-
-    pub fn catchup_input(&mut self, t: &mut Transform, client_tick: &ClientTick, input_tick: u64) {
-        let movement = self.calculate_movement(t);
-
-        if (t.translation.x + movement.x).abs() <= X_BOUNDS
-            && (t.translation.y + movement.y).abs() <= Y_BOUNDS
-            && client_tick.pause == 0
-        {
-            t.translation += Vec3::new(movement.x, movement.y, 0.0);
-            self.past_pos.insert(input_tick, t.translation);
         }
     }
 }
