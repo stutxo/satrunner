@@ -96,24 +96,11 @@ impl Enemy {
         }
 
         for _ in enemy_tick..client_tick.tick.unwrap() {
-            self.catchup_input(t, client_tick);
+            self.apply_input(t, client_tick);
         }
     }
 
     pub fn apply_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
-        let movement = self.calculate_movement(t);
-
-        if (t.translation.x + movement.x).abs() <= X_BOUNDS
-            && (t.translation.y + movement.y).abs() <= Y_BOUNDS
-            && client_tick.pause == 0
-        {
-            t.translation += Vec3::new(movement.x, movement.y, 0.0);
-            self.past_pos
-                .insert(client_tick.tick.unwrap(), t.translation);
-        }
-    }
-
-    pub fn catchup_input(&mut self, t: &mut Transform, client_tick: &ClientTick) {
         let movement = self.calculate_movement(t);
 
         if (t.translation.x + movement.x).abs() <= X_BOUNDS
