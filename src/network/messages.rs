@@ -49,7 +49,7 @@ pub struct NewGame {
     pub id: Uuid,
     pub server_tick: u64,
     pub rng_seed: u64,
-    pub player_positions: HashMap<Uuid, PlayerPos>,
+    // pub player_positions: HashMap<Uuid, PlayerPos>,
     pub high_scores: Vec<(String, u64)>,
 }
 

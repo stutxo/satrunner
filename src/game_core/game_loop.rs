@@ -52,7 +52,9 @@ pub fn enemy_loop(
             );
         }
 
-        enemy.apply_input(&mut t, &client_tick);
+        if !enemy.dead {
+            enemy.apply_input(&mut t, &client_tick);
+        }
     }
 }
 

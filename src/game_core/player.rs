@@ -82,6 +82,7 @@ pub struct Enemy {
     pub spawn_time: Instant,
     pub past_pos: HashMap<u64, Vec3>,
     pub pending_inputs: VecDeque<PlayerInput>,
+    pub dead: bool,
 }
 
 impl Enemy {

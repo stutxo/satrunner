@@ -85,7 +85,7 @@ pub fn handle_server(
                     }
 
                     for (_, mut enemy, mut t, _) in query_enemy.iter_mut() {
-                        if game_update.id == enemy.id {
+                        if game_update.id == enemy.id && !enemy.dead {
                             enemy.target.x = game_update.input[0];
                             enemy.target.y = game_update.input[1];
                             enemy.enemy_reconciliation(
@@ -126,40 +126,36 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = Some(new_game.server_tick + 4);
+                    client_tick.tick = Some(new_game.server_tick + 2);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
                     // info!("new game: {:?}", new_game);
 
-                    for (id, player_pos) in &new_game.player_positions {
-                        if id == &new_game.id {
-                            spawn_player(
-                                &mut commands,
-                                &new_game.id,
-                                &asset_server,
-                                &mut next_state,
-                            );
-                        } else if player_pos.alive {
-                            spawn_enemies(
-                                &mut commands,
-                                id,
-                                player_pos.pos,
-                                Some(player_pos.target),
-                                player_pos.score,
-                                player_pos.name.clone(),
-                                &asset_server,
-                            );
-                        }
-                    }
+                    // for (id, player_pos) in &new_game.player_positions {
+                    //     if id == &new_game.id {
+                    spawn_player(&mut commands, &new_game.id, &asset_server, &mut next_state);
+                    //     } else if player_pos.alive {
+                    //         spawn_enemies(
+                    //             &mut commands,
+                    //             id,
+                    //             player_pos.pos,
+                    //             Some(player_pos.target),
+                    //             player_pos.score,
+                    //             player_pos.name.clone(),
+                    //             &asset_server,
+                    //         );
+                    //     }
+                    // }
 
                     // info!("players: {:?}", new_game.player_positions);
                 }
                 Ok(NetworkMessage::PlayerConnected(player)) => {
                     //info!("player connected: {:?}", player_id);
                     let mut enemy_spawned = Vec::new();
-                    for (_entity, enemy, _t, mut visibility) in query_enemy.iter_mut() {
+                    for (_entity, mut enemy, _t, mut visibility) in query_enemy.iter_mut() {
                         if player.id == enemy.id {
                             *visibility = Visibility::Visible;
+                            enemy.dead = false;
                             enemy_spawned.push(enemy.id);
                         }
                     }
@@ -195,14 +191,18 @@ pub fn handle_server(
                     } else {
                         objects.high_scores = damage.high_scores.unwrap();
                     }
-                    for (mut player, _t) in query_player.iter_mut() {
+                    for (mut player, mut t) in query_player.iter_mut() {
                         if damage.id == player.id {
+                            t.translation.x = damage.pos[0];
+                            t.translation.y = damage.pos[1];
                             player.death_time = Some(damage.secs_alive);
+                            player.target = t.translation.truncate();
                             next_state.set(GameStage::GameOver);
                         }
                     }
                     for (_entity, mut enemy, mut t, mut visibility) in query_enemy.iter_mut() {
                         if damage.id == enemy.id {
+                            enemy.dead = true;
                             t.translation.x = damage.pos[0];
                             t.translation.y = damage.pos[1];
                             enemy.target = t.translation.truncate();

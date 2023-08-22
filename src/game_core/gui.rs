@@ -96,13 +96,17 @@ pub fn setup_menu(
     mut next_state: ResMut<NextState<GameStage>>,
     mut player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    mut query_player: Query<(&mut Player, &mut Sprite)>,
+    mut query_player: Query<(&mut Player, &mut Sprite, &Transform)>,
     client_tick: Res<ClientTick>,
     objects: Res<Objects>,
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
-        for (player, _) in query_player.iter_mut() {
-            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+        for (player, _, t) in query_player.iter_mut() {
+            let input = PlayerInput::new(
+                t.translation.truncate().into(),
+                player.id,
+                client_tick.tick.unwrap(),
+            );
 
             match network_stuff
                 .write
@@ -118,7 +122,7 @@ pub fn setup_menu(
 
     let ctx = contexts.ctx_mut();
 
-    for (_, mut sprite) in query_player.iter_mut() {
+    for (_, mut sprite, _) in query_player.iter_mut() {
         sprite.color = Color::GRAY;
     }
 
@@ -207,7 +211,7 @@ pub fn setup_menu(
                         Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
                     };
 
-                    for (mut player, _) in query_player.iter_mut() {
+                    for (mut player, _, _) in query_player.iter_mut() {
                         player.spawn_time = Some(Instant::now());
                         player.name = player_name.name.clone();
                     }
