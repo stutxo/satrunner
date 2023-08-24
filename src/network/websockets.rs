@@ -34,7 +34,7 @@ pub fn websocket(mut network_stuff: ResMut<NetworkStuff>, mut ping: ResMut<PingT
             let message = message.write_to_vec().unwrap();
 
             TimeoutFuture::new(DELAY).await;
-            info!("sending message, {:?}", message);
+
             let send = write.send(Message::Bytes(message)).await;
 
             match send {

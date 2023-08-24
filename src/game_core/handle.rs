@@ -37,7 +37,6 @@ pub fn handle_server(
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
-            info!("Got message {:?}", message);
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
                     for (mut player, mut t) in query_player.iter_mut() {
@@ -183,12 +182,14 @@ pub fn handle_server(
                         if sync_client.tick_adjustment > 0
                             && client_tick.tick.unwrap() > sync_client.server_tick
                         {
+                            info!("tick ahead: {}", sync_client.tick_adjustment);
                             client_tick.pause = sync_client.tick_adjustment - 2;
 
                             // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
+                            info!("tick behind: {}", sync_client.tick_adjustment);
                             let mut ticks_behind = sync_client.tick_adjustment - 2;
                             // player.adjust_iter = sync_client.adjustment_iteration;
 
