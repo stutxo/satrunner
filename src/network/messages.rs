@@ -13,6 +13,7 @@ pub enum NetworkMessage {
     Ping,
     DamagePlayer(Damage),
     PlayerInput(PlayerInput),
+    SyncClient(SyncMessage),
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -27,8 +28,12 @@ pub struct NewPos {
     pub tick: u64,
     pub id: Uuid,
     pub pos: [f32; 2],
+}
+
+#[derive(Readable, Writable, Debug, Clone, Default)]
+pub struct SyncMessage {
     pub tick_adjustment: i64,
-    pub adjustment_iteration: u64,
+    pub server_tick: u64,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]

@@ -37,50 +37,17 @@ pub fn handle_server(
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
+            info!("Got message {:?}", message);
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
-                    // info!("got game update: {:?}", game_update);
                     for (mut player, mut t) in query_player.iter_mut() {
                         if game_update.id == player.id {
-                            //if we are ahead of the server, then pause the game for how many ticks we are ahead.
-                            if game_update.tick_adjustment > 0 {
-                                client_tick.pause = game_update.tick_adjustment - 2;
-                                player.adjust_iter = game_update.adjustment_iteration;
-                                // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
-                            } else if game_update.tick_adjustment < 0
-                                && player.adjust_iter < game_update.adjustment_iteration
-                            {
-                                let mut ticks_behind = game_update.tick_adjustment - 2;
-                                player.adjust_iter = game_update.adjustment_iteration;
-
-                                while ticks_behind < 0 {
-                                    handle_rain_behind(
-                                        &mut objects,
-                                        &mut rain_pool,
-                                        &mut rain,
-                                        &client_tick,
-                                    );
-                                    handle_bolt_behind(
-                                        &mut objects,
-                                        &mut bolt_pool,
-                                        &mut bolt,
-                                        &client_tick,
-                                    );
-                                    player.apply_input(&mut t, &client_tick);
-                                    ticks_behind += 1;
-
-                                    if let Some(tick) = &mut client_tick.tick {
-                                        *tick += 1;
-                                    }
-                                }
-                            } else {
-                                player.server_reconciliation(
-                                    &mut t,
-                                    &client_tick,
-                                    game_update.pos,
-                                    game_update.tick,
-                                );
-                            }
+                            player.server_reconciliation(
+                                &mut t,
+                                &client_tick,
+                                game_update.pos,
+                                game_update.tick,
+                            );
                         }
                     }
 
@@ -126,10 +93,10 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
+                    info!("new game: {:?}", new_game);
                     client_tick.tick = Some(new_game.server_tick + 2);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
-                    // info!("new game: {:?}", new_game);
 
                     // for (id, player_pos) in &new_game.player_positions {
                     //     if id == &new_game.id {
@@ -207,6 +174,44 @@ pub fn handle_server(
                             t.translation.y = damage.pos[1];
                             enemy.target = t.translation.truncate();
                             *visibility = Visibility::Hidden;
+                        }
+                    }
+                }
+                Ok(NetworkMessage::SyncClient(sync_client)) => {
+                    for (mut player, mut t) in query_player.iter_mut() {
+                        //if we are ahead of the server, then pause the game for how many ticks we are ahead.
+                        if sync_client.tick_adjustment > 0
+                            && client_tick.tick.unwrap() > sync_client.server_tick
+                        {
+                            client_tick.pause = sync_client.tick_adjustment - 2;
+
+                            // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
+                        } else if sync_client.tick_adjustment < 0
+                            && client_tick.tick.unwrap() < sync_client.server_tick
+                        {
+                            let mut ticks_behind = sync_client.tick_adjustment - 2;
+                            // player.adjust_iter = sync_client.adjustment_iteration;
+
+                            while ticks_behind < 0 {
+                                handle_rain_behind(
+                                    &mut objects,
+                                    &mut rain_pool,
+                                    &mut rain,
+                                    &client_tick,
+                                );
+                                handle_bolt_behind(
+                                    &mut objects,
+                                    &mut bolt_pool,
+                                    &mut bolt,
+                                    &client_tick,
+                                );
+                                player.apply_input(&mut t, &client_tick);
+                                ticks_behind += 1;
+
+                                if let Some(tick) = &mut client_tick.tick {
+                                    *tick += 1;
+                                }
+                            }
                         }
                     }
                 }
