@@ -4,11 +4,9 @@ use uuid::Uuid;
 // Network messages
 #[derive(Readable, Writable, Debug, Clone)]
 pub enum NetworkMessage {
-    GameUpdate(NewPos),
+    GameUpdate(Vec<NewPos>),
+    GameState(Vec<PlayerState>),
     NewGame(NewGame),
-    ScoreUpdate(Score),
-    PlayerConnected(PlayerConnected),
-    PlayerDisconnected(Uuid),
     Ping,
     DamagePlayer(Damage),
     PlayerInput(PlayerInput),
@@ -53,30 +51,7 @@ pub struct NewGame {
     pub id: Uuid,
     pub server_tick: u64,
     pub rng_seed: u64,
-    // pub player_positions: HashMap<Uuid, PlayerPos>,
     pub high_scores: Vec<(String, u64)>,
-}
-
-#[derive(Readable, Writable, Debug, Clone)]
-pub struct PlayerPos {
-    pub pos: Option<[f32; 2]>,
-    pub target: [f32; 2],
-    pub score: usize,
-    pub name: Option<String>,
-    pub alive: bool,
-}
-
-#[derive(Readable, Writable, Debug, Clone)]
-pub struct Score {
-    pub id: Uuid,
-    pub score: usize,
-    pub tick: u64,
-}
-
-#[derive(Readable, Writable, Debug, Clone)]
-pub struct PlayerConnected {
-    pub id: Uuid,
-    pub name: String,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -87,4 +62,13 @@ pub struct Damage {
     pub win: bool,
     pub high_scores: Option<Vec<(String, u64)>>,
     pub pos: [f32; 2],
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct PlayerState {
+    pub pos: [f32; 2],
+    pub target: [f32; 2],
+    pub score: usize,
+    pub name: Option<String>,
+    pub id: Uuid,
 }

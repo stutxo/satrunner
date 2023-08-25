@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 
 use speedy::Readable;
 
@@ -39,26 +39,58 @@ pub fn handle_server(
         while let Ok(Some(message)) = receive_rx.try_next() {
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
-                    for (mut player, mut t) in query_player.iter_mut() {
-                        if game_update.id == player.id {
-                            player.server_reconciliation(
-                                &mut t,
-                                &client_tick,
-                                game_update.pos,
-                                game_update.tick,
-                            );
+                    for game_update in &game_update {
+                        for (mut player, mut t) in query_player.iter_mut() {
+                            if game_update.id == player.id {
+                                player.server_reconciliation(
+                                    &mut t,
+                                    &client_tick,
+                                    game_update.pos,
+                                    game_update.tick,
+                                );
+                            }
+                        }
+                        for (_, mut enemy, mut t, _) in query_enemy.iter_mut() {
+                            if game_update.id == enemy.id && !enemy.dead {
+                                enemy.target.x = game_update.input[0];
+                                enemy.target.y = game_update.input[1];
+                                enemy.enemy_reconciliation(
+                                    &mut t,
+                                    &client_tick,
+                                    game_update.pos,
+                                    game_update.tick,
+                                );
+                            }
+                        }
+                    }
+                }
+                Ok(NetworkMessage::GameState(player_state)) => {
+                    let current_player_ids: HashSet<_> =
+                        player_state.iter().map(|p| p.id).collect();
+                    let mut existing_entities = Vec::new();
+
+                    for (player, _) in query_player.iter_mut() {
+                        existing_entities.push(player.id);
+                    }
+                    for (entity, enemy, _, _) in query_enemy.iter_mut() {
+                        existing_entities.push(enemy.id);
+                        for entity_id in &existing_entities {
+                            if !current_player_ids.contains(entity_id) && entity_id == &enemy.id {
+                                commands.entity(entity).despawn_recursive();
+                            }
                         }
                     }
 
-                    for (_, mut enemy, mut t, _) in query_enemy.iter_mut() {
-                        if game_update.id == enemy.id && !enemy.dead {
-                            enemy.target.x = game_update.input[0];
-                            enemy.target.y = game_update.input[1];
-                            enemy.enemy_reconciliation(
-                                &mut t,
-                                &client_tick,
-                                game_update.pos,
-                                game_update.tick,
+                    for player in player_state {
+                        if !existing_entities.contains(&player.id) {
+                            spawn_enemies(
+                                &mut commands,
+                                &player.id,
+                                Some(player.pos),
+                                Some(player.target),
+                                player.score,
+                                player.name,
+                                &asset_server,
                             );
                         }
                     }
@@ -70,80 +102,12 @@ pub fn handle_server(
                         }
                     }
                 }
-
-                Ok(NetworkMessage::ScoreUpdate(score)) => {
-                    if let Some(index) = objects
-                        .bolt_pos
-                        .iter()
-                        .position(|object| object.tick == score.tick)
-                    {
-                        objects.bolt_pos.remove(index);
-                    }
-
-                    for (mut player, _t) in query_player.iter_mut() {
-                        if score.id == player.id {
-                            player.score = score.score;
-                        }
-                    }
-                    for (_entity, mut enemy, _t, _) in query_enemy.iter_mut() {
-                        if score.id == enemy.id {
-                            enemy.score = score.score;
-                        }
-                    }
-                }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    info!("new game: {:?}", new_game);
                     client_tick.tick = Some(new_game.server_tick + 2);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
 
-                    // for (id, player_pos) in &new_game.player_positions {
-                    //     if id == &new_game.id {
                     spawn_player(&mut commands, &new_game.id, &asset_server, &mut next_state);
-                    //     } else if player_pos.alive {
-                    //         spawn_enemies(
-                    //             &mut commands,
-                    //             id,
-                    //             player_pos.pos,
-                    //             Some(player_pos.target),
-                    //             player_pos.score,
-                    //             player_pos.name.clone(),
-                    //             &asset_server,
-                    //         );
-                    //     }
-                    // }
-
-                    // info!("players: {:?}", new_game.player_positions);
-                }
-                Ok(NetworkMessage::PlayerConnected(player)) => {
-                    //info!("player connected: {:?}", player_id);
-                    let mut enemy_spawned = Vec::new();
-                    for (_entity, mut enemy, _t, mut visibility) in query_enemy.iter_mut() {
-                        if player.id == enemy.id {
-                            *visibility = Visibility::Visible;
-                            enemy.dead = false;
-                            enemy_spawned.push(enemy.id);
-                        }
-                    }
-                    if !enemy_spawned.contains(&player.id) {
-                        spawn_enemies(
-                            &mut commands,
-                            &player.id,
-                            None,
-                            None,
-                            0,
-                            Some(player.name),
-                            &asset_server,
-                        );
-                    }
-                }
-                Ok(NetworkMessage::PlayerDisconnected(player_id)) => {
-                    //info!("player disconnected: {:?}", player_id);
-                    for (entity, enemy, _t, _) in query_enemy.iter_mut() {
-                        if player_id == enemy.id {
-                            commands.entity(entity).despawn_recursive();
-                        }
-                    }
                 }
                 Ok(NetworkMessage::DamagePlayer(damage)) => {
                     if !damage.win {
@@ -178,20 +142,14 @@ pub fn handle_server(
                 }
                 Ok(NetworkMessage::SyncClient(sync_client)) => {
                     for (mut player, mut t) in query_player.iter_mut() {
-                        //if we are ahead of the server, then pause the game for how many ticks we are ahead.
                         if sync_client.tick_adjustment > 0
                             && client_tick.tick.unwrap() > sync_client.server_tick
                         {
-                            info!("tick ahead: {}", sync_client.tick_adjustment);
                             client_tick.pause = sync_client.tick_adjustment - 2;
-
-                            // if we are behind the server, then apply the new adjustment iteration. we know its a new iter if the number is higher than the one we have saved.
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
-                            info!("tick behind: {}", sync_client.tick_adjustment);
                             let mut ticks_behind = sync_client.tick_adjustment - 2;
-                            // player.adjust_iter = sync_client.adjustment_iteration;
 
                             while ticks_behind < 0 {
                                 handle_rain_behind(
@@ -222,12 +180,3 @@ pub fn handle_server(
         }
     }
 }
-
-// pub fn disconnect_check_system(ping_timer: ResMut<PingTimer>) {
-//     if ping_timer.ping_timer.elapsed() > Duration::from_secs(10) {
-//         if let Some(disconnected_tx) = &ping_timer.disconnected_tx {
-//             disconnected_tx.clone().try_send(()).unwrap();
-//             info!("No ping received for 10 seconds, sending disconnect signal.");
-//         }
-//     }
-// }

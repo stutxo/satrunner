@@ -64,7 +64,6 @@ impl ClientTick {
 
 #[derive(Resource)]
 pub struct PingTimer {
-    pub ping_timer: Instant,
     pub disconnected_rx: Option<Receiver<()>>,
     pub disconnected_tx: Option<Sender<()>>,
 }
@@ -72,7 +71,6 @@ pub struct PingTimer {
 impl PingTimer {
     pub fn new() -> Self {
         Self {
-            ping_timer: Instant::now(),
             disconnected_rx: None,
             disconnected_tx: None,
         }
