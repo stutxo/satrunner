@@ -1,5 +1,4 @@
 use speedy::{Readable, Writable};
-use std::collections::HashMap;
 use uuid::Uuid;
 
 // Network messages
