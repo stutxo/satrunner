@@ -1,9 +1,6 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, time::Duration};
 
-use bevy::{
-    prelude::*,
-    utils::{HashMap, Instant},
-};
+use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 
 use bevy_ecs_ldtk::LdtkWorldBundle;
 use uuid::Uuid;
@@ -84,6 +81,7 @@ pub fn spawn_player(
     next_state.set(GameStage::Menu);
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn spawn_enemies(
     commands: &mut Commands,
     player_id: &Uuid,
@@ -92,6 +90,7 @@ pub fn spawn_enemies(
     score: usize,
     enemy_name: Option<String>,
     asset_server: &Res<AssetServer>,
+    spawn_time: u64,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or([0.0, 0.0]);
@@ -107,6 +106,9 @@ pub fn spawn_enemies(
         )]);
 
         let player_image = asset_server.load("umbrella.png");
+
+        let mut stopwatch = Stopwatch::new();
+        stopwatch.set_elapsed(Duration::from_secs(spawn_time));
 
         commands
             .spawn(SpriteBundle {
@@ -130,7 +132,7 @@ pub fn spawn_enemies(
                 },
                 score,
                 name: enemy_name,
-                spawn_time: Instant::now(),
+                spawn_time: stopwatch,
                 pending_inputs: VecDeque::new(),
                 past_pos: HashMap::new(),
                 dead: false,

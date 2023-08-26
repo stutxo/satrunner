@@ -91,6 +91,7 @@ pub fn handle_server(
                                 player.score,
                                 player.name,
                                 &asset_server,
+                                player.time_alive,
                             );
                         }
                     }

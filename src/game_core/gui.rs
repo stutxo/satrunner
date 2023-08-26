@@ -57,8 +57,8 @@ pub fn score_board(
 
     for enemy in query_enemy.iter() {
         if !enemy.name.is_empty() {
-            let duration = Instant::now() - enemy.spawn_time;
-            let seconds = duration.as_secs();
+            let duration = &enemy.spawn_time;
+            let seconds = duration.elapsed_secs() as u64;
             let minutes = seconds / 60;
             score_list.push((
                 enemy.name.to_string(),

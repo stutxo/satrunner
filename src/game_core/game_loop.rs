@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::game_util::{
     components::{NamePlates, NamePlatesLocal},
     resources::ClientTick,
@@ -38,8 +40,10 @@ pub fn enemy_loop(
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {
-        let duration = Instant::now() - enemy.spawn_time;
-        let seconds = duration.as_secs();
+        enemy.spawn_time.tick(Duration::from_millis(100));
+        let duration = &enemy.spawn_time;
+        let seconds = duration.elapsed_secs() as u64;
+
         let minutes = seconds / 60;
 
         for mut text in query_text.iter_mut() {

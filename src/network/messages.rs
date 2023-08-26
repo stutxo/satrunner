@@ -71,4 +71,5 @@ pub struct PlayerState {
     pub score: usize,
     pub name: Option<String>,
     pub id: Uuid,
+    pub time_alive: u64,
 }

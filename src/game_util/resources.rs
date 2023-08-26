@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
 use futures::channel::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 

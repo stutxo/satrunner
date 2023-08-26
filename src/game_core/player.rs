@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::{
     prelude::*,
+    time::Stopwatch,
     utils::{HashMap, Instant},
 };
 use uuid::Uuid;
@@ -79,7 +80,7 @@ pub struct Enemy {
     pub id: Uuid,
     pub score: usize,
     pub name: String,
-    pub spawn_time: Instant,
+    pub spawn_time: Stopwatch,
     pub past_pos: HashMap<u64, Vec3>,
     pub pending_inputs: VecDeque<PlayerInput>,
     pub dead: bool,
