@@ -9,6 +9,7 @@ pub enum NetworkMessage {
     NewGame(NewGame),
     Ping,
     DamagePlayer(Damage),
+    ScoreUpdate(Score),
     PlayerInput(PlayerInput),
     SyncClient(SyncMessage),
 }
@@ -52,6 +53,13 @@ pub struct NewGame {
     pub server_tick: u64,
     pub rng_seed: u64,
     pub high_scores: Vec<(String, u64)>,
+    pub objects: ObjectMsg,
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct ObjectMsg {
+    pub rain_pos: Vec<(u64, [f32; 2])>,
+    pub bolt_pos: Vec<(u64, [f32; 2])>,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -59,9 +67,16 @@ pub struct Damage {
     pub id: Uuid,
     pub tick: Option<u64>,
     pub secs_alive: u64,
-    pub win: bool,
     pub high_scores: Option<Vec<(String, u64)>>,
     pub pos: [f32; 2],
+    pub score: usize,
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct Score {
+    pub id: Uuid,
+    pub score: usize,
+    pub tick: u64,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -72,4 +87,5 @@ pub struct PlayerState {
     pub name: Option<String>,
     pub id: Uuid,
     pub time_alive: u64,
+    pub alive: bool,
 }

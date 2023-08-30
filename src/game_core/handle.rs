@@ -1,6 +1,10 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 use speedy::Readable;
+use uuid::Uuid;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
@@ -8,12 +12,12 @@ use crate::{
         components::{Bolt, Rain},
         resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
-    network::messages::NetworkMessage,
+    network::messages::{NetworkMessage, PlayerState},
     GameStage,
 };
 
 use super::{
-    objects::{handle_bolt_behind, handle_rain_behind},
+    objects::{handle_bolt_behind, handle_rain_behind, ObjectPos},
     player::{Enemy, Player},
 };
 
@@ -81,7 +85,17 @@ pub fn handle_server(
                         }
                     }
 
-                    for player in player_state {
+                    for player in player_state.clone() {
+                        for (mut local_player, _) in query_player.iter_mut() {
+                            if local_player.id == player.id {
+                                local_player.score = player.score;
+                            }
+                        }
+                        for (_, mut enemy, _, _) in query_enemy.iter_mut() {
+                            if enemy.id == player.id {
+                                enemy.score = player.score;
+                            }
+                        }
                         if !existing_entities.contains(&player.id) {
                             spawn_enemies(
                                 &mut commands,
@@ -108,36 +122,68 @@ pub fn handle_server(
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
 
+                    objects.rain_pos = new_game
+                        .objects
+                        .rain_pos
+                        .iter()
+                        .map(|&(tick, [x, y])| ObjectPos {
+                            tick,
+                            pos: Vec3 { x, y, z: 0.0 },
+                        })
+                        .collect();
+
+                    objects.bolt_pos = new_game
+                        .objects
+                        .bolt_pos
+                        .iter()
+                        .map(|&(tick, [x, y])| ObjectPos {
+                            tick,
+                            pos: Vec3 { x, y, z: 0.0 },
+                        })
+                        .collect();
+
                     spawn_player(&mut commands, &new_game.id, &asset_server, &mut next_state);
                 }
                 Ok(NetworkMessage::DamagePlayer(damage)) => {
-                    if !damage.win {
-                        if let Some(index) = objects
-                            .rain_pos
-                            .iter()
-                            .position(|object| object.tick == damage.tick.unwrap())
-                        {
-                            objects.rain_pos.remove(index);
-                        }
-                    } else {
-                        objects.high_scores = damage.high_scores.unwrap();
+                    if let Some(index) = objects
+                        .rain_pos
+                        .iter()
+                        .position(|object| object.tick == damage.tick.unwrap())
+                    {
+                        objects.rain_pos.remove(index);
                     }
+
+                    if let Some(high_scores) = damage.high_scores {
+                        objects.high_scores = high_scores;
+                    }
+
                     for (mut player, mut t) in query_player.iter_mut() {
                         if damage.id == player.id {
-                            t.translation.x = damage.pos[0];
-                            t.translation.y = damage.pos[1];
+                            t.translation = Vec3::ZERO;
                             player.death_time = Some(damage.secs_alive);
+                            player.score = damage.score;
                             player.target = t.translation.truncate();
                             next_state.set(GameStage::GameOver);
                         }
                     }
-                    for (_entity, mut enemy, mut t, mut visibility) in query_enemy.iter_mut() {
-                        if damage.id == enemy.id {
-                            enemy.dead = true;
-                            t.translation.x = damage.pos[0];
-                            t.translation.y = damage.pos[1];
-                            enemy.target = t.translation.truncate();
-                            *visibility = Visibility::Hidden;
+                }
+                Ok(NetworkMessage::ScoreUpdate(score)) => {
+                    if let Some(index) = objects
+                        .bolt_pos
+                        .iter()
+                        .position(|object| object.tick == score.tick)
+                    {
+                        objects.bolt_pos.remove(index);
+                    }
+
+                    for (mut player, _t) in query_player.iter_mut() {
+                        if score.id == player.id {
+                            player.score = score.score;
+                        }
+                    }
+                    for (_entity, mut enemy, _t, _) in query_enemy.iter_mut() {
+                        if score.id == enemy.id {
+                            enemy.score = score.score;
                         }
                     }
                 }
