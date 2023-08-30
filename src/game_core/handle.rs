@@ -106,15 +106,8 @@ pub fn handle_server(
                         }
                     }
                 }
-                Ok(NetworkMessage::PlayerInput(input)) => {
-                    for (_, mut enemy, _, _) in query_enemy.iter_mut() {
-                        if input.id == enemy.id {
-                            enemy.pending_inputs.push_back(input.clone());
-                        }
-                    }
-                }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = Some(new_game.server_tick + 4);
+                    client_tick.tick = Some(new_game.server_tick);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
 
@@ -188,11 +181,11 @@ pub fn handle_server(
                         if sync_client.tick_adjustment > 0
                             && client_tick.tick.unwrap() > sync_client.server_tick
                         {
-                            client_tick.pause = sync_client.tick_adjustment - 4;
+                            client_tick.pause = sync_client.tick_adjustment;
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
-                            let mut ticks_behind = sync_client.tick_adjustment - 4;
+                            let mut ticks_behind = sync_client.tick_adjustment;
 
                             while ticks_behind < 0 {
                                 handle_rain_behind(
