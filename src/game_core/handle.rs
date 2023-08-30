@@ -107,7 +107,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::NewGame(new_game)) => {
-                    client_tick.tick = Some(new_game.server_tick);
+                    client_tick.tick = Some(new_game.server_tick + 10);
                     objects.rng_seed = Some(new_game.rng_seed);
                     objects.high_scores = new_game.high_scores;
 
@@ -185,7 +185,7 @@ pub fn handle_server(
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
-                            let mut ticks_behind = sync_client.tick_adjustment - 6;
+                            let mut ticks_behind = sync_client.tick_adjustment - 8;
 
                             while ticks_behind < 0 {
                                 handle_rain_behind(
