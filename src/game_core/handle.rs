@@ -1,10 +1,6 @@
-use bevy::{
-    prelude::*,
-    utils::{HashMap, HashSet},
-};
+use bevy::{prelude::*, utils::HashSet};
 
 use speedy::Readable;
-use uuid::Uuid;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
@@ -12,7 +8,7 @@ use crate::{
         components::{Bolt, Rain},
         resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
-    network::messages::{NetworkMessage, PlayerState},
+    network::messages::NetworkMessage,
     GameStage,
 };
 
