@@ -10,12 +10,12 @@ use crate::game_util::resources::{NetworkStuff, PingTimer};
 
 use super::messages::ClientMessage;
 
-// pub const DELAY: u32 = 100;
+// pub const DELAY: u32 = 500;
 // use gloo_timers::future::TimeoutFuture;
 
 pub fn websocket(mut network_stuff: ResMut<NetworkStuff>, mut ping: ResMut<PingTimer>) {
-    //let ws = WebSocket::open("ws://0.0.0.0:3030/run").unwrap();
-    let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
+    let ws = WebSocket::open("ws://0.0.0.0:3030/run").unwrap();
+    //let ws = WebSocket::open("wss://satrunner.gg/run").unwrap();
     let (mut write, mut read) = ws.split();
 
     let (send_tx, mut send_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);

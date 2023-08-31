@@ -69,17 +69,3 @@ pub fn tick(mut client_tick: ResMut<ClientTick>) {
         *tick += 1;
     }
 }
-
-// pub fn handle_enemy_input(
-//     mut query_enemy: Query<(&mut Enemy, &mut Transform), Without<Player>>,
-//     client_tick: Res<ClientTick>,
-// ) {
-//     for (mut enemy, mut t) in query_enemy.iter_mut() {
-//         if let Some(input) = enemy.pending_inputs.front().cloned() {
-//             enemy.target.x = input.target[0];
-//             enemy.target.y = input.target[1];
-//             enemy.enemy_reconciliation(&mut t, &client_tick, input.tick);
-//             enemy.pending_inputs.pop_front();
-//         }
-//     }
-// }
