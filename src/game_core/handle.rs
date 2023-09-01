@@ -181,7 +181,7 @@ pub fn handle_server(
                         if sync_client.tick_adjustment > 0
                             && client_tick.tick.unwrap() > sync_client.server_tick
                         {
-                            client_tick.pause = sync_client.tick_adjustment - 2;
+                            client_tick.pause = sync_client.tick_adjustment;
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
