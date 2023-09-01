@@ -18,7 +18,6 @@ pub struct Player {
     pub id: Uuid,
     pub score: usize,
     pub pending_inputs: Vec<PlayerInput>,
-    pub adjust_iter: u64,
     pub name: String,
     pub spawn_time: Option<Instant>,
     pub death_time: Option<u64>,

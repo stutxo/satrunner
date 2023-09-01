@@ -276,6 +276,11 @@ pub fn game_over(
         .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
             for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
+                transform.translation = Vec3::ZERO;
+                player.target = Vec2::ZERO;
+                sprite.color = Color::GRAY;
+                player.pending_inputs.clear();
+
                 egui::Area::new("area")
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, -20.0))
                     .show(ctx, |ui| {
@@ -314,9 +319,6 @@ pub fn game_over(
                                 player.death_time = None;
                             }
                         });
-                        transform.translation = Vec3::ZERO;
-                        player.target = transform.translation.truncate();
-                        sprite.color = Color::GRAY;
                     });
                 ui.label("High Scores");
                 ui.label(format!(

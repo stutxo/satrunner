@@ -53,7 +53,7 @@ pub fn spawn_player(
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
-            adjust_iter: 0,
+
             name: String::new(),
             spawn_time: None,
             death_time: None,
