@@ -185,7 +185,7 @@ pub fn handle_server(
                         } else if sync_client.tick_adjustment < 0
                             && client_tick.tick.unwrap() < sync_client.server_tick
                         {
-                            let mut ticks_behind = sync_client.tick_adjustment - 3;
+                            let mut ticks_behind = sync_client.tick_adjustment;
 
                             while ticks_behind < 0 {
                                 handle_rain_behind(
