@@ -11,7 +11,7 @@ use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
-pub const PLAYER_SPEED: f32 = 5.0;
+pub const PLAYER_SPEED: f32 = 2.5;
 #[derive(Component)]
 pub struct Player {
     pub target: Vec2,
@@ -69,8 +69,8 @@ impl Player {
         if direction.length() > tolerance {
             let mut speed = PLAYER_SPEED;
 
-            if direction.y > 0.0 {
-                speed /= 2.0;
+            if direction.y < 0.0 {
+                speed *= 2.0;
             }
 
             direction.normalize() * speed
@@ -127,8 +127,8 @@ impl Enemy {
         if direction.length() > tolerance {
             let mut speed = PLAYER_SPEED;
 
-            if direction.y > 0.0 {
-                speed /= 2.0;
+            if direction.y < 0.0 {
+                speed *= 2.0;
             }
 
             direction.normalize() * speed
