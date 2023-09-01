@@ -102,7 +102,7 @@ pub fn setup_menu(
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
         for (player, _, _) in query_player.iter_mut() {
-            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap(), false);
 
             match network_stuff
                 .write
@@ -254,7 +254,7 @@ pub fn game_over(
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
         for (_, player, _) in query_player.iter_mut() {
-            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap(), false);
 
             match network_stuff
                 .write

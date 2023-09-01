@@ -38,11 +38,17 @@ pub struct PlayerInput {
     pub target: [f32; 2],
     pub id: Uuid,
     pub tick: u64,
+    pub in_game: bool,
 }
 
 impl PlayerInput {
-    pub fn new(target: [f32; 2], id: Uuid, tick: u64) -> Self {
-        Self { target, id, tick }
+    pub fn new(target: [f32; 2], id: Uuid, tick: u64, in_game: bool) -> Self {
+        Self {
+            target,
+            id,
+            tick,
+            in_game,
+        }
     }
 }
 

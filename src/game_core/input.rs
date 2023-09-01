@@ -43,6 +43,7 @@ pub fn input(
                     [player.target.x, player.target.y],
                     player.id,
                     client_tick.tick.unwrap(),
+                    true,
                 );
 
                 player.pending_inputs.push(input.clone());
