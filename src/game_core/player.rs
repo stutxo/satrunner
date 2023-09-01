@@ -67,7 +67,13 @@ impl Player {
         let tolerance = 6.0;
 
         if direction.length() > tolerance {
-            direction.normalize() * PLAYER_SPEED
+            let mut speed = PLAYER_SPEED;
+
+            if direction.y > 0.0 {
+                speed /= 2.0;
+            }
+
+            direction.normalize() * speed
         } else {
             Vec2::ZERO
         }
@@ -119,7 +125,13 @@ impl Enemy {
         let tolerance = 6.0;
 
         if direction.length() > tolerance {
-            direction.normalize() * PLAYER_SPEED
+            let mut speed = PLAYER_SPEED;
+
+            if direction.y > 0.0 {
+                speed /= 2.0;
+            }
+
+            direction.normalize() * speed
         } else {
             Vec2::ZERO
         }
