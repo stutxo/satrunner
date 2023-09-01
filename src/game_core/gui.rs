@@ -101,12 +101,8 @@ pub fn setup_menu(
     objects: Res<Objects>,
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
-        for (player, _, t) in query_player.iter_mut() {
-            let input = PlayerInput::new(
-                t.translation.truncate().into(),
-                player.id,
-                client_tick.tick.unwrap(),
-            );
+        for (player, _, _) in query_player.iter_mut() {
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
             match network_stuff
                 .write
@@ -250,19 +246,15 @@ pub fn game_over(
     mut contexts: EguiContexts,
     player_name: ResMut<PlayerName>,
     mut network_stuff: ResMut<NetworkStuff>,
-    mut query_player: Query<(&Transform, &mut Player, &mut Sprite)>,
+    mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut next_state: ResMut<NextState<GameStage>>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
     objects: Res<Objects>,
     client_tick: Res<ClientTick>,
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
-        for (transform, player, _) in query_player.iter_mut() {
-            let input = PlayerInput::new(
-                transform.translation.truncate().into(),
-                player.id,
-                client_tick.tick.unwrap(),
-            );
+        for (_, player, _) in query_player.iter_mut() {
+            let input = PlayerInput::new([0.0, 0.0], player.id, client_tick.tick.unwrap());
 
             match network_stuff
                 .write
@@ -283,7 +275,7 @@ pub fn game_over(
         .collapsible(false)
         .anchor(egui::Align2::CENTER_TOP, egui::Vec2::ZERO)
         .show(ctx, |ui| {
-            for (transform, mut player, mut sprite) in query_player.iter_mut() {
+            for (mut transform, mut player, mut sprite) in query_player.iter_mut() {
                 egui::Area::new("area")
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::new(0.0, -20.0))
                     .show(ctx, |ui| {
@@ -322,6 +314,7 @@ pub fn game_over(
                                 player.death_time = None;
                             }
                         });
+                        transform.translation = Vec3::ZERO;
                         player.target = transform.translation.truncate();
                         sprite.color = Color::GRAY;
                     });
