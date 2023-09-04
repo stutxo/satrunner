@@ -112,7 +112,7 @@ pub fn update_joystick(
         }
 
         for mut player in query.iter_mut() {
-            player.target += Vec2::new(x, y) * 4.;
+            player.target += Vec2::new(x, y) * 2.;
             if client_tick.tick.unwrap_or(0) % 2 == 0 {
                 let input = PlayerInput::new(
                     [player.target.x, player.target.y],
