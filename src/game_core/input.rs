@@ -95,6 +95,7 @@ pub fn update_joystick(
 ) {
     for j in joystick.iter() {
         let Vec2 { x, y } = j.axis();
+
         match j.get_type() {
             VirtualJoystickEventType::Press | VirtualJoystickEventType::Drag => {
                 let (mut color, node) = joystick_color.single_mut();
@@ -111,26 +112,27 @@ pub fn update_joystick(
         }
 
         for mut player in query.iter_mut() {
-            player.target += Vec2::new(x, y);
+            player.target += Vec2::new(x, y) * 4.;
+            if client_tick.tick.unwrap_or(0) % 2 == 0 {
+                let input = PlayerInput::new(
+                    [player.target.x, player.target.y],
+                    player.id,
+                    client_tick.tick.unwrap(),
+                    true,
+                );
 
-            let input = PlayerInput::new(
-                [player.target.x, player.target.y],
-                player.id,
-                client_tick.tick.unwrap(),
-                true,
-            );
+                player.pending_inputs.push(input.clone());
 
-            player.pending_inputs.push(input.clone());
-
-            match outgoing
-                .write
-                .as_mut()
-                .unwrap()
-                .try_send(ClientMessage::PlayerInput(input))
-            {
-                Ok(()) => {}
-                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-            };
+                match outgoing
+                    .write
+                    .as_mut()
+                    .unwrap()
+                    .try_send(ClientMessage::PlayerInput(input))
+                {
+                    Ok(()) => {}
+                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                };
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ pub fn spawn_player(
                         border_image: asset_server.load("Outline.png"),
                         knob_image: asset_server.load("Knob.png"),
                         knob_size: Vec2::new(40., 40.),
-                        dead_zone: 0.,
+                        dead_zone: 1.,
                         id: "UniqueJoystick".to_string(),
                         axis: VirtualJoystickAxis::Both,
                         behaviour: VirtualJoystickType::Floating,
