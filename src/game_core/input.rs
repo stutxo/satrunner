@@ -113,26 +113,24 @@ pub fn update_joystick(
 
         for mut player in query.iter_mut() {
             player.target += Vec2::new(x, y) * 2.;
-            if client_tick.tick.unwrap_or(0) % 2 == 0 {
-                let input = PlayerInput::new(
-                    [player.target.x, player.target.y],
-                    player.id,
-                    client_tick.tick.unwrap(),
-                    true,
-                );
+            let input = PlayerInput::new(
+                [player.target.x, player.target.y],
+                player.id,
+                client_tick.tick.unwrap(),
+                true,
+            );
 
-                player.pending_inputs.push(input.clone());
+            player.pending_inputs.push(input.clone());
 
-                match outgoing
-                    .write
-                    .as_mut()
-                    .unwrap()
-                    .try_send(ClientMessage::PlayerInput(input))
-                {
-                    Ok(()) => {}
-                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                };
-            }
+            match outgoing
+                .write
+                .as_mut()
+                .unwrap()
+                .try_send(ClientMessage::PlayerInput(input))
+            {
+                Ok(()) => {}
+                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+            };
         }
     }
 }
