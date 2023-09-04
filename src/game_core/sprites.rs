@@ -36,7 +36,7 @@ pub fn spawn_player(
                 NodeBundle {
                     style: Style {
                         position_type: PositionType::Absolute,
-                        bottom: Val::Px(150.0),
+                        bottom: Val::Px(0.0),
                         width: Val::Percent(100.0),
                         ..Default::default()
                     },
