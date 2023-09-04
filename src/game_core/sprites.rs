@@ -10,7 +10,8 @@ use crate::{
         components::{Bolt, NamePlates, NamePlatesLocal, Rain},
         resources::{BoltPool, RainPool},
     },
-    GameStage,
+    keyboard::components::KeyboardNode,
+    GameStage, KeyboardState,
 };
 
 use super::player::{Enemy, Player};
@@ -26,7 +27,26 @@ pub fn spawn_player(
     id: &Uuid,
     asset_server: &Res<AssetServer>,
     next_state: &mut ResMut<NextState<GameStage>>,
+    keyboard_state: &mut ResMut<NextState<KeyboardState>>,
+    windows: &Query<&Window>,
 ) {
+    if let Some(window) = windows.iter().next() {
+        if window.width() < 800.0 {
+            commands.spawn((
+                NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        bottom: Val::Px(150.0),
+                        width: Val::Percent(100.0),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+                KeyboardNode,
+            ));
+        }
+    }
+
     let text = Text::from_sections([TextSection::new(
         String::new(),
         TextStyle {
@@ -53,7 +73,6 @@ pub fn spawn_player(
             target: Vec2::ZERO,
             score: 0,
             pending_inputs: Vec::new(),
-
             name: String::new(),
             spawn_time: None,
             death_time: None,
@@ -78,6 +97,7 @@ pub fn spawn_player(
                 .insert(NamePlatesLocal);
         });
 
+    keyboard_state.set(KeyboardState::On);
     next_state.set(GameStage::Menu);
 }
 

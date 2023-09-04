@@ -13,7 +13,7 @@ use crate::{
         resources::{ClientTick, NetworkStuff, Objects, PingTimer, PlayerName},
     },
     network::messages::{ClientMessage, PlayerInput},
-    GameStage,
+    GameStage, KeyboardState,
 };
 
 use super::player::{Enemy, Player};
@@ -91,6 +91,7 @@ pub fn score_board(
         });
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn setup_menu(
     mut contexts: EguiContexts,
     mut next_state: ResMut<NextState<GameStage>>,
@@ -99,6 +100,7 @@ pub fn setup_menu(
     mut query_player: Query<(&mut Player, &mut Sprite, &Transform)>,
     client_tick: Res<ClientTick>,
     objects: Res<Objects>,
+    mut keyboard_state: ResMut<NextState<KeyboardState>>,
 ) {
     if client_tick.tick.unwrap_or(0) % 10 == 0 {
         for (player, _, _) in query_player.iter_mut() {
@@ -196,6 +198,7 @@ pub fn setup_menu(
                     player_name.name = rand_name.next().unwrap();
                 }
                 if ui.button("Play").clicked() && !player_name.name.is_empty() {
+                    keyboard_state.set(KeyboardState::Off);
                     player_name.submitted = true;
                     match network_stuff
                         .write

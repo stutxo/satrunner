@@ -14,11 +14,13 @@ use game_core::{
 use game_util::resources::{
     BoltPool, ClientTick, NetworkStuff, Objects, PingTimer, PlayerName, RainPool,
 };
+use keyboard::{resources::KeyboardData, KeyboardPlugin};
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
 mod game_core;
 mod game_util;
+mod keyboard;
 mod network;
 
 pub const TICK_RATE: f32 = 1. / 10.;
@@ -39,6 +41,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
             EguiPlugin,
             LdtkPlugin,
+            KeyboardPlugin,
         ))
         .insert_resource(LevelSelection::Index(0))
         .insert_resource(LdtkSettings {
@@ -50,6 +53,7 @@ fn main() {
         })
         .register_ldtk_entity::<MyBundle>("background")
         .add_state::<GameStage>()
+        .add_state::<KeyboardState>()
         .add_systems(Startup, (spawn_ldtk, pool_rain, pool_bolt, websocket))
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
@@ -73,6 +77,7 @@ fn main() {
         .insert_resource(ClientTick::new())
         .insert_resource(PlayerName::new())
         .insert_resource(PingTimer::new())
+        .insert_resource(KeyboardData("".to_string()))
         .run();
 }
 
@@ -83,6 +88,13 @@ pub enum GameStage {
     InGame,
     Disconnected,
     GameOver,
+}
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum KeyboardState {
+    #[default]
+    Off,
+    On,
 }
 
 #[derive(Default, Component)]

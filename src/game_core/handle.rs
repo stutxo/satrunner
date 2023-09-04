@@ -9,7 +9,7 @@ use crate::{
         resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
     network::messages::NetworkMessage,
-    GameStage,
+    GameStage, KeyboardState,
 };
 
 use super::{
@@ -34,6 +34,8 @@ pub fn handle_server(
         (&Bolt, &mut Visibility, &mut Transform),
         (Without<Player>, Without<Enemy>, Without<Rain>),
     >,
+    mut keyboard_state: ResMut<NextState<KeyboardState>>,
+    windows: Query<&Window>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -131,7 +133,14 @@ pub fn handle_server(
                         })
                         .collect();
 
-                    spawn_player(&mut commands, &new_game.id, &asset_server, &mut next_state);
+                    spawn_player(
+                        &mut commands,
+                        &new_game.id,
+                        &asset_server,
+                        &mut next_state,
+                        &mut keyboard_state,
+                        &windows,
+                    );
                 }
                 Ok(NetworkMessage::DamagePlayer(damage)) => {
                     if let Some(index) = objects
