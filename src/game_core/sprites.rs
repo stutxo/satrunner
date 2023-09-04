@@ -58,15 +58,15 @@ pub fn spawn_player(
                         dead_zone: 0.,
                         id: "UniqueJoystick".to_string(),
                         axis: VirtualJoystickAxis::Both,
-                        behaviour: VirtualJoystickType::Fixed,
+                        behaviour: VirtualJoystickType::Floating,
                     })
                     .set_color(TintColor(Color::WHITE.with_a(0.2)))
                     .set_style(Style {
                         width: Val::Px(75.),
                         height: Val::Px(75.),
                         position_type: PositionType::Absolute,
-                        right: Val::Percent(5.),
-                        bottom: Val::Percent(5.),
+                        right: Val::Percent(8.),
+                        bottom: Val::Percent(8.),
                         ..default()
                     }),
                 )

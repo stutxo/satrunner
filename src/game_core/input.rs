@@ -4,7 +4,6 @@ use virtual_joystick::{
 };
 
 use crate::{
-    game_core::player::PLAYER_SPEED,
     game_util::resources::{ClientTick, NetworkStuff},
     network::messages::{ClientMessage, PlayerInput},
 };
@@ -111,31 +110,29 @@ pub fn update_joystick(
             }
         }
 
-        if client_tick.tick.unwrap_or(0) % 2 == 0 {
-            for mut player in query.iter_mut() {
-                player.target += Vec2::new(x, y) * 10.;
+        for mut player in query.iter_mut() {
+            player.target += Vec2::new(x, y) * 5.;
 
-                info!("player target: {:?}", player.target);
+            info!("player target: {:?}", player.target);
 
-                let input = PlayerInput::new(
-                    [player.target.x, player.target.y],
-                    player.id,
-                    client_tick.tick.unwrap(),
-                    true,
-                );
+            let input = PlayerInput::new(
+                [player.target.x, player.target.y],
+                player.id,
+                client_tick.tick.unwrap(),
+                true,
+            );
 
-                player.pending_inputs.push(input.clone());
+            player.pending_inputs.push(input.clone());
 
-                match outgoing
-                    .write
-                    .as_mut()
-                    .unwrap()
-                    .try_send(ClientMessage::PlayerInput(input))
-                {
-                    Ok(()) => {}
-                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                };
-            }
+            match outgoing
+                .write
+                .as_mut()
+                .unwrap()
+                .try_send(ClientMessage::PlayerInput(input))
+            {
+                Ok(()) => {}
+                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+            };
         }
     }
 }
