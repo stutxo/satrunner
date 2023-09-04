@@ -90,8 +90,6 @@ pub fn update_joystick(
     mut joystick: EventReader<VirtualJoystickEvent<String>>,
     mut joystick_color: Query<(&mut TintColor, &VirtualJoystickNode<String>)>,
     mut query: Query<&mut Player>,
-    mut outgoing: ResMut<NetworkStuff>,
-    client_tick: Res<ClientTick>,
 ) {
     for j in joystick.iter() {
         let Vec2 { x, y } = j.axis();
@@ -112,25 +110,7 @@ pub fn update_joystick(
         }
 
         for mut player in query.iter_mut() {
-            player.target += Vec2::new(x, y) * 2.;
-            let input = PlayerInput::new(
-                [player.target.x, player.target.y],
-                player.id,
-                client_tick.tick.unwrap(),
-                true,
-            );
-
-            player.pending_inputs.push(input.clone());
-
-            match outgoing
-                .write
-                .as_mut()
-                .unwrap()
-                .try_send(ClientMessage::PlayerInput(input))
-            {
-                Ok(()) => {}
-                Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-            };
+            player.target += Vec2::new(x, y);
         }
     }
 }
