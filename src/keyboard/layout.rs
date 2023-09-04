@@ -14,7 +14,7 @@ pub fn setup_keyboard(
     asset_server: Res<AssetServer>,
     placement_query: Query<Entity, With<KeyboardNode>>,
 ) {
-    info!("keyboard setup!");
+    // info!("keyboard setup!");
     for ent in placement_query.iter() {
         // let mut parent_node = commands.entity(ent);
         // parent_node.commands().spawn(bundle)

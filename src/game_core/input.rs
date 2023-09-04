@@ -1,6 +1,10 @@
 use bevy::prelude::*;
+use virtual_joystick::{
+    TintColor, VirtualJoystickEvent, VirtualJoystickEventType, VirtualJoystickNode,
+};
 
 use crate::{
+    game_core::player::PLAYER_SPEED,
     game_util::resources::{ClientTick, NetworkStuff},
     network::messages::{ClientMessage, PlayerInput},
 };
@@ -12,7 +16,7 @@ pub fn input(
     mouse: Res<Input<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
-    touches: Res<Touches>,
+    // touches: Res<Touches>,
     mut outgoing: ResMut<NetworkStuff>,
     client_tick: Res<ClientTick>,
 ) {
@@ -73,11 +77,64 @@ pub fn input(
                 }
             }
 
-            for touch in touches.iter_just_pressed() {
-                if let Some(window) = windows.iter().next() {
-                    let position = get_position(touch.position(), window);
-                    handle_input(position, &mut player);
+            // for touch in touches.iter_just_pressed() {
+            //     if let Some(window) = windows.iter().next() {
+            //         let position = get_position(touch.position(), window);
+            //         handle_input(position, &mut player);
+            //     }
+            // }
+        }
+    }
+}
+
+pub fn update_joystick(
+    mut joystick: EventReader<VirtualJoystickEvent<String>>,
+    mut joystick_color: Query<(&mut TintColor, &VirtualJoystickNode<String>)>,
+    mut query: Query<&mut Player>,
+    mut outgoing: ResMut<NetworkStuff>,
+    client_tick: Res<ClientTick>,
+) {
+    for j in joystick.iter() {
+        let Vec2 { x, y } = j.axis();
+        match j.get_type() {
+            VirtualJoystickEventType::Press | VirtualJoystickEventType::Drag => {
+                let (mut color, node) = joystick_color.single_mut();
+                if node.id == j.id() {
+                    *color = TintColor(Color::WHITE);
                 }
+            }
+            VirtualJoystickEventType::Up => {
+                let (mut color, node) = joystick_color.single_mut();
+                if node.id == j.id() {
+                    *color = TintColor(Color::WHITE.with_a(0.2));
+                }
+            }
+        }
+
+        if client_tick.tick.unwrap_or(0) % 2 == 0 {
+            for mut player in query.iter_mut() {
+                player.target += Vec2::new(x, y) * 10.;
+
+                info!("player target: {:?}", player.target);
+
+                let input = PlayerInput::new(
+                    [player.target.x, player.target.y],
+                    player.id,
+                    client_tick.tick.unwrap(),
+                    true,
+                );
+
+                player.pending_inputs.push(input.clone());
+
+                match outgoing
+                    .write
+                    .as_mut()
+                    .unwrap()
+                    .try_send(ClientMessage::PlayerInput(input))
+                {
+                    Ok(()) => {}
+                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                };
             }
         }
     }

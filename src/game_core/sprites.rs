@@ -4,6 +4,10 @@ use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 
 use bevy_ecs_ldtk::LdtkWorldBundle;
 use uuid::Uuid;
+use virtual_joystick::{
+    TintColor, VirtualJoystickAxis, VirtualJoystickBundle, VirtualJoystickInteractionArea,
+    VirtualJoystickNode, VirtualJoystickType,
+};
 
 use crate::{
     game_util::{
@@ -44,6 +48,29 @@ pub fn spawn_player(
                 },
                 KeyboardNode,
             ));
+
+            commands
+                .spawn(
+                    VirtualJoystickBundle::new(VirtualJoystickNode {
+                        border_image: asset_server.load("Outline.png"),
+                        knob_image: asset_server.load("Knob.png"),
+                        knob_size: Vec2::new(40., 40.),
+                        dead_zone: 0.,
+                        id: "UniqueJoystick".to_string(),
+                        axis: VirtualJoystickAxis::Both,
+                        behaviour: VirtualJoystickType::Fixed,
+                    })
+                    .set_color(TintColor(Color::WHITE.with_a(0.2)))
+                    .set_style(Style {
+                        width: Val::Px(75.),
+                        height: Val::Px(75.),
+                        position_type: PositionType::Absolute,
+                        right: Val::Percent(5.),
+                        bottom: Val::Percent(5.),
+                        ..default()
+                    }),
+                )
+                .insert(VirtualJoystickInteractionArea);
         }
     }
 

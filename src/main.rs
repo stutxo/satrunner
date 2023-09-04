@@ -6,7 +6,7 @@ use game_core::{
     game_loop::{enemy_loop, player_loop, tick},
     gui::{check_disconnected, disconnected, game_over, score_board, setup_menu},
     handle::handle_server,
-    input::input,
+    input::{input, update_joystick},
     objects::{handle_bolt, handle_rain},
     sprites::{pool_bolt, pool_rain, spawn_ldtk},
 };
@@ -17,6 +17,7 @@ use game_util::resources::{
 use keyboard::KeyboardPlugin;
 use network::websockets::websocket;
 use std::collections::VecDeque;
+use virtual_joystick::VirtualJoystickPlugin;
 
 mod game_core;
 mod game_util;
@@ -42,6 +43,7 @@ fn main() {
             EguiPlugin,
             LdtkPlugin,
             KeyboardPlugin,
+            VirtualJoystickPlugin::<String>::default(),
         ))
         .insert_resource(LevelSelection::Index(0))
         .insert_resource(LdtkSettings {
@@ -58,7 +60,10 @@ fn main() {
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
         .add_systems(FixedUpdate, (tick, enemy_loop, handle_rain, handle_bolt))
-        .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
+        .add_systems(
+            Update,
+            (input, update_joystick).run_if(in_state(GameStage::InGame)),
+        )
         .add_systems(
             Update,
             (disconnected).run_if(in_state(GameStage::Disconnected)),
