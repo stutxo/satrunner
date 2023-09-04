@@ -60,9 +60,10 @@ fn main() {
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
         .add_systems(FixedUpdate, (tick, enemy_loop, handle_rain, handle_bolt))
+        .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
         .add_systems(
-            Update,
-            (input, update_joystick).run_if(in_state(GameStage::InGame)),
+            FixedUpdate,
+            (update_joystick).run_if(in_state(GameStage::InGame)),
         )
         .add_systems(
             Update,
