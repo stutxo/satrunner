@@ -3655,8 +3655,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 [[package]]
 name = "virtual_joystick"
 version = "2.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40e5ad1ddd4985811f0b2e0c6991d84fcd0fd912db2d8cd37fefb9b18c65db05"
+source = "git+https://github.com/stum0/virtual_joystick.git#8e453e48b20c1017c9c9a10b3a291b37393903de"
 dependencies = [
  "bevy",
  "serde",
