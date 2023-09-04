@@ -53,7 +53,7 @@ pub fn handle_server(
                             }
                         }
                         for (_, mut enemy, mut t, _) in query_enemy.iter_mut() {
-                            if game_update.id == enemy.id && !enemy.dead {
+                            if game_update.id == enemy.id {
                                 enemy.target.x = game_update.input[0];
                                 enemy.target.y = game_update.input[1];
                                 enemy.enemy_reconciliation(

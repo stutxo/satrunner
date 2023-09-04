@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use uuid::Uuid;
 
 #[derive(Component)]
 pub struct Rain;
@@ -6,7 +7,9 @@ pub struct Rain;
 pub struct Bolt;
 
 #[derive(Component)]
-pub struct NamePlates;
+pub struct NamePlates {
+    pub id: Uuid,
+}
 
 #[derive(Component)]
 pub struct NamePlatesLocal;

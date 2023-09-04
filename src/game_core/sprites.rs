@@ -155,7 +155,6 @@ pub fn spawn_enemies(
                 spawn_time: stopwatch,
                 pending_inputs: VecDeque::new(),
                 past_pos: HashMap::new(),
-                dead: false,
             })
             .with_children(|parent| {
                 parent
@@ -167,7 +166,7 @@ pub fn spawn_enemies(
                         },
                         ..Default::default()
                     })
-                    .insert(NamePlates);
+                    .insert(NamePlates { id: *player_id });
             });
     }
 }

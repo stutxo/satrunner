@@ -36,7 +36,7 @@ pub fn player_loop(
 
 pub fn enemy_loop(
     mut query_enemy: Query<(&mut Transform, &mut Enemy)>,
-    mut query_text: Query<&mut Text, With<NamePlates>>,
+    mut query_text: Query<(&mut Text, &NamePlates)>,
     client_tick: Res<ClientTick>,
 ) {
     for (mut t, mut enemy) in query_enemy.iter_mut() {
@@ -46,19 +46,19 @@ pub fn enemy_loop(
 
         let minutes = seconds / 60;
 
-        for mut text in query_text.iter_mut() {
-            text.sections[0].value = format!(
-                "{:02}/21\n({:02}:{:02})\n{}",
-                enemy.score,
-                minutes % 60,
-                seconds % 60,
-                enemy.name
-            );
+        for (mut text, plates) in query_text.iter_mut() {
+            if plates.id == enemy.id {
+                text.sections[0].value = format!(
+                    "{:02}/21\n({:02}:{:02})\n{}",
+                    enemy.score,
+                    minutes % 60,
+                    seconds % 60,
+                    enemy.name
+                );
+            }
         }
 
-        if !enemy.dead {
-            enemy.apply_input(&mut t, &client_tick);
-        }
+        enemy.apply_input(&mut t, &client_tick);
     }
 }
 
