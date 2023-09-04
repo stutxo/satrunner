@@ -111,9 +111,7 @@ pub fn update_joystick(
         }
 
         for mut player in query.iter_mut() {
-            player.target += Vec2::new(x, y) * 5.;
-
-            info!("player target: {:?}", player.target);
+            player.target += Vec2::new(x, y);
 
             let input = PlayerInput::new(
                 [player.target.x, player.target.y],
