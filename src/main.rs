@@ -14,7 +14,7 @@ use game_core::{
 use game_util::resources::{
     BoltPool, ClientTick, NetworkStuff, Objects, PingTimer, PlayerName, RainPool,
 };
-use keyboard::{resources::KeyboardData, KeyboardPlugin};
+use keyboard::KeyboardPlugin;
 use network::websockets::websocket;
 use std::collections::VecDeque;
 
@@ -77,7 +77,6 @@ fn main() {
         .insert_resource(ClientTick::new())
         .insert_resource(PlayerName::new())
         .insert_resource(PingTimer::new())
-        .insert_resource(KeyboardData("".to_string()))
         .run();
 }
 

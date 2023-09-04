@@ -4,7 +4,7 @@ use crate::{game_util::resources::PlayerName, keyboard::styles::PRESSED_BUTTON};
 
 use super::{
     components::{Capitalizable, KeyBoardButton},
-    resources::{CapitalizeToggle, KeyboardData},
+    resources::CapitalizeToggle,
     styles::{HOVERED_BUTTON, NORMAL_BUTTON},
 };
 
@@ -14,25 +14,21 @@ const MAX_INPUT_LENGTH: usize = 100;
 pub fn physical_keyboard_system(
     mut char_evr: EventReader<ReceivedCharacter>,
     keys: Res<Input<KeyCode>>,
-    mut keyboard_text: ResMut<KeyboardData>,
+
     mut player_name: ResMut<PlayerName>,
 ) {
     if keys.just_pressed(KeyCode::Back) {
-        keyboard_text.0.pop();
         player_name.name.pop();
     }
 
     for ev in char_evr.iter() {
         let k = ev.char;
 
-        if ACCEPTABLE_CHARS.contains(k) && keyboard_text.0.len() < MAX_INPUT_LENGTH {
-            keyboard_text.0.push(k);
+        if ACCEPTABLE_CHARS.contains(k) && player_name.name.len() < MAX_INPUT_LENGTH {
             player_name.name.push(k);
         } else {
             info!("no likey this character sorry")
         }
-
-        info!("new pkeydata {:?}", keyboard_text.0);
     }
 }
 
@@ -42,7 +38,7 @@ pub fn virtual_keyboard_system(
         (&Interaction, &mut BackgroundColor, &KeyBoardButton),
         (Changed<Interaction>, With<Button>, With<KeyBoardButton>),
     >,
-    mut keyboard_text: ResMut<KeyboardData>,
+
     mut player_name: ResMut<PlayerName>,
     mut c_toggle: ResMut<CapitalizeToggle>,
 ) {
@@ -52,7 +48,6 @@ pub fn virtual_keyboard_system(
             Interaction::Pressed => {
                 match k {
                     '<' => {
-                        keyboard_text.0.pop();
                         player_name.name.pop();
                     }
                     '^' => {
@@ -60,13 +55,11 @@ pub fn virtual_keyboard_system(
                         debug!("capitalize is now set to: {}", c_toggle.0);
                     }
                     k if ACCEPTABLE_CHARS.contains(k)
-                        && keyboard_text.0.len() < MAX_INPUT_LENGTH =>
+                        && player_name.name.len() < MAX_INPUT_LENGTH =>
                     {
                         if c_toggle.0 {
-                            keyboard_text.0.push(k.to_ascii_uppercase());
                             player_name.name.push(k.to_ascii_uppercase());
                         } else {
-                            keyboard_text.0.push(k);
                             player_name.name.push(k);
                         }
                     }
@@ -74,8 +67,6 @@ pub fn virtual_keyboard_system(
                         info!("no likey this character sorry")
                     }
                 }
-
-                info!("new vkeydata {:?}", keyboard_text.0);
 
                 *color = PRESSED_BUTTON.into();
             }
