@@ -11,7 +11,7 @@ use crate::{game_util::resources::ClientTick, network::messages::PlayerInput};
 
 use super::objects::{X_BOUNDS, Y_BOUNDS};
 
-pub const PLAYER_SPEED: f32 = 2.5;
+pub const PLAYER_SPEED: f32 = 1.0;
 #[derive(Component)]
 pub struct Player {
     pub target: Vec2,
