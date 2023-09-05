@@ -106,7 +106,7 @@ pub fn update_joystick(
                 let mut current_direction = String::from("");
                 let angle = axis.y.atan2(axis.x);
                 let degree = angle * 180.0 / PI;
-                let tolerance = 20.0;
+                let tolerance = 30.0;
 
                 if degree >= -tolerance && degree <= tolerance {
                     current_direction = "Right".to_string();
@@ -120,7 +120,6 @@ pub fn update_joystick(
 
                 if player.last_direction.is_none()
                     || player.last_direction.as_ref().unwrap() != &current_direction
-                        && !current_direction.is_empty()
                 {
                     should_send = true;
                     player.last_direction = Some(current_direction.clone());
@@ -132,7 +131,7 @@ pub fn update_joystick(
                         "Down" => player.target = Vec2::new(0.0, -1.0) * 1000.,
                         "Right" => player.target = Vec2::new(1.0, 0.0) * 1000.,
                         "Left" => player.target = Vec2::new(-1.0, 0.0) * 1000.,
-                        _ => {}
+                        _ => player.target = Vec2::new(0.0, 0.0),
                     };
 
                     let input = PlayerInput::new(
