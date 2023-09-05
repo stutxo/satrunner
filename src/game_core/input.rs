@@ -51,11 +51,6 @@ pub fn input(
 
                 player.pending_inputs.push(input.clone());
 
-                // info!(
-                //     "Sending input: {:?}, player pos: {:?}",
-                //     input, t.translation.x
-                // );
-
                 match outgoing
                     .write
                     .as_mut()
