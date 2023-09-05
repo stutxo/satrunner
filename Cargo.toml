@@ -18,8 +18,8 @@ bevy_egui = "0.21.0"
 names = { version = "0.14.0", default-features = false }
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 bevy_ecs_ldtk = "0.8.0"
-# virtual_joystick = "2.0.1"
-virtual_joystick = { git = "https://github.com/stum0/virtual_joystick.git" }
+virtual_joystick = "2.0.1"
+# virtual_joystick = { git = "https://github.com/stum0/virtual_joystick.git" }
 
 [profile.release]
 lto = true

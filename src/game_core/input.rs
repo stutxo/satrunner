@@ -18,6 +18,7 @@ pub fn input(
     windows: Query<&Window>,
     mut outgoing: ResMut<NetworkStuff>,
     client_tick: Res<ClientTick>,
+    touches: Res<Touches>,
 ) {
     for mut player in query.iter_mut() {
         let (camera, camera_transform) = camera_query.single();
@@ -68,6 +69,13 @@ pub fn input(
                         let position = get_position(cursor, window);
                         handle_input(position, &mut player);
                     }
+                }
+            }
+
+            for touch in touches.iter_just_pressed() {
+                if let Some(window) = windows.iter().next() {
+                    let position = get_position(touch.position(), window);
+                    handle_input(position, &mut player);
                 }
             }
         }
