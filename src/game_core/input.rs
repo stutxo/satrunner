@@ -77,7 +77,7 @@ pub fn input(
 pub fn update_joystick(
     mut joystick: EventReader<VirtualJoystickEvent<String>>,
     mut joystick_color: Query<(&mut TintColor, &VirtualJoystickNode<String>)>,
-    mut query: Query<&mut Player>,
+    mut query: Query<(&Transform, &mut Player)>,
     mut outgoing: ResMut<NetworkStuff>,
     client_tick: Res<ClientTick>,
 ) {
@@ -98,7 +98,7 @@ pub fn update_joystick(
                 }
             }
 
-            for mut player in query.iter_mut() {
+            for (t, mut player) in query.iter_mut() {
                 let axis = j.axis().normalize();
 
                 let mut should_send = false;
@@ -131,7 +131,7 @@ pub fn update_joystick(
                         "Down" => player.target = Vec2::new(0.0, -1.0) * 1000.,
                         "Right" => player.target = Vec2::new(1.0, 0.0) * 1000.,
                         "Left" => player.target = Vec2::new(-1.0, 0.0) * 1000.,
-                        _ => player.target = Vec2::new(0.0, 0.0),
+                        _ => player.target = Vec2::new(t.translation.x, t.translation.y),
                     };
 
                     let input = PlayerInput::new(
