@@ -62,14 +62,14 @@ pub fn input(
                 };
             };
 
-            // if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
-            //     if let Some(window) = windows.iter().next() {
-            //         if let Some(cursor) = window.cursor_position() {
-            //             let position = get_position(cursor, window);
-            //             handle_input(position, &mut player);
-            //         }
-            //     }
-            // }
+            if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
+                if let Some(window) = windows.iter().next() {
+                    if let Some(cursor) = window.cursor_position() {
+                        let position = get_position(cursor, window);
+                        handle_input(position, &mut player);
+                    }
+                }
+            }
         }
     }
 }
