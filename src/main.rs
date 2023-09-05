@@ -60,7 +60,10 @@ fn main() {
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
         .add_systems(Update, (handle_server, score_board, check_disconnected))
         .add_systems(FixedUpdate, (tick, enemy_loop, handle_rain, handle_bolt))
-        .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
+        .add_systems(
+            Update,
+            (input, update_joystick).run_if(in_state(GameStage::InGame)),
+        )
         .add_systems(
             Update,
             (disconnected).run_if(in_state(GameStage::Disconnected)),
@@ -68,8 +71,7 @@ fn main() {
         .add_systems(Update, (game_over).run_if(in_state(GameStage::GameOver)))
         .add_systems(
             FixedUpdate,
-            (player_loop.after(update_joystick), update_joystick)
-                .run_if(in_state(GameStage::InGame)),
+            (player_loop).run_if(in_state(GameStage::InGame)),
         )
         .insert_resource(FixedTime::new_from_secs(TICK_RATE))
         .insert_resource(ClearColor(Color::BLACK))

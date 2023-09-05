@@ -55,7 +55,7 @@ pub fn spawn_player(
                         border_image: asset_server.load("Outline.png"),
                         knob_image: asset_server.load("Knob.png"),
                         knob_size: Vec2::new(40., 40.),
-                        dead_zone: 1.,
+                        dead_zone: 0.,
                         id: "UniqueJoystick".to_string(),
                         axis: VirtualJoystickAxis::Both,
                         behaviour: VirtualJoystickType::Floating,
@@ -96,6 +96,7 @@ pub fn spawn_player(
             ..Default::default()
         })
         .insert(Player {
+            last_direction: None,
             id: *id,
             target: Vec2::ZERO,
             score: 0,

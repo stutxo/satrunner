@@ -1,11 +1,8 @@
 use std::time::Duration;
 
-use crate::{
-    game_util::{
-        components::{NamePlates, NamePlatesLocal},
-        resources::{ClientTick, NetworkStuff},
-    },
-    network::messages::{ClientMessage, PlayerInput},
+use crate::game_util::{
+    components::{NamePlates, NamePlatesLocal},
+    resources::ClientTick,
 };
 use bevy::{prelude::*, utils::Instant};
 
@@ -15,7 +12,6 @@ pub fn player_loop(
     mut query_player: Query<(&mut Transform, &mut Player, &mut Sprite)>,
     mut query_text: Query<&mut Text, With<NamePlatesLocal>>,
     client_tick: Res<ClientTick>,
-    mut outgoing: ResMut<NetworkStuff>,
 ) {
     for (mut t, mut player, mut sprite) in query_player.iter_mut() {
         t.translation.z = 1.0;
@@ -33,25 +29,6 @@ pub fn player_loop(
                 seconds % 60,
             );
         }
-
-        let input = PlayerInput::new(
-            [player.target.x, player.target.y],
-            player.id,
-            client_tick.tick.unwrap(),
-            true,
-        );
-
-        player.pending_inputs.push(input.clone());
-
-        match outgoing
-            .write
-            .as_mut()
-            .unwrap()
-            .try_send(ClientMessage::PlayerInput(input))
-        {
-            Ok(()) => {}
-            Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-        };
 
         player.apply_input(&mut t, &client_tick);
     }

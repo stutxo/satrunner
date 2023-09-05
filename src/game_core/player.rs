@@ -15,6 +15,7 @@ pub const PLAYER_SPEED: f32 = 2.5;
 #[derive(Component)]
 pub struct Player {
     pub target: Vec2,
+    pub last_direction: Option<String>,
     pub id: Uuid,
     pub score: usize,
     pub pending_inputs: Vec<PlayerInput>,

@@ -9,6 +9,7 @@ use crate::{
 };
 
 use super::player::Player;
+use std::f32::consts::PI;
 
 pub fn input(
     mut query: Query<&mut Player>,
@@ -87,8 +88,6 @@ pub fn update_joystick(
 ) {
     if client_tick.pause == 0 {
         for j in joystick.iter() {
-            let Vec2 { x, y } = j.axis();
-
             match j.get_type() {
                 VirtualJoystickEventType::Press | VirtualJoystickEventType::Drag => {
                     let (mut color, node) = joystick_color.single_mut();
@@ -105,26 +104,61 @@ pub fn update_joystick(
             }
 
             for mut player in query.iter_mut() {
-                player.target += Vec2::new(x, y) * 2.;
+                let axis = j.axis().normalize();
 
-                let input = PlayerInput::new(
-                    [player.target.x, player.target.y],
-                    player.id,
-                    client_tick.tick.unwrap(),
-                    true,
-                );
+                let mut should_send = false;
 
-                player.pending_inputs.push(input.clone());
+                let mut current_direction = String::from("");
+                let angle = axis.y.atan2(axis.x);
+                let degree = angle * 180.0 / PI;
+                let tolerance = 20.0;
 
-                match outgoing
-                    .write
-                    .as_mut()
-                    .unwrap()
-                    .try_send(ClientMessage::PlayerInput(input))
+                if degree >= -tolerance && degree <= tolerance {
+                    current_direction = "Right".to_string();
+                } else if degree >= 90.0 - tolerance && degree <= 90.0 + tolerance {
+                    current_direction = "Up".to_string();
+                } else if degree >= -90.0 - tolerance && degree <= -90.0 + tolerance {
+                    current_direction = "Down".to_string();
+                } else if degree >= 180.0 - tolerance || degree <= -180.0 + tolerance {
+                    current_direction = "Left".to_string();
+                }
+
+                if player.last_direction.is_none()
+                    || player.last_direction.as_ref().unwrap() != &current_direction
+                        && !current_direction.is_empty()
                 {
-                    Ok(()) => {}
-                    Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
-                };
+                    should_send = true;
+                    player.last_direction = Some(current_direction.clone());
+                }
+
+                if should_send {
+                    match current_direction.as_str() {
+                        "Up" => player.target = Vec2::new(0.0, 1.0) * 1000.,
+                        "Down" => player.target = Vec2::new(0.0, -1.0) * 1000.,
+                        "Right" => player.target = Vec2::new(1.0, 0.0) * 1000.,
+                        "Left" => player.target = Vec2::new(-1.0, 0.0) * 1000.,
+                        _ => {}
+                    };
+
+                    let input = PlayerInput::new(
+                        [player.target.x, player.target.y],
+                        player.id,
+                        client_tick.tick.unwrap(),
+                        true,
+                    );
+
+                    player.pending_inputs.push(input.clone());
+
+                    match outgoing
+                        .write
+                        .as_mut()
+                        .unwrap()
+                        .try_send(ClientMessage::PlayerInput(input))
+                    {
+                        Ok(()) => {}
+                        Err(e) => error!("Error sending message: {} CHANNEL FULL???", e),
+                    };
+                }
             }
         }
     }
