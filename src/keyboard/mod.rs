@@ -6,7 +6,7 @@ use self::{
     components::KeyBoard,
     layout::setup_keyboard,
     resources::CapitalizeToggle,
-    systems::{physical_keyboard_system, virtual_capitalize_system, virtual_keyboard_system},
+    systems::{virtual_capitalize_system, virtual_keyboard_system},
 };
 
 pub mod components;
@@ -25,11 +25,7 @@ impl Plugin for KeyboardPlugin {
             .add_systems(OnEnter(KeyboardState::On), setup_keyboard)
             .add_systems(
                 Update,
-                (
-                    physical_keyboard_system,
-                    virtual_keyboard_system,
-                    virtual_capitalize_system,
-                )
+                (virtual_keyboard_system, virtual_capitalize_system)
                     .run_if(in_state(KeyboardState::On)),
             )
             .add_systems(OnExit(KeyboardState::On), despawn_screen::<KeyBoard>);

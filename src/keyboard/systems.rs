@@ -10,27 +10,27 @@ use super::{
 
 const ACCEPTABLE_CHARS: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 @.";
 const MAX_INPUT_LENGTH: usize = 100;
-#[allow(clippy::type_complexity)]
-pub fn physical_keyboard_system(
-    mut char_evr: EventReader<ReceivedCharacter>,
-    keys: Res<Input<KeyCode>>,
+// #[allow(clippy::type_complexity)]
+// pub fn physical_keyboard_system(
+//     mut char_evr: EventReader<ReceivedCharacter>,
+//     keys: Res<Input<KeyCode>>,
 
-    mut player_name: ResMut<PlayerName>,
-) {
-    if keys.just_pressed(KeyCode::Back) {
-        player_name.name.pop();
-    }
+//     mut player_name: ResMut<PlayerName>,
+// ) {
+//     if keys.just_pressed(KeyCode::Back) {
+//         player_name.name.pop();
+//     }
 
-    for ev in char_evr.iter() {
-        let k = ev.char;
+//     for ev in char_evr.iter() {
+//         let k = ev.char;
 
-        if ACCEPTABLE_CHARS.contains(k) && player_name.name.len() < MAX_INPUT_LENGTH {
-            player_name.name.push(k);
-        } else {
-            info!("no likey this character sorry")
-        }
-    }
-}
+//         if ACCEPTABLE_CHARS.contains(k) && player_name.name.len() < MAX_INPUT_LENGTH {
+//             player_name.name.push(k);
+//         } else {
+//             info!("no likey this character sorry")
+//         }
+//     }
+// }
 
 #[allow(clippy::type_complexity)]
 pub fn virtual_keyboard_system(
