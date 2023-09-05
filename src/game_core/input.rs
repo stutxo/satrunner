@@ -62,14 +62,14 @@ pub fn input(
                 };
             };
 
-            if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
-                if let Some(window) = windows.iter().next() {
-                    if let Some(cursor) = window.cursor_position() {
-                        let position = get_position(cursor, window);
-                        handle_input(position, &mut player);
-                    }
-                }
-            }
+            // if mouse.just_pressed(MouseButton::Left) || mouse.just_pressed(MouseButton::Right) {
+            //     if let Some(window) = windows.iter().next() {
+            //         if let Some(cursor) = window.cursor_position() {
+            //             let position = get_position(cursor, window);
+            //             handle_input(position, &mut player);
+            //         }
+            //     }
+            // }
         }
     }
 }
@@ -106,7 +106,7 @@ pub fn update_joystick(
                 let mut current_direction = String::from("");
                 let angle = axis.y.atan2(axis.x);
                 let degree = angle * 180.0 / PI;
-                let tolerance = 30.0;
+                let tolerance = 1.0;
 
                 if degree >= -tolerance && degree <= tolerance {
                     current_direction = "Right".to_string();
@@ -116,6 +116,14 @@ pub fn update_joystick(
                     current_direction = "Down".to_string();
                 } else if degree >= 180.0 - tolerance || degree <= -180.0 + tolerance {
                     current_direction = "Left".to_string();
+                } else if degree >= 45.0 - tolerance && degree <= 45.0 + tolerance {
+                    current_direction = "UpRight".to_string();
+                } else if degree >= 135.0 - tolerance && degree <= 135.0 + tolerance {
+                    current_direction = "UpLeft".to_string();
+                } else if degree >= -135.0 - tolerance && degree <= -135.0 + tolerance {
+                    current_direction = "DownLeft".to_string();
+                } else if degree >= -45.0 - tolerance && degree <= -45.0 + tolerance {
+                    current_direction = "DownRight".to_string();
                 }
 
                 if player.last_direction.is_none()
@@ -131,6 +139,10 @@ pub fn update_joystick(
                         "Down" => player.target = Vec2::new(0.0, -1.0) * 1000.,
                         "Right" => player.target = Vec2::new(1.0, 0.0) * 1000.,
                         "Left" => player.target = Vec2::new(-1.0, 0.0) * 1000.,
+                        "UpRight" => player.target = Vec2::new(1.0, 1.0) * 1000.,
+                        "UpLeft" => player.target = Vec2::new(-1.0, 1.0) * 1000.,
+                        "DownRight" => player.target = Vec2::new(1.0, -1.0) * 1000.,
+                        "DownLeft" => player.target = Vec2::new(-1.0, -1.0) * 1000.,
                         _ => player.target = Vec2::new(t.translation.x, t.translation.y),
                     };
 
