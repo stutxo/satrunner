@@ -22,7 +22,7 @@ use super::player::{Enemy, Player};
 
 const FONT_SIZE: f32 = 15.0;
 
-const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
+pub const PLAYER_SIZE: Vec2 = Vec2::new(20.0, 20.0);
 const DOTS_SIZE: Vec2 = Vec2::new(10., 10.);
 const LN_SIZE: Vec2 = Vec2::new(10., 10.);
 
@@ -104,6 +104,7 @@ pub fn spawn_player(
             name: String::new(),
             spawn_time: None,
             death_time: None,
+            badge_url: None,
         })
         .with_children(|parent| {
             parent.spawn(Camera2dBundle {
@@ -139,6 +140,7 @@ pub fn spawn_enemies(
     enemy_name: Option<String>,
     asset_server: &Res<AssetServer>,
     spawn_time: u64,
+    badge_url: Option<String>,
 ) {
     let target = target.unwrap_or([0.0, 0.0]);
     let player_pos = player_pos.unwrap_or([0.0, 0.0]);
@@ -153,7 +155,12 @@ pub fn spawn_enemies(
             },
         )]);
 
-        let player_image = asset_server.load("umbrella.png");
+        let player_image = if badge_url.is_some() {
+            //get nostr badge image from url
+            asset_server.load("nostr_badge.png")
+        } else {
+            asset_server.load("umbrella.png")
+        };
 
         let mut stopwatch = Stopwatch::new();
         stopwatch.set_elapsed(Duration::from_secs(spawn_time));

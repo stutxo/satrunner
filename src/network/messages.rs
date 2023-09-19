@@ -11,6 +11,7 @@ pub enum NetworkMessage {
     DamagePlayer(Damage),
     ScoreUpdate(Score),
     SyncClient(SyncMessage),
+    BadgeUrl(BadgeUrl),
 }
 
 #[derive(Readable, Writable, Debug, Clone)]
@@ -93,4 +94,11 @@ pub struct PlayerState {
     pub id: Uuid,
     pub time_alive: u64,
     pub alive: bool,
+    pub badge_url: Option<String>,
+}
+
+#[derive(Readable, Writable, Debug, Clone)]
+pub struct BadgeUrl {
+    pub id: Uuid,
+    pub url: Vec<u8>,
 }

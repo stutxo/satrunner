@@ -1,6 +1,18 @@
-use bevy::{prelude::*, utils::HashSet};
+use std::f32::consts::E;
 
+use bevy::{
+    prelude::*,
+    render::{
+        render_resource::{Extent3d, TextureDimension, TextureFormat},
+        texture::{BevyDefault, ImageFormat},
+    },
+    utils::HashSet,
+};
+
+use gloo_net::http::Request;
+use image::GenericImageView;
 use speedy::Readable;
+use wasm_bindgen_futures::spawn_local;
 
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
@@ -15,12 +27,13 @@ use crate::{
 use super::{
     objects::{handle_bolt_behind, handle_rain_behind, ObjectPos},
     player::{Enemy, Player},
+    sprites::PLAYER_SIZE,
 };
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn handle_server(
     mut incoming: ResMut<NetworkStuff>,
-    mut query_player: Query<(&mut Player, &mut Transform)>,
+    mut query_player: Query<(&mut Player, &mut Transform, &mut Sprite)>,
     mut query_enemy: Query<(Entity, &mut Enemy, &mut Transform, &mut Visibility), Without<Player>>,
     mut commands: Commands,
     mut client_tick: ResMut<ClientTick>,
@@ -36,13 +49,14 @@ pub fn handle_server(
     >,
     mut keyboard_state: ResMut<NextState<KeyboardState>>,
     windows: Query<&Window>,
+    mut textures: ResMut<Assets<Image>>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
             match NetworkMessage::read_from_buffer(&message) {
                 Ok(NetworkMessage::GameUpdate(game_update)) => {
                     for game_update in &game_update {
-                        for (mut player, mut t) in query_player.iter_mut() {
+                        for (mut player, mut t, _) in query_player.iter_mut() {
                             if game_update.id == player.id {
                                 player.server_reconciliation(
                                     &mut t,
@@ -71,7 +85,7 @@ pub fn handle_server(
                         player_state.iter().map(|p| p.id).collect();
                     let mut existing_entities = Vec::new();
 
-                    for (player, _) in query_player.iter_mut() {
+                    for (player, _, _) in query_player.iter_mut() {
                         existing_entities.push(player.id);
                     }
                     for (entity, enemy, _, _) in query_enemy.iter_mut() {
@@ -83,27 +97,29 @@ pub fn handle_server(
                         }
                     }
 
-                    for player in player_state.clone() {
-                        for (mut local_player, _) in query_player.iter_mut() {
-                            if local_player.id == player.id {
-                                local_player.score = player.score;
+                    for player_state in player_state.clone() {
+                        info!("badge: {:?}", player_state.badge_url);
+                        for (mut local_player, _, _) in query_player.iter_mut() {
+                            if local_player.id == player_state.id {
+                                local_player.score = player_state.score;
                             }
                         }
                         for (_, mut enemy, _, _) in query_enemy.iter_mut() {
-                            if enemy.id == player.id {
-                                enemy.score = player.score;
+                            if enemy.id == player_state.id {
+                                enemy.score = player_state.score;
                             }
                         }
-                        if !existing_entities.contains(&player.id) {
+                        if !existing_entities.contains(&player_state.id) {
                             spawn_enemies(
                                 &mut commands,
-                                &player.id,
-                                Some(player.pos),
-                                Some(player.target),
-                                player.score,
-                                player.name,
+                                &player_state.id,
+                                Some(player_state.pos),
+                                Some(player_state.target),
+                                player_state.score,
+                                player_state.name,
                                 &asset_server,
-                                player.time_alive,
+                                player_state.time_alive,
+                                player_state.badge_url,
                             );
                         }
                     }
@@ -155,7 +171,7 @@ pub fn handle_server(
                         objects.high_scores = high_scores;
                     }
 
-                    for (mut player, mut t) in query_player.iter_mut() {
+                    for (mut player, mut t, _) in query_player.iter_mut() {
                         if damage.id == player.id {
                             t.translation = Vec3::ZERO;
                             player.death_time = Some(damage.secs_alive);
@@ -174,7 +190,7 @@ pub fn handle_server(
                         objects.bolt_pos.remove(index);
                     }
 
-                    for (mut player, _t) in query_player.iter_mut() {
+                    for (mut player, _t, _) in query_player.iter_mut() {
                         if score.id == player.id {
                             player.score = score.score;
                         }
@@ -186,7 +202,7 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::SyncClient(sync_client)) => {
-                    for (mut player, mut t) in query_player.iter_mut() {
+                    for (mut player, mut t, _) in query_player.iter_mut() {
                         if sync_client.tick_adjustment > 0
                             && client_tick.tick.unwrap() > sync_client.server_tick
                         {
@@ -220,6 +236,51 @@ pub fn handle_server(
                     }
                 }
                 Ok(NetworkMessage::Ping) => {}
+                Ok(NetworkMessage::BadgeUrl(badge)) => {
+                    for (player, _, mut sprite) in query_player.iter_mut() {
+                        if badge.id == player.id {
+                            let img_result = image::load_from_memory(badge.url.as_slice());
+
+                            match img_result {
+                                Ok(dynamic_image) => {
+                                    let image_data = dynamic_image.to_rgba8();
+                                    let (width, height) = image_data.dimensions();
+                                    let data = image_data.into_raw();
+
+                                    let extent = Extent3d {
+                                        width,
+                                        height,
+                                        depth_or_array_layers: 1,
+                                    };
+
+                                    let dimensions = TextureDimension::D2;
+
+                                    let img_format = TextureFormat::bevy_default();
+
+                                    let bevy_image =
+                                        Image::new(extent, dimensions, data, img_format);
+
+                                    let texture = textures.add(bevy_image);
+
+                                    commands.spawn(SpriteBundle {
+                                        sprite: Sprite {
+                                            custom_size: Some(PLAYER_SIZE),
+                                            ..default()
+                                        },
+                                        texture,
+                                        transform: Transform::from_translation(Vec3::new(
+                                            0., 0., 0.1,
+                                        )),
+                                        ..Default::default()
+                                    });
+                                }
+                                Err(e) => {
+                                    info!("Failed to read the image: {:?}", e);
+                                }
+                            };
+                        }
+                    }
+                }
                 Err(_) => {}
             }
         }

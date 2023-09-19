@@ -22,6 +22,7 @@ pub struct Player {
     pub name: String,
     pub spawn_time: Option<Instant>,
     pub death_time: Option<u64>,
+    pub badge_url: Option<String>,
 }
 
 impl Player {

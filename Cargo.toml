@@ -20,7 +20,7 @@ gloo-timers = { version = "0.3.0", features = ["futures"] }
 bevy_ecs_ldtk = "0.8.0"
 virtual_joystick = "2.0.1"
 # virtual_joystick = { git = "https://github.com/stum0/virtual_joystick.git" }
-
+image = "0.24.7"
 [profile.release]
 lto = true
 opt-level = 'z'
