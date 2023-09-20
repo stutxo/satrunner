@@ -58,7 +58,7 @@ pub fn handle_server(
     mut keyboard_state: ResMut<NextState<KeyboardState>>,
     windows: Query<&Window>,
     mut textures: ResMut<Assets<Image>>,
-    mut local_sprite: Query<(&mut Handle<Image>)>,
+    mut local_sprite: Query<&mut Handle<Image>, With<Player>>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -107,7 +107,6 @@ pub fn handle_server(
                     }
 
                     for player_state in player_state.clone() {
-                        info!("badge: {:?}", player_state.badge_url);
                         for (mut local_player, _) in query_player.iter_mut() {
                             if local_player.id == player_state.id {
                                 local_player.score = player_state.score;

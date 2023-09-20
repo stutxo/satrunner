@@ -90,7 +90,7 @@ pub fn handle_bolt(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            if client_tick.tick.unwrap_or(0) % 5 == 0 {
+            if client_tick.tick.unwrap_or(0) % 5 == 0 && client_tick.tick.unwrap_or(0) % 60 != 0 {
                 let pos_start = Vec3::new(x_position, Y_BOUNDS, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
@@ -214,7 +214,7 @@ pub fn handle_bolt_behind(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            if client_tick.tick.unwrap_or(0) % 5 == 0 {
+            if client_tick.tick.unwrap_or(0) % 5 == 0 && client_tick.tick.unwrap_or(0) % 60 != 0 {
                 let pos_start = Vec3::new(x_position, Y_BOUNDS, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
@@ -272,7 +272,7 @@ pub fn handle_badge(
 
             let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
 
-            if client_tick.tick.unwrap_or(0) % 50 == 0 {
+            if client_tick.tick.unwrap_or(0) % 60 == 0 {
                 let pos_start = Vec3::new(x_position, Y_BOUNDS, 0.0);
                 let new_pos = ObjectPos {
                     tick: client_tick.tick.unwrap(),
