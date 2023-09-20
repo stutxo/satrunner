@@ -10,6 +10,7 @@ use crate::{game_core::objects::ObjectPos, network::messages::ClientMessage};
 pub struct Objects {
     pub rain_pos: Vec<ObjectPos>,
     pub bolt_pos: Vec<ObjectPos>,
+    pub badge_pos: Vec<ObjectPos>,
     pub rng_seed: Option<u64>,
     pub high_scores: Vec<(String, u64)>,
 }
@@ -19,6 +20,7 @@ impl Objects {
         Self {
             rain_pos: Vec::new(),
             bolt_pos: Vec::new(),
+            badge_pos: Vec::new(),
             rng_seed: None,
             high_scores: Vec::new(),
         }
@@ -30,6 +32,9 @@ pub struct RainPool(pub VecDeque<Entity>);
 
 #[derive(Resource)]
 pub struct BoltPool(pub VecDeque<Entity>);
+
+#[derive(Resource)]
+pub struct BadgePool(pub VecDeque<Entity>);
 
 //server
 #[derive(Resource)]

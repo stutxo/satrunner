@@ -11,8 +11,8 @@ use virtual_joystick::{
 
 use crate::{
     game_util::{
-        components::{Bolt, NamePlates, NamePlatesLocal, Rain},
-        resources::{BoltPool, RainPool},
+        components::{Badge, Bolt, NamePlates, NamePlatesLocal, Rain},
+        resources::{BadgePool, BoltPool, RainPool},
     },
     keyboard::components::KeyboardNode,
     GameStage, KeyboardState,
@@ -251,6 +251,30 @@ pub fn pool_bolt(
             .insert(Visibility::Hidden)
             .id();
         bolt_pool.0.push_back(ln);
+    }
+}
+
+pub fn pool_badge(
+    mut commands: Commands,
+    mut badge_pool: ResMut<BadgePool>,
+    asset_server: Res<AssetServer>,
+) {
+    let badge_image = asset_server.load("2xbadge.png");
+
+    for _ in 0..200 {
+        let ln = commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(25., 25.)),
+                    ..Default::default()
+                },
+                texture: badge_image.clone(),
+                ..Default::default()
+            })
+            .insert(Badge)
+            .insert(Visibility::Hidden)
+            .id();
+        badge_pool.0.push_back(ln);
     }
 }
 

@@ -66,6 +66,7 @@ pub struct NewGame {
 pub struct ObjectMsg {
     pub rain_pos: Vec<(u64, [f32; 2])>,
     pub bolt_pos: Vec<(u64, [f32; 2])>,
+    pub badge_pos: Vec<(u64, [f32; 2])>,
 }
 
 #[derive(Readable, Writable, Debug, Clone)]

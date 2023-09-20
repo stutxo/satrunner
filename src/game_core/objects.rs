@@ -3,8 +3,8 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 
 use crate::game_util::{
-    components::{Bolt, Rain},
-    resources::{BoltPool, ClientTick, Objects, RainPool},
+    components::{Badge, Bolt, Rain},
+    resources::{BadgePool, BoltPool, ClientTick, Objects, RainPool},
 };
 
 use super::player::{Enemy, Player};
@@ -139,7 +139,10 @@ pub fn handle_bolt(
 pub fn handle_rain_behind(
     objects: &mut ResMut<Objects>,
     rain_pool: &mut ResMut<RainPool>,
-    rain: &mut Query<(&Rain, &mut Visibility, &mut Transform), (Without<Player>, Without<Enemy>)>,
+    rain: &mut Query<
+        (&Rain, &mut Visibility, &mut Transform),
+        (Without<Player>, Without<Enemy>, Without<Bolt>),
+    >,
     client_tick: &ResMut<ClientTick>,
 ) {
     if client_tick.pause == 0 {
@@ -249,6 +252,131 @@ pub fn handle_bolt_behind(
 
             for pool in pool_iter {
                 if let Ok((_particle, mut visibility, _transform)) = bolt.get_mut(*pool) {
+                    *visibility = Visibility::Hidden;
+                }
+            }
+        }
+    }
+}
+
+pub fn handle_badge(
+    mut objects: ResMut<Objects>,
+    mut badge_pool: ResMut<BadgePool>,
+    mut badge: Query<(&Badge, &mut Visibility, &mut Transform), Without<Player>>,
+    client_tick: ResMut<ClientTick>,
+) {
+    if client_tick.pause == 0 {
+        if let Some(rng_seed) = objects.rng_seed {
+            let seed = rng_seed ^ client_tick.tick.unwrap();
+            let mut rng = ChaCha8Rng::seed_from_u64(seed);
+
+            let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
+
+            if client_tick.tick.unwrap_or(0) % 50 == 0 {
+                let pos_start = Vec3::new(x_position, Y_BOUNDS, 0.0);
+                let new_pos = ObjectPos {
+                    tick: client_tick.tick.unwrap(),
+                    pos: pos_start,
+                };
+                objects.badge_pos.push(new_pos);
+            }
+
+            for object in objects.badge_pos.iter_mut() {
+                object.pos.y += FALL_SPEED * -1.;
+            }
+
+            objects.badge_pos.retain(|object| {
+                object.pos.y >= -Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.x >= -X_BOUNDS
+                    && object.pos.x <= X_BOUNDS
+            });
+
+            let mut pool_iter = badge_pool.0.iter_mut();
+
+            for object in objects.badge_pos.iter() {
+                if let Some(pool) = pool_iter.next() {
+                    match badge.get_mut(*pool) {
+                        Ok((_particles, mut visibility, mut transform)) => {
+                            transform.translation = object.pos;
+                            *visibility = Visibility::Visible;
+                        }
+                        Err(err) => {
+                            info!("Error: {:?}", err);
+                        }
+                    }
+                }
+            }
+
+            for pool in pool_iter {
+                if let Ok((_particle, mut visibility, _transform)) = badge.get_mut(*pool) {
+                    *visibility = Visibility::Hidden;
+                }
+            }
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
+pub fn handle_badge_behind(
+    objects: &mut ResMut<Objects>,
+    badge_pool: &mut ResMut<BadgePool>,
+    badge: &mut Query<
+        (&Badge, &mut Visibility, &mut Transform),
+        (
+            Without<Player>,
+            Without<Enemy>,
+            Without<Rain>,
+            Without<Bolt>,
+        ),
+    >,
+    client_tick: &ResMut<ClientTick>,
+) {
+    if client_tick.pause == 0 {
+        if let Some(rng_seed) = objects.rng_seed {
+            let seed = rng_seed ^ (client_tick.tick.unwrap());
+            let mut rng = ChaCha8Rng::seed_from_u64(seed);
+
+            let x_position: f32 = rng.gen_range(-X_BOUNDS..X_BOUNDS);
+
+            if client_tick.tick.unwrap_or(0) % 5 == 0 {
+                let pos_start = Vec3::new(x_position, Y_BOUNDS, 0.0);
+                let new_pos = ObjectPos {
+                    tick: client_tick.tick.unwrap(),
+                    pos: pos_start,
+                };
+                objects.badge_pos.push(new_pos);
+            }
+
+            for object in objects.badge_pos.iter_mut() {
+                object.pos.y += FALL_SPEED * -1.0;
+            }
+
+            objects.badge_pos.retain(|object| {
+                object.pos.y >= -Y_BOUNDS
+                    && object.pos.y <= Y_BOUNDS
+                    && object.pos.x >= -X_BOUNDS
+                    && object.pos.x <= X_BOUNDS
+            });
+
+            let mut pool_iter = badge_pool.0.iter_mut();
+
+            for object in objects.badge_pos.iter() {
+                if let Some(pool) = pool_iter.next() {
+                    match badge.get_mut(*pool) {
+                        Ok((_particles, mut visibility, mut transform)) => {
+                            transform.translation = object.pos;
+                            *visibility = Visibility::Visible;
+                        }
+                        Err(err) => {
+                            info!("Error: {:?}", err);
+                        }
+                    }
+                }
+            }
+
+            for pool in pool_iter {
+                if let Ok((_particle, mut visibility, _transform)) = badge.get_mut(*pool) {
                     *visibility = Visibility::Hidden;
                 }
             }

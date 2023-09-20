@@ -12,15 +12,15 @@ use speedy::Readable;
 use crate::{
     game_core::sprites::{spawn_enemies, spawn_player},
     game_util::{
-        components::{Bolt, Rain},
-        resources::{BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
+        components::{Badge, Bolt, Rain},
+        resources::{BadgePool, BoltPool, ClientTick, NetworkStuff, Objects, RainPool},
     },
     network::messages::NetworkMessage,
     GameStage, KeyboardState,
 };
 
 use super::{
-    objects::{handle_bolt_behind, handle_rain_behind, ObjectPos},
+    objects::{handle_badge_behind, handle_bolt_behind, handle_rain_behind, ObjectPos},
     player::{Enemy, Player},
     sprites::PLAYER_SIZE,
 };
@@ -36,16 +36,29 @@ pub fn handle_server(
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<GameStage>>,
     mut rain_pool: ResMut<RainPool>,
-    mut rain: Query<(&Rain, &mut Visibility, &mut Transform), (Without<Player>, Without<Enemy>)>,
+    mut rain: Query<
+        (&Rain, &mut Visibility, &mut Transform),
+        (Without<Player>, Without<Enemy>, Without<Bolt>),
+    >,
     mut bolt_pool: ResMut<BoltPool>,
     mut bolt: Query<
         (&Bolt, &mut Visibility, &mut Transform),
         (Without<Player>, Without<Enemy>, Without<Rain>),
     >,
+    // mut badge_pool: ResMut<BadgePool>,
+    // mut badge: Query<
+    //     (&Badge, &mut Visibility, &mut Transform),
+    //     (
+    //         Without<Player>,
+    //         Without<Enemy>,
+    //         Without<Rain>,
+    //         Without<Bolt>,
+    //     ),
+    // >,
     mut keyboard_state: ResMut<NextState<KeyboardState>>,
     windows: Query<&Window>,
     mut textures: ResMut<Assets<Image>>,
-    mut sprite: Query<&mut Handle<Image>, With<Player>>,
+    mut local_sprite: Query<(&mut Handle<Image>)>,
 ) {
     if let Some(ref mut receive_rx) = incoming.read {
         while let Ok(Some(message)) = receive_rx.try_next() {
@@ -145,6 +158,16 @@ pub fn handle_server(
                         })
                         .collect();
 
+                    objects.badge_pos = new_game
+                        .objects
+                        .badge_pos
+                        .iter()
+                        .map(|&(tick, [x, y])| ObjectPos {
+                            tick,
+                            pos: Vec3 { x, y, z: 0.0 },
+                        })
+                        .collect();
+
                     spawn_player(
                         &mut commands,
                         &new_game.id,
@@ -186,6 +209,14 @@ pub fn handle_server(
                         objects.bolt_pos.remove(index);
                     }
 
+                    if let Some(index) = objects
+                        .badge_pos
+                        .iter()
+                        .position(|object| object.tick == score.tick)
+                    {
+                        objects.badge_pos.remove(index);
+                    }
+
                     for (mut player, _t) in query_player.iter_mut() {
                         if score.id == player.id {
                             player.score = score.score;
@@ -221,6 +252,12 @@ pub fn handle_server(
                                     &mut bolt,
                                     &client_tick,
                                 );
+                                // handle_badge_behind(
+                                //     &mut objects,
+                                //     &mut badge_pool,
+                                //     &mut badge,
+                                //     &client_tick,
+                                // );
                                 player.apply_input(&mut t, &client_tick);
                                 ticks_behind += 1;
 
@@ -258,7 +295,7 @@ pub fn handle_server(
 
                                     let texture = textures.add(bevy_image);
 
-                                    for mut handle in &mut sprite.iter_mut() {
+                                    for mut handle in &mut local_sprite.iter_mut() {
                                         *handle = texture.clone();
                                     }
                                 }
@@ -268,6 +305,42 @@ pub fn handle_server(
                             };
                         }
                     }
+
+                    // for (_entity, mut enemy, _t, _) in query_enemy.iter_mut() {
+                    //     if badge.id == enemy.id {
+                    //         let img_result = image::load_from_memory(badge.url.as_slice());
+
+                    //         match img_result {
+                    //             Ok(dynamic_image) => {
+                    //                 let image_data = dynamic_image.to_rgba8();
+                    //                 let (width, height) = image_data.dimensions();
+                    //                 let data = image_data.into_raw();
+
+                    //                 let extent = Extent3d {
+                    //                     width,
+                    //                     height,
+                    //                     depth_or_array_layers: 1,
+                    //                 };
+
+                    //                 let dimensions = TextureDimension::D2;
+
+                    //                 let img_format = TextureFormat::bevy_default();
+
+                    //                 let bevy_image =
+                    //                     Image::new(extent, dimensions, data, img_format);
+
+                    //                 let texture = textures.add(bevy_image);
+
+                    //                 for mut handle in &mut local_sprite.iter_mut() {
+                    //                     *handle = texture.clone();
+                    //                 }
+                    //             }
+                    //             Err(e) => {
+                    //                 info!("Failed to read the image: {:?}", e);
+                    //             }
+                    //         };
+                    //     }
+                    // }
                 }
                 Err(_) => {}
             }

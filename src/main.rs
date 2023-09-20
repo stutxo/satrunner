@@ -7,12 +7,12 @@ use game_core::{
     gui::{check_disconnected, disconnected, game_over, score_board, setup_menu},
     handle::handle_server,
     input::{input, update_joystick},
-    objects::{handle_bolt, handle_rain},
-    sprites::{pool_bolt, pool_rain, spawn_ldtk},
+    objects::{handle_badge, handle_bolt, handle_rain},
+    sprites::{pool_badge, pool_bolt, pool_rain, spawn_ldtk},
 };
 
 use game_util::resources::{
-    BoltPool, ClientTick, NetworkStuff, Objects, PingTimer, PlayerName, RainPool,
+    BadgePool, BoltPool, ClientTick, NetworkStuff, Objects, PingTimer, PlayerName, RainPool,
 };
 use keyboard::KeyboardPlugin;
 use network::websockets::websocket;
@@ -56,10 +56,16 @@ fn main() {
         .register_ldtk_entity::<MyBundle>("background")
         .add_state::<GameStage>()
         .add_state::<KeyboardState>()
-        .add_systems(Startup, (spawn_ldtk, pool_rain, pool_bolt, websocket))
+        .add_systems(
+            Startup,
+            (spawn_ldtk, pool_rain, pool_bolt, pool_badge, websocket),
+        )
         .add_systems(Update, setup_menu.run_if(in_state(GameStage::Menu)))
-        .add_systems(Update, (handle_server, score_board, check_disconnected))
-        .add_systems(FixedUpdate, (tick, enemy_loop, handle_rain, handle_bolt))
+        .add_systems(Update, (score_board, check_disconnected, handle_server))
+        .add_systems(
+            FixedUpdate,
+            (tick, enemy_loop, handle_rain, handle_bolt, handle_badge),
+        )
         .add_systems(Update, (input).run_if(in_state(GameStage::InGame)))
         .add_systems(
             Update,
@@ -75,6 +81,7 @@ fn main() {
         .insert_resource(Objects::new())
         .insert_resource(RainPool(VecDeque::new()))
         .insert_resource(BoltPool(VecDeque::new()))
+        .insert_resource(BadgePool(VecDeque::new()))
         .insert_resource(NetworkStuff::new())
         .insert_resource(ClientTick::new())
         .insert_resource(PlayerName::new())

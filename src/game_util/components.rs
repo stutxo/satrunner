@@ -7,6 +7,9 @@ pub struct Rain;
 pub struct Bolt;
 
 #[derive(Component)]
+pub struct Badge;
+
+#[derive(Component)]
 pub struct NamePlates {
     pub id: Uuid,
 }
